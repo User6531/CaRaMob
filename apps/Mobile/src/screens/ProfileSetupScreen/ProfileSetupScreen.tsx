@@ -118,6 +118,30 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
     }
   };
 
+  const handleCancel = () => {
+    const hasData = name.trim() || email.trim() || phone.trim() || birthday || profileImage;
+    
+    if (hasData) {
+      Alert.alert(
+        'Скасувати створення профілю?',
+        'Ви вже ввели деякі дані. Ви впевнені, що хочете скасувати?',
+        [
+          {
+            text: 'Продовжити редагування',
+            style: 'cancel'
+          },
+          {
+            text: 'Скасувати',
+            style: 'destructive',
+            onPress: () => navigation.navigate('Home')
+          }
+        ]
+      );
+    } else {
+      navigation.navigate('Home');
+    }
+  };
+
   const handleContinue = () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Будь ласка, введи своє імʼя');
@@ -248,10 +272,19 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
             />
           )}
 
-          {/* Continue Button */}
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-            <Text style={styles.continueButtonText}>Далі</Text>
-          </TouchableOpacity>
+          {/* Action Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.cancelButton} 
+              onPress={handleCancel}
+            >
+              <Text style={styles.cancelButtonText}>Скасувати</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+              <Text style={styles.continueButtonText}>Далі</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -360,17 +393,37 @@ const styles = StyleSheet.create({
   datePlaceholder: {
     color: '#999',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    marginBottom: 40,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '500',
+  },
   continueButton: {
+    flex: 1,
     backgroundColor: '#007AFF',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 40,
   },
   continueButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
 });

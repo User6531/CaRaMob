@@ -4,7 +4,7 @@
     "module": "esnext",
     "jsx": "react-native",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowJs": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -14,8 +14,7 @@
     "noEmit": true,
     "types": [
       "react",
-      "react-native",
-      "jest"
+      "react-native"
     ]
   },
   "include": [
