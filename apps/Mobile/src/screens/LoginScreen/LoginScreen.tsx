@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Button, Image, StyleSheet, Text, View } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -23,7 +23,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images/icon.png')} style={styles.logo} />
+      <Image source={require('../../../assets/images/icon.png')} style={styles.logo} />
       <Text style={styles.title}>Welcome Back</Text>
       <Button title={loading ? 'Signing in...' : 'Sign in with Microsoft'} onPress={handleLogin} disabled={loading} />
       {loading && <ActivityIndicator style={{ marginTop: 16 }} />}

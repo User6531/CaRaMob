@@ -14,6 +14,9 @@ export const scopes = [
   "profile",
   "email",
   "offline_access",
+  "User.Read",
+  "User.ReadBasic.All",
+  "https://graph.microsoft.com/User.Read",
 ];
 
 const msalConfig = {

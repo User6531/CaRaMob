@@ -21,6 +21,17 @@ import React, {
   useState,
 } from "react";
 
+interface UserProfile {
+  id: string;
+  displayName: string;
+  givenName: string;
+  surname: string;
+  mail: string;
+  userPrincipalName: string;
+  mobilePhone: string;
+  photo: string | null;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -28,6 +39,7 @@ interface AuthContextType {
   login: () => Promise<void>;
   logout: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
+  getUserProfile: () => Promise<UserProfile | null>;
   promptAsync:
     | ((options?: AuthRequestPromptOptions) => Promise<AuthSessionResult>)
     | null;
@@ -57,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       usePKCE: true,
       redirectUri: makeRedirectUri(
         isExpoGo
-          ? { useProxy: true }
+          ? { scheme: 'exp' }
           : { native: `msal${clientId}://auth` }
       ),
       extraParams: {
@@ -80,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             code,
             redirectUri: makeRedirectUri(
               isExpoGo
-                ? { useProxy: true }
+                ? { scheme: 'exp' }
                 : { native: `msal${clientId}://auth` }
             ),
             extraParams: {
@@ -213,6 +225,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
+  const getUserProfile = async (): Promise<UserProfile | null> => {
+    try {
+      console.log('🔍 Starting getUserProfile...');
+      const accessToken = await getAccessToken();
+      console.log('🔑 Access token:', accessToken ? 'Present' : 'Missing');
+      
+      if (!accessToken) {
+        console.log('❌ No access token available');
+        return null;
+      }
+
+      console.log('📡 Fetching profile from Microsoft Graph...');
+      // Get basic profile info
+      const profileResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📊 Profile response status:', profileResponse.status);
+      
+      if (!profileResponse.ok) {
+        const errorText = await profileResponse.text();
+        console.error('❌ Profile fetch failed:', errorText);
+        throw new Error(`Failed to fetch user profile: ${profileResponse.status} - ${errorText}`);
+      }
+
+      const profile = await profileResponse.json();
+      console.log('✅ Profile data received:', { 
+        id: profile.id, 
+        displayName: profile.displayName,
+        mail: profile.mail 
+      });
+
+      // Try to get profile photo
+      let photoUrl = null;
+      try {
+        const photoResponse = await fetch('https://graph.microsoft.com/v1.0/me/photo/$value', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+        
+        if (photoResponse.ok) {
+          const photoBlob = await photoResponse.blob();
+          photoUrl = URL.createObjectURL(photoBlob);
+        }
+      } catch (photoError) {
+        console.log('Photo not available or error fetching photo:', photoError);
+      }
+
+      return {
+        id: profile.id,
+        displayName: profile.displayName || '',
+        givenName: profile.givenName || '',
+        surname: profile.surname || '',
+        mail: profile.mail || profile.userPrincipalName || '',
+        userPrincipalName: profile.userPrincipalName || '',
+        mobilePhone: profile.mobilePhone || '',
+        photo: photoUrl,
+      };
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -222,6 +302,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         getAccessToken,
+        getUserProfile,
         promptAsync,
       }}
     >

@@ -1,10 +1,13 @@
 import { Button, StyleSheet, Text, View } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
 
-export default function HomeScreen({ navigation }: { navigation: any }) {
+export default function ProfileScreen() {
+  const { user, logout } = useAuth();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to CARa 🚗</Text>
-      <Button title="Go to Profile" onPress={() => navigation.navigate('Profile')} />
+      <Text style={styles.title}>Hello, {user} 👋</Text>
+      <Button title="Logout" onPress={logout} />
     </View>
   );
 }
