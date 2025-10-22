@@ -29,6 +29,7 @@ interface UserProfile {
   mail: string;
   userPrincipalName: string;
   mobilePhone: string;
+  birthday: string;
   photo: string | null;
 }
 
@@ -285,6 +286,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         mail: profile.mail || profile.userPrincipalName || '',
         userPrincipalName: profile.userPrincipalName || '',
         mobilePhone: profile.mobilePhone || '',
+        birthday: profile.birthday || '',
         photo: photoUrl,
       };
     } catch (error) {

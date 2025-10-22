@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../../context/AuthContext';
 
 interface ProfileSetupScreenProps {
@@ -25,6 +26,8 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [birthday, setBirthday] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   useEffect(() => {
@@ -39,12 +42,22 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
           const fullName = profile.displayName || `${profile.givenName} ${profile.surname}`.trim() || '';
           const email = profile.mail || profile.userPrincipalName || '';
           const phone = profile.mobilePhone || '';
+          const birthdayStr = profile.birthday || '';
           
-          console.log('📝 Setting form data:', { fullName, email, phone });
+          console.log('📝 Setting form data:', { fullName, email, phone, birthday: birthdayStr });
           
           setName(fullName);
           setEmail(email);
           setPhone(phone);
+          
+          // Parse birthday from Microsoft format (YYYY-MM-DD)
+          if (birthdayStr) {
+            const birthdayDate = new Date(birthdayStr);
+            if (!isNaN(birthdayDate.getTime())) {
+              setBirthday(birthdayDate);
+              console.log('🎂 Setting birthday from Microsoft:', birthdayDate.toDateString());
+            }
+          }
           
           if (profile.photo) {
             console.log('📸 Setting profile photo from Microsoft');
@@ -68,6 +81,22 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
 
     loadUserProfile();
   }, [getUserProfile]);
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setBirthday(selectedDate);
+    }
+  };
+
+  const formatDate = (date: Date | null): string => {
+    if (!date) return '';
+    return date.toLocaleDateString('uk-UA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  };
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -102,9 +131,19 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
       Alert.alert('Error', 'Будь ласка, введи свій телефон');
       return;
     }
+    if (!birthday) {
+      Alert.alert('Error', 'Будь ласка, вкажи дату народження');
+      return;
+    }
 
     // TODO: Save profile data to backend
-    console.log('Profile data:', { name, email, phone, profileImage });
+    console.log('Profile data:', { 
+      name, 
+      email, 
+      phone, 
+      birthday: birthday?.toISOString().split('T')[0], // Format as YYYY-MM-DD
+      profileImage 
+    });
     
     // Navigate to HomeScreen
     navigation.navigate('Home');
@@ -178,11 +217,36 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
               style={styles.input}
               value={phone}
               onChangeText={setPhone}
-              placeholder="Enter your phone number"
+              placeholder="Введи свій телефон"
               placeholderTextColor="#999"
               keyboardType="phone-pad"
             />
           </View>
+
+          {/* Birthday Field */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Дата народження *</Text>
+            <TouchableOpacity 
+              style={styles.dateInput} 
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={[styles.dateText, !birthday && styles.datePlaceholder]}>
+                {birthday ? formatDate(birthday) : 'Оберіть дату народження'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Date Picker */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={birthday || new Date()}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onDateChange}
+              maximumDate={new Date()}
+              minimumDate={new Date(1900, 0, 1)}
+            />
+          )}
 
           {/* Continue Button */}
           <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
@@ -279,6 +343,22 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     backgroundColor: '#FAFAFA',
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: '#FAFAFA',
+    justifyContent: 'center',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  datePlaceholder: {
+    color: '#999',
   },
   continueButton: {
     backgroundColor: '#007AFF',
