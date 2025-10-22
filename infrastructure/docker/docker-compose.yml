@@ -1,0 +1,42 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongodb-init:/docker-entrypoint-initdb.d
+    networks:
+      - mainhub-network
+
+  mainhub-api:
+    build:
+      context: ../../Services/Main/MainHub.Api
+      dockerfile: Dockerfile
+    container_name: mainhub-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - MongoDbSettings__ConnectionString=mongodb://admin:admin123@mongodb:27017
+      - MongoDbSettings__DatabaseName=mongo
+      - MongoDbSettings__UserCollectionName=Main
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    networks:
+      - mainhub-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  mainhub-network:
+    driver: bridge
