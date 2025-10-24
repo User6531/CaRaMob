@@ -67,15 +67,18 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://login.microsoftonline.com/43978eea-0438-44a8-98b8-0c16c5902345/v2.0";
-        options.Audience = "9b06a155-e9bc-42d4-a47a-cf9f135e1048";
+        // Authority points to your tenant (can be 'common' for public users)
+        options.Authority = "https://login.microsoftonline.com/common/v2.0";
+
+        // Audience must be your backend API's Application ID URI
+        options.Audience = "api://0200db18-ed94-4544-925a-d307b6de8603"; // backend client ID
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true
+            // Remove ValidateIssuerSigningKey; middleware fetches keys automatically
         };
     });
 
