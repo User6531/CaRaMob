@@ -19,9 +19,10 @@ public static class UserEndpoints
     // users.MapDelete("/{id:guid}", DeleteAsync);
     users.MapGet("/me", [Authorize] async (ClaimsPrincipal user, IUserService userService, ILogger<Program> logger) =>
     {
-      var providerId = user.FindFirst("oid")?.Value;
+      var providerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
       var email = user.FindFirst("preferred_username")?.Value;
       var name = user.FindFirst("name")?.Value;
+
       logger.LogInformation("GetMe called by user: {Name}, Email: {Email}, ProviderId: {ProviderId}", name, email, providerId);
 
       if (string.IsNullOrEmpty(providerId))
@@ -47,7 +48,6 @@ public static class UserEndpoints
     //   .MapToApiVersion(1, 0)
     //   .RequireAuthorization(PmpcAuthPolicy.DeploymentsWrite);
   }
-
   internal static async Task<IResult> GetAllAsync(IUserService userService)
   {
     var allUsers = await userService.GetAllAsync();

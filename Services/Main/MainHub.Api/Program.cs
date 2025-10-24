@@ -67,18 +67,22 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        // Authority points to your tenant (can be 'common' for public users)
         options.Authority = "https://login.microsoftonline.com/common/v2.0";
-
-        // Audience must be your backend API's Application ID URI
-        options.Audience = "api://0200db18-ed94-4544-925a-d307b6de8603"; // backend client ID
+        options.Audience = "0200db18-ed94-4544-925a-d307b6de8603"; // backend client ID
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            // Remove ValidateIssuerSigningKey; middleware fetches keys automatically
+
+            // Accept any Microsoft tenant issuer
+            IssuerValidator = (issuer, token, parameters) =>
+            {
+                if (issuer.StartsWith("https://login.microsoftonline.com/"))
+                    return issuer;
+                throw new SecurityTokenInvalidIssuerException($"Invalid issuer: {issuer}");
+            }
         };
     });
 
