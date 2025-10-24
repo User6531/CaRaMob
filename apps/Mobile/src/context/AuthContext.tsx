@@ -69,9 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       responseType: ResponseType.Code,
       usePKCE: true,
       redirectUri: makeRedirectUri(
-        isExpoGo
-          ? { scheme: 'exp' }
-          : { native: `msal${clientId}://auth` }
+        isExpoGo ? { scheme: "exp" } : { native: `msal${clientId}://auth` }
       ),
       extraParams: {
         prompt: "select_account",
@@ -93,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             code,
             redirectUri: makeRedirectUri(
               isExpoGo
-                ? { scheme: 'exp' }
+                ? { scheme: "exp" }
                 : { native: `msal${clientId}://auth` }
             ),
             extraParams: {
@@ -174,6 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  console.log("ACCESS TOKEN", tokenResponse?.accessToken);
+
   const logout = async () => {
     try {
       if (tokenResponse?.accessToken) {
@@ -228,69 +228,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const getUserProfile = async (): Promise<UserProfile | null> => {
     try {
-      console.log('🔍 Starting getUserProfile...');
+      console.log("🔍 Starting getUserProfile...");
       const accessToken = await getAccessToken();
-      console.log('🔑 Access token:', accessToken ? 'Present' : 'Missing');
-      
+      console.log("🔑 Access token:", accessToken ? "Present" : "Missing");
+
       if (!accessToken) {
-        console.log('❌ No access token available');
+        console.log("❌ No access token available");
         return null;
       }
 
-      console.log('📡 Fetching profile from Microsoft Graph...');
+      console.log("📡 Fetching profile from Microsoft Graph...");
       // Get basic profile info
-      const profileResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const profileResponse = await fetch(
+        "https://graph.microsoft.com/v1.0/me",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      console.log('📊 Profile response status:', profileResponse.status);
-      
+      console.log("📊 Profile response status:", profileResponse.status);
+
       if (!profileResponse.ok) {
         const errorText = await profileResponse.text();
-        console.error('❌ Profile fetch failed:', errorText);
-        throw new Error(`Failed to fetch user profile: ${profileResponse.status} - ${errorText}`);
+        console.error("❌ Profile fetch failed:", errorText);
+        throw new Error(
+          `Failed to fetch user profile: ${profileResponse.status} - ${errorText}`
+        );
       }
 
       const profile = await profileResponse.json();
-      console.log('✅ Profile data received:', { 
-        id: profile.id, 
+      console.log("✅ Profile data received:", {
+        id: profile.id,
         displayName: profile.displayName,
-        mail: profile.mail 
+        mail: profile.mail,
       });
 
       // Try to get profile photo
       let photoUrl = null;
       try {
-        const photoResponse = await fetch('https://graph.microsoft.com/v1.0/me/photo/$value', {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-        });
-        
+        const photoResponse = await fetch(
+          "https://graph.microsoft.com/v1.0/me/photo/$value",
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
         if (photoResponse.ok) {
           const photoBlob = await photoResponse.blob();
           photoUrl = URL.createObjectURL(photoBlob);
         }
       } catch (photoError) {
-        console.log('Photo not available or error fetching photo:', photoError);
+        console.log("Photo not available or error fetching photo:", photoError);
       }
 
       return {
         id: profile.id,
-        displayName: profile.displayName || '',
-        givenName: profile.givenName || '',
-        surname: profile.surname || '',
-        mail: profile.mail || profile.userPrincipalName || '',
-        userPrincipalName: profile.userPrincipalName || '',
-        mobilePhone: profile.mobilePhone || '',
-        birthday: profile.birthday || '',
+        displayName: profile.displayName || "",
+        givenName: profile.givenName || "",
+        surname: profile.surname || "",
+        mail: profile.mail || profile.userPrincipalName || "",
+        userPrincipalName: profile.userPrincipalName || "",
+        mobilePhone: profile.mobilePhone || "",
+        birthday: profile.birthday || "",
         photo: photoUrl,
       };
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error("Error fetching user profile:", error);
       return null;
     }
   };

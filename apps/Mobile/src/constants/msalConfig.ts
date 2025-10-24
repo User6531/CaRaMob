@@ -1,6 +1,7 @@
 import { DiscoveryDocument } from "expo-auth-session";
 
-export const clientId = "9b06a155-e9bc-42d4-a47a-cf9f135e1048";
+export const clientId = "10cce22d-e9f4-49dd-a39e-93bb13b447de";
+export const apiClientId = "0200db18-ed94-4544-925a-d307b6de8603";
 export const tenantId = "common";
 
 export const discovery: DiscoveryDocument = {
@@ -12,11 +13,8 @@ export const discovery: DiscoveryDocument = {
 export const scopes = [
   "openid",
   "profile",
-  "email",
   "offline_access",
-  "User.Read",
-  "User.ReadBasic.All",
-  "https://graph.microsoft.com/User.Read",
+  `api://${apiClientId}/access_as_user`,
 ];
 
 const msalConfig = {
@@ -28,5 +26,3 @@ const msalConfig = {
 } as const;
 
 export default msalConfig;
-
-
