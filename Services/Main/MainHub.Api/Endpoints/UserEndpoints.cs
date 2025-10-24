@@ -70,7 +70,7 @@ public static class UserEndpoints
     ILogger<Program> logger
   )
   {
-    var providerId = userСlaims.FindFirst("oid")?.Value;
+    var providerId = userСlaims.FindFirstValue(ClaimTypes.NameIdentifier);
     var email = userСlaims.FindFirst("preferred_username")?.Value;
     var name = userСlaims.FindFirst("name")?.Value;
     logger.LogInformation("Create internal user called by user: {Name}, Email: {Email}, ProviderId: {ProviderId}", name, email, providerId);
