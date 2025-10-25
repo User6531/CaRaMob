@@ -1,14 +1,19 @@
 namespace MainHub.Api.DTOs
 {
   /// <summary>
-  /// Represent a create user DTO.
+  /// Represents an update user DTO.
   /// </summary>
-  public class CreateUserDto
+  public class UpdateUserDto
   {
+    /// <summary>
+    /// The unique identifier of the user.
+    /// </summary>
+    public required Guid Id { get; set; }
+
     /// <summary>
     /// The name of the user.
     /// </summary>
-    public required string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// The email of the user.

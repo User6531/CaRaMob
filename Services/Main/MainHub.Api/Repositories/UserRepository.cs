@@ -10,6 +10,12 @@ namespace MainHub.Api.Repositories;
 /// </summary>
 public interface IUserRepository
 {
+    /// <summary>
+    /// Replaces an existing user entity asynchronously.
+    /// </summary>
+    /// <param name="user">The user entity to update.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ReplaceAsync(UserEntity user);
 
     /// <summary>
     /// Retrieves a user entity by its provider identifier asynchronously.
@@ -65,8 +71,14 @@ public class UserRepository : IUserRepository
         _users = database.GetCollection<UserEntity>(settings.Value.UserCollectionName);
     }
 
+    public async Task ReplaceAsync(UserEntity user)
+    {
+        var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, user.Id);
+        await _users.ReplaceOneAsync(filter, user);
+    }
+
     public async Task<UserEntity?> GetByProviderIdAsync(string providerId) =>
-    await _users.Find(u => u.ProviderId == providerId).FirstOrDefaultAsync();
+        await _users.Find(u => u.ProviderId == providerId).FirstOrDefaultAsync();
 
     public async Task<List<UserEntity>> GetAllAsync() =>
         await _users.Find(_ => true).ToListAsync();

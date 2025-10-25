@@ -8,7 +8,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin123
       MONGO_INITDB_DATABASE: mongo
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongodb_data:/data/db
       - ./mongodb-init:/docker-entrypoint-initdb.d
@@ -23,12 +23,12 @@ services:
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_URLS=http://+:5001
       - MongoDbSettings__ConnectionString=mongodb://admin:admin123@mongodb:27017
       - MongoDbSettings__DatabaseName=mongo
       - MongoDbSettings__UserCollectionName=Main
     ports:
-      - "8080:8080"
+      - "5001:5001"
     depends_on:
       - mongodb
     networks:

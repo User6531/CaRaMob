@@ -1,7 +1,7 @@
 namespace MainHub.Api.DTOs;
 
 /// <summary>
-/// Represents a data transfer object for retrieving the current user's information.
+/// Represents a DTO for retrieving the current user's information.
 /// </summary>
 public class GetMeDto
 {

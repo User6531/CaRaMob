@@ -11,6 +11,12 @@ namespace MainHub.Api.Services;
 public interface IUserService
 {
   /// <summary>
+  /// Updates an existing user asynchronously.
+  /// </summary>
+  /// <param name="userDto">The user DTO containing updated information.</param>
+  Task UpdateAsync(UpdateUserDto userDto);
+
+  /// <summary>
   /// Retrieves the current user's information based on the provider ID asynchronously.
   /// </summary>
   /// <param name="providerId">The provider identifier of the user.</param>
@@ -57,6 +63,26 @@ public interface IUserService
 public class UserService(IUserRepository repository) : IUserService
 {
   private readonly IUserRepository _repository = repository;
+
+  public async Task UpdateAsync(UpdateUserDto userDto)
+  {
+    var existingUser = await _repository.GetByIdAsync(userDto.Id);
+
+    if (existingUser is null)
+    {
+      throw new KeyNotFoundException("User not found.");
+    }
+
+    // Update only the fields that are provided in the DTO
+    if (userDto.Name is not null)
+      existingUser.Name = userDto.Name;
+
+    if (userDto.Email is not null)
+      existingUser.Email = userDto.Email;
+
+    await _repository.ReplaceAsync(existingUser);
+  }
+
 
   public async Task<GetMeDto> GetMeAsync(string providerId)
   {

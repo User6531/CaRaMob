@@ -1,7 +1,6 @@
 using MainHub.Api.Services;
 using MainHub.Api.DTOs;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace MainHub.Api.Endpoints;
 
@@ -14,39 +13,49 @@ public static class UserEndpoints
                    .RequireAuthorization();
 
     // users.MapGet("/", GetAllAsync);
+
     // users.MapGet("/{id:guid}", GetByIdAsync);
-    users.MapPost("/", CreateAsync);
+
     // users.MapDelete("/{id:guid}", DeleteAsync);
-    users.MapGet("/me", [Authorize] async (ClaimsPrincipal user, IUserService userService, ILogger<Program> logger) =>
+
+    users.MapPost("/", CreateAsync);
+
+    users.MapPut("/update", UpdateAsync);
+
+    users
+      .MapGet("/me", GetMeAsync)
+      .Produces<GetMeDto>(StatusCodes.Status200OK);
+
+  }
+
+  internal static async Task<IResult> UpdateAsync(
+    UpdateUserDto userDto,
+    IUserService userService
+  )
+  {
+    await userService.UpdateAsync(userDto);
+    return Results.NoContent();
+  }
+
+  internal static async Task<IResult> GetMeAsync(
+    ClaimsPrincipal userClaims,
+    IUserService userService,
+    ILogger<Program> logger
+  )
+  {
+    var providerId = userClaims.FindFirstValue(ClaimTypes.NameIdentifier);
+    var email = userClaims.FindFirst("preferred_username")?.Value;
+    var name = userClaims.FindFirst("name")?.Value;
+    logger.LogInformation("GetMe called by user: {Name}, Email: {Email}, ProviderId: {ProviderId}", name, email, providerId);
+
+    if (string.IsNullOrEmpty(providerId))
     {
-      var providerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-      var email = user.FindFirst("preferred_username")?.Value;
-      var name = user.FindFirst("name")?.Value;
+      logger.LogWarning("GetMe failed: ProviderId (oid) claim is missing");
+      return Results.BadRequest("ProviderId (oid) claim is missing.");
+    }
 
-      logger.LogInformation("GetMe called by user: {Name}, Email: {Email}, ProviderId: {ProviderId}", name, email, providerId);
-
-      if (string.IsNullOrEmpty(providerId))
-      {
-        logger.LogWarning("GetMe failed: ProviderId (oid) claim is missing");
-        return Results.BadRequest("ProviderId (oid) claim is missing.");
-      }
-
-      var getMeData = await userService.GetMeAsync(providerId);
-      return Results.Ok(getMeData);
-    })
-    .Produces<GetMeDto>(StatusCodes.Status200OK);
-
-    // deploymentsPerIntuneConnection.MapPost($"{{tenantId:Guid}}/draft", CreateDraftDeployment)
-    //     .WithName()
-    // .WithMetadata();
-    //  .Accepts<CreateDraftIntuneDeploymentDto>(_contentType)
-    //   .Produces<DraftIntuneDeploymentDto>(StatusCodes.Status200OK)
-    //   .Produces(StatusCodes.Status400BadRequest)
-    //   .Produces(StatusCodes.Status404NotFound)
-    //   .AddEndpointFilter<ValidationFilter<CreateDraftIntuneDeploymentDto>>()
-    //   .MapToApiVersion(1, 1)
-    //   .MapToApiVersion(1, 0)
-    //   .RequireAuthorization(PmpcAuthPolicy.DeploymentsWrite);
+    var getMeData = await userService.GetMeAsync(providerId);
+    return Results.Ok(getMeData);
   }
   internal static async Task<IResult> GetAllAsync(IUserService userService)
   {
@@ -66,13 +75,13 @@ public static class UserEndpoints
   internal static async Task<IResult> CreateAsync(
     CreateUserDto userDto,
     IUserService userService,
-    ClaimsPrincipal userСlaims,
+    ClaimsPrincipal userClaims,
     ILogger<Program> logger
   )
   {
-    var providerId = userСlaims.FindFirstValue(ClaimTypes.NameIdentifier);
-    var email = userСlaims.FindFirst("preferred_username")?.Value;
-    var name = userСlaims.FindFirst("name")?.Value;
+    var providerId = userClaims.FindFirstValue(ClaimTypes.NameIdentifier);
+    var email = userClaims.FindFirst("preferred_username")?.Value;
+    var name = userClaims.FindFirst("name")?.Value;
     logger.LogInformation("Create internal user called by user: {Name}, Email: {Email}, ProviderId: {ProviderId}", name, email, providerId);
 
     if (string.IsNullOrEmpty(providerId))
