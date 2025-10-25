@@ -75,7 +75,8 @@ public class UserService(IUserRepository repository) : IUserService
       IsRegistered = true,
       UserData = new UserInfo
       {
-        Name = user.Name
+        Name = user.Name,
+        Id = user.Id
       }
     };
   }

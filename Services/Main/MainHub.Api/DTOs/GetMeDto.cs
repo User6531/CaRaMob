@@ -25,4 +25,9 @@ public class UserInfo
   /// Represents the name of the user.
   /// </summary>
   public required string Name { get; set; }
+
+  /// <summary>
+  /// Represents the unique identifier of the user.
+  /// </summary>
+  public required Guid Id { get; set; }
 }
