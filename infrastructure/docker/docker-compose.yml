@@ -6,7 +6,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin123
-      MONGO_INITDB_DATABASE: mongo
+      MONGO_INITDB_DATABASE: Main
     ports:
       - "27018:27017"
     volumes:
@@ -25,8 +25,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5001
       - MongoDbSettings__ConnectionString=mongodb://admin:admin123@mongodb:27018
-      - MongoDbSettings__DatabaseName=mongo
-      - MongoDbSettings__UserCollectionName=Main
+      - MongoDbSettings__DatabaseName=Main
+      - MongoDbSettings__UserCollectionName=Users
     ports:
       - "5001:5001"
     depends_on:
