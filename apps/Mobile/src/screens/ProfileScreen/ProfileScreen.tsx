@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
   StyleSheet, 
   Text, 
   View, 
   TouchableOpacity, 
   ScrollView, 
-  Image, 
-  Alert,
-  ActivityIndicator 
+  Alert
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,25 +14,7 @@ interface ProfileScreenProps {
 }
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
-  const { logout, getUserProfile } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        setIsLoading(true);
-        const profileData = await getUserProfile();
-        setProfile(profileData);
-      } catch (error) {
-        console.error('Error loading profile:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadProfile();
-  }, [getUserProfile]);
+  const { logout } = useAuth();
 
   const handleEditProfile = () => {
     navigation.navigate('ProfileSetup');
@@ -58,64 +38,31 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     );
   };
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Завантаження профілю...</Text>
-      </View>
-    );
-  }
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
         {/* Profile Header */}
         <View style={styles.header}>
-          {profile?.photo ? (
-            <Image source={{ uri: profile.photo }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.placeholderImage}>
-              <Text style={styles.placeholderText}>👤</Text>
-            </View>
-          )}
-          <Text style={styles.name}>{profile?.displayName || 'Користувач'}</Text>
-          <Text style={styles.email}>{profile?.mail || profile?.userPrincipalName || ''}</Text>
+          <View style={styles.placeholderImage}>
+            <Text style={styles.placeholderText}>👤</Text>
+          </View>
+          <Text style={styles.name}>Користувач</Text>
+          <Text style={styles.email}>Профіль користувача</Text>
         </View>
 
         {/* Profile Info */}
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>Інформація про профіль</Text>
           
-          {profile?.givenName && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Ім'я:</Text>
-              <Text style={styles.infoValue}>{profile.givenName}</Text>
-            </View>
-          )}
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Статус:</Text>
+            <Text style={styles.infoValue}>Активний</Text>
+          </View>
           
-          {profile?.surname && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Прізвище:</Text>
-              <Text style={styles.infoValue}>{profile.surname}</Text>
-            </View>
-          )}
-          
-          {profile?.mobilePhone && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Телефон:</Text>
-              <Text style={styles.infoValue}>{profile.mobilePhone}</Text>
-            </View>
-          )}
-          
-          {profile?.birthday && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Дата народження:</Text>
-              <Text style={styles.infoValue}>
-                {new Date(profile.birthday).toLocaleDateString('uk-UA')}
-              </Text>
-            </View>
-          )}
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Тип акаунту:</Text>
+            <Text style={styles.infoValue}>Стандартний</Text>
+          </View>
         </View>
 
         {/* Action Buttons */}

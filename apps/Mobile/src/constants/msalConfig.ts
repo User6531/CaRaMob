@@ -13,8 +13,9 @@ export const discovery: DiscoveryDocument = {
 export const scopes = [
   "openid",
   "profile",
+  "email",
   "offline_access",
-  `api://${apiClientId}/access_as_user`,
+ 
 ];
 
 const msalConfig = {
