@@ -20,6 +20,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { queryClient } from "../lib/queryClient";
 
 
 interface AuthContextType {
@@ -176,6 +177,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error revoking token:", error);
     } finally {
+      // Очистити кеш React Query при логауті
+      queryClient.clear();
+      
       await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
       setTokenResponse(null);
       setIsAuthenticated(false);
