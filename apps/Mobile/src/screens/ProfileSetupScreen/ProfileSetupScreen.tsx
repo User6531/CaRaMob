@@ -21,7 +21,7 @@ interface ProfileSetupScreenProps {
 }
 
 export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
-  const { getUserProfile } = useAuth();
+  const { } = useAuth();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -31,56 +31,9 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   useEffect(() => {
-    const loadUserProfile = async () => {
-      try {
-        console.log('🚀 ProfileSetupScreen: Starting to load user profile...');
-        setIsLoadingProfile(true);
-        const profile = await getUserProfile();
-        console.log('📋 ProfileSetupScreen: Profile received:', profile);
-        
-        if (profile) {
-          const fullName = profile.displayName || `${profile.givenName} ${profile.surname}`.trim() || '';
-          const email = profile.mail || profile.userPrincipalName || '';
-          const phone = profile.mobilePhone || '';
-          const birthdayStr = profile.birthday || '';
-          
-          console.log('📝 Setting form data:', { fullName, email, phone, birthday: birthdayStr });
-          
-          setName(fullName);
-          setEmail(email);
-          setPhone(phone);
-          
-          // Parse birthday from Microsoft format (YYYY-MM-DD)
-          if (birthdayStr) {
-            const birthdayDate = new Date(birthdayStr);
-            if (!isNaN(birthdayDate.getTime())) {
-              setBirthday(birthdayDate);
-              console.log('🎂 Setting birthday from Microsoft:', birthdayDate.toDateString());
-            }
-          }
-          
-          if (profile.photo) {
-            console.log('📸 Setting profile photo from Microsoft');
-            setProfileImage(profile.photo);
-          } else {
-            console.log('📸 No photo available from Microsoft');
-          }
-        } else {
-          console.log('❌ No profile data received');
-        }
-      } catch (error) {
-        console.error('❌ ProfileSetupScreen: Error loading user profile:', error);
-        console.error('Error details:', {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        });
-      } finally {
-        setIsLoadingProfile(false);
-      }
-    };
-
-    loadUserProfile();
-  }, [getUserProfile]);
+    // Profile setup screen - no longer loading from Microsoft Graph
+    setIsLoadingProfile(false);
+  }, []);
 
   const onDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
