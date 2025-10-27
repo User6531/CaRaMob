@@ -24,7 +24,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5001
-      - MongoDbSettings__ConnectionString=mongodb://admin:admin123@mongodb:27018
+      - MongoDbSettings__ConnectionString=mongodb://admin:admin123@mongodb:27017
       - MongoDbSettings__DatabaseName=Main
       - MongoDbSettings__UserCollectionName=Users
       - MongoDbSettings__CarsCollectionName=Cars
