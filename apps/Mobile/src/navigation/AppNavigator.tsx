@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
+import { theme } from '../styles/theme';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import LoginScreen from '../screens/LoginScreen/LoginScreen';
 import UserCheckScreen from '../screens/UserCheckScreen/UserCheckScreen';
@@ -12,6 +13,19 @@ import CarEditScreen from '../screens/CarEditScreen/CarEditScreen';
 import CarDetailsScreen from '../screens/CarDetailsScreen/CarDetailsScreen';
 
 const Stack = createNativeStackNavigator();
+
+// Dark theme header styles
+const darkHeaderOptions = {
+  headerStyle: {
+    backgroundColor: theme.colors.background.secondary,
+  },
+  headerTitleStyle: {
+    fontWeight: '600' as const,
+    color: theme.colors.text.primary,
+  },
+  headerTintColor: theme.colors.accent.primary,
+  headerBackTitle: 'Назад',
+};
 
 export default function AppNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,74 +53,52 @@ export default function AppNavigator() {
                 gestureEnabled: false,
               }} 
             />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen 
+              name="Profile" 
+              component={ProfileScreen} 
+              options={{ 
+                ...darkHeaderOptions,
+                title: 'Профіль',
+              }} 
+            />
             <Stack.Screen 
               name="ProfileEdit" 
               component={ProfileEditScreen} 
               options={{ 
-                headerShown: true,
+                ...darkHeaderOptions,
                 title: 'Редагування профілю',
-                headerBackTitle: 'Назад',
-                headerStyle: {
-                  backgroundColor: '#f8f9fa',
-                },
-                headerTitleStyle: {
-                  fontWeight: '600',
-                  color: '#333',
-                },
-                headerTintColor: '#007AFF',
               }} 
             />
-            <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} options={{ headerShown: false }} />
+            <Stack.Screen 
+              name="ProfileSetup" 
+              component={ProfileSetupScreen} 
+              options={{ 
+                ...darkHeaderOptions,
+                title: 'Налаштування профілю',
+              }} 
+            />
             <Stack.Screen 
               name="CarCard" 
               component={CarCardScreen} 
               options={{ 
-                headerShown: true,
+                ...darkHeaderOptions,
                 title: 'Додати автомобіль',
-                headerBackTitle: 'Назад',
-                headerStyle: {
-                  backgroundColor: '#f8f9fa',
-                },
-                headerTitleStyle: {
-                  fontWeight: '600',
-                  color: '#333',
-                },
-                headerTintColor: '#007AFF',
               }} 
             />
             <Stack.Screen 
               name="CarEdit" 
               component={CarEditScreen} 
               options={{ 
-                headerShown: true,
+                ...darkHeaderOptions,
                 title: 'Редагувати автомобіль',
-                headerBackTitle: 'Назад',
-                headerStyle: {
-                  backgroundColor: '#f8f9fa',
-                },
-                headerTitleStyle: {
-                  fontWeight: '600',
-                  color: '#333',
-                },
-                headerTintColor: '#007AFF',
               }} 
             />
             <Stack.Screen 
               name="CarDetails" 
               component={CarDetailsScreen} 
               options={{ 
-                headerShown: true,
+                ...darkHeaderOptions,
                 title: 'Деталі автомобіля',
-                headerBackTitle: 'Назад',
-                headerStyle: {
-                  backgroundColor: '#f8f9fa',
-                },
-                headerTitleStyle: {
-                  fontWeight: '600',
-                  color: '#333',
-                },
-                headerTintColor: '#007AFF',
               }} 
             />
           </>

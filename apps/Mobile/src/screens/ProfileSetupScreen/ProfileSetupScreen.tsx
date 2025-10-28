@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useCreateUser } from '../../queries/userQueries';
+import { useTheme } from '../../hooks/useTheme';
+import { globalStyles } from '../../styles/globalStyles';
 
 interface ProfileSetupScreenProps {
   navigation: any;
@@ -22,6 +24,7 @@ interface ProfileSetupScreenProps {
 export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
   const { } = useAuth();
   const createUserMutation = useCreateUser();
+  const theme = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);

@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useMe, useUpdateUserProfile } from '../../queries/userQueries';
+import { useTheme } from '../../hooks/useTheme';
+import { globalStyles } from '../../styles/globalStyles';
 
 interface ProfileEditScreenProps {
   navigation: any;
@@ -20,6 +22,7 @@ interface ProfileEditScreenProps {
 export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
   const { data: meData, isLoading: isLoadingMe } = useMe();
   const updateUserMutation = useUpdateUserProfile();
+  const theme = useTheme();
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

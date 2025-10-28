@@ -14,9 +14,12 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useCar, Car } from '../../context/CarContext';
+import { useTheme } from '../../hooks/useTheme';
+import { globalStyles } from '../../styles/globalStyles';
 
 export default function CarEditScreen({ navigation, route }: any) {
   const { getCarById, updateCar, deleteCar } = useCar();
+  const theme = useTheme();
   const { carId } = route.params;
   
   const [carImage, setCarImage] = useState<string | null>(null);
@@ -167,22 +170,22 @@ export default function CarEditScreen({ navigation, route }: any) {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Збереження даних...</Text>
+      <View style={[globalStyles.container, globalStyles.pageBackground, globalStyles.loadingContainer]}>
+        <ActivityIndicator size="large" color={theme.colors.accent.primary} />
+        <Text style={globalStyles.loadingText}>Збереження даних...</Text>
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container} 
+      style={[globalStyles.container, globalStyles.pageBackground]} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
-          <Text style={styles.title}>Редагувати автомобіль</Text>
-          <Text style={styles.subtitle}>Оновити дані твого авто</Text>
+          <Text style={[globalStyles.textLarge, styles.title]}>Редагувати автомобіль</Text>
+          <Text style={[globalStyles.textSecondary, styles.subtitle]}>Оновити дані твого авто</Text>
         </View>
 
         <View style={styles.form}>
@@ -202,37 +205,37 @@ export default function CarEditScreen({ navigation, route }: any) {
 
           {/* Brand Field */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Марка *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>Марка *</Text>
             <TextInput
-              style={styles.input}
+              style={[globalStyles.input, styles.input]}
               value={brand}
               onChangeText={setBrand}
               placeholder="Наприклад: Toyota, BMW, Mercedes"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.colors.special.placeholder}
             />
           </View>
 
           {/* Model Field */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Модель *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>Модель *</Text>
             <TextInput
-              style={styles.input}
+              style={[globalStyles.input, styles.input]}
               value={model}
               onChangeText={setModel}
               placeholder="Наприклад: Camry, X5, C-Class"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.colors.special.placeholder}
             />
           </View>
 
           {/* Year Field */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Рік випуску *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>Рік випуску *</Text>
             <TextInput
-              style={styles.input}
+              style={[globalStyles.input, styles.input]}
               value={year}
               onChangeText={setYear}
               placeholder="Наприклад: 2020"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.colors.special.placeholder}
               keyboardType="numeric"
               maxLength={4}
             />
@@ -240,38 +243,38 @@ export default function CarEditScreen({ navigation, route }: any) {
 
           {/* Color Field */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Колір *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>Колір *</Text>
             <TextInput
-              style={styles.input}
+              style={[globalStyles.input, styles.input]}
               value={color}
               onChangeText={setColor}
               placeholder="Наприклад: Чорний, Білий, Сірий"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.colors.special.placeholder}
             />
           </View>
 
           {/* License Plate Field */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Номерний знак *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>Номерний знак *</Text>
             <TextInput
-              style={styles.input}
+              style={[globalStyles.input, styles.input]}
               value={licensePlate}
               onChangeText={setLicensePlate}
               placeholder="Наприклад: АА1234ВВ"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.colors.special.placeholder}
               autoCapitalize="characters"
             />
           </View>
 
           {/* VIN Field */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>VIN номер</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>VIN номер</Text>
             <TextInput
-              style={styles.input}
+              style={[globalStyles.input, styles.input]}
               value={vin}
               onChangeText={setVin}
               placeholder="17-значний VIN номер (необов'язково)"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.colors.special.placeholder}
               autoCapitalize="characters"
               maxLength={17}
             />
@@ -280,21 +283,21 @@ export default function CarEditScreen({ navigation, route }: any) {
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
-              style={styles.deleteButton} 
+              style={globalStyles.buttonDanger} 
               onPress={handleDelete}
             >
-              <Text style={styles.deleteButtonText}>Видалити</Text>
+              <Text style={globalStyles.buttonDangerText}>Видалити</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={styles.cancelButton} 
+              style={globalStyles.buttonSecondary} 
               onPress={handleCancel}
             >
-              <Text style={styles.cancelButtonText}>Скасувати</Text>
+              <Text style={globalStyles.buttonSecondaryText}>Скасувати</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Зберегти</Text>
+            <TouchableOpacity style={globalStyles.buttonPrimary} onPress={handleSave}>
+              <Text style={globalStyles.buttonPrimaryText}>Зберегти</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -304,37 +307,20 @@ export default function CarEditScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
   scrollContainer: {
     flexGrow: 1,
     paddingHorizontal: 24,
   },
   header: {
     alignItems: 'center',
-    marginTop: 60,
+    marginTop: 20,
     marginBottom: 40,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
     textAlign: 'center',
   },
   form: {
@@ -349,7 +335,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#E0E0E0',
+    borderColor: '#30363D', // Using theme color directly
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
@@ -368,25 +354,16 @@ const styles = StyleSheet.create({
   },
   placeholderLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#8B949E', // Using theme color directly
   },
   inputContainer: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    backgroundColor: '#FAFAFA',
+    // Additional input styles if needed
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -394,43 +371,5 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 40,
     gap: 8,
-  },
-  deleteButton: {
-    flex: 1,
-    backgroundColor: '#FF3B30',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  cancelButtonText: {
-    color: '#666',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  saveButton: {
-    flex: 1,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

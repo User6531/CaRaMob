@@ -10,11 +10,14 @@ import {
   Alert,
 } from 'react-native';
 import { useCar } from '../../context/CarContext';
+import { useTheme } from '../../hooks/useTheme';
+import { globalStyles } from '../../styles/globalStyles';
 
 const { width } = Dimensions.get('window');
 
 export default function CarDetailsScreen({ navigation, route }: any) {
   const { getCarById, deleteCar } = useCar();
+  const theme = useTheme();
   const { carId } = route.params;
   const [car, setCar] = useState<any>(null);
 
@@ -55,14 +58,14 @@ export default function CarDetailsScreen({ navigation, route }: any) {
 
   if (!car) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>Завантаження...</Text>
+      <View style={[globalStyles.container, globalStyles.pageBackground, globalStyles.loadingContainer]}>
+        <Text style={globalStyles.loadingText}>Завантаження...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[globalStyles.container, globalStyles.pageBackground]}>
       {/* Car Image */}
       <View style={styles.imageContainer}>
         {car.carImage ? (
@@ -78,42 +81,42 @@ export default function CarDetailsScreen({ navigation, route }: any) {
       {/* Car Information */}
       <View style={styles.infoContainer}>
         <View style={styles.header}>
-          <Text style={styles.carTitle}>{car.brand} {car.model}</Text>
-          <Text style={styles.carYear}>{car.year} рік</Text>
+          <Text style={[globalStyles.textLarge, styles.carTitle]}>{car.brand} {car.model}</Text>
+          <Text style={[globalStyles.textSecondary, styles.carYear]}>{car.year} рік</Text>
         </View>
 
-        <View style={styles.detailsSection}>
-          <Text style={styles.sectionTitle}>Основна інформація</Text>
+        <View style={[globalStyles.card, styles.detailsSection]}>
+          <Text style={[globalStyles.textPrimary, styles.sectionTitle]}>Основна інформація</Text>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Марка:</Text>
-            <Text style={styles.detailValue}>{car.brand}</Text>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>Марка:</Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>{car.brand}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Модель:</Text>
-            <Text style={styles.detailValue}>{car.model}</Text>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>Модель:</Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>{car.model}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Рік випуску:</Text>
-            <Text style={styles.detailValue}>{car.year}</Text>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>Рік випуску:</Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>{car.year}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Колір:</Text>
-            <Text style={styles.detailValue}>{car.color}</Text>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>Колір:</Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>{car.color}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Номерний знак:</Text>
-            <Text style={[styles.detailValue, styles.licensePlate]}>{car.licensePlate}</Text>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>Номерний знак:</Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue, styles.licensePlate]}>{car.licensePlate}</Text>
           </View>
           
           {car.vin && (
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>VIN номер:</Text>
-              <Text style={styles.detailValue}>{car.vin}</Text>
+              <Text style={[globalStyles.textSecondary, styles.detailLabel]}>VIN номер:</Text>
+              <Text style={[globalStyles.textPrimary, styles.detailValue]}>{car.vin}</Text>
             </View>
           )}
         </View>
@@ -153,12 +156,12 @@ export default function CarDetailsScreen({ navigation, route }: any) {
 
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-          <Text style={styles.editButtonText}>✏️ Редагувати</Text>
+        <TouchableOpacity style={globalStyles.buttonPrimary} onPress={handleEdit}>
+          <Text style={globalStyles.buttonPrimaryText}>✏️ Редагувати</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <Text style={styles.deleteButtonText}>🗑️ Видалити</Text>
+        <TouchableOpacity style={globalStyles.buttonDanger} onPress={handleDelete}>
+          <Text style={globalStyles.buttonDangerText}>🗑️ Видалити</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -166,19 +169,9 @@ export default function CarDetailsScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-  },
   imageContainer: {
     height: 250,
-    backgroundColor: '#fff',
+    backgroundColor: '#161B22', // Using theme color directly
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -197,7 +190,7 @@ const styles = StyleSheet.create({
   },
   placeholderLabel: {
     fontSize: 16,
-    color: '#666',
+    color: '#8B949E', // Using theme color directly
   },
   infoContainer: {
     paddingHorizontal: 24,
@@ -207,14 +200,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   carTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
     marginBottom: 8,
   },
   carYear: {
-    fontSize: 18,
-    color: '#666',
+    // Additional styles if needed
   },
   detailsSection: {
     marginBottom: 24,
@@ -223,9 +212,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
     marginBottom: 16,
   },
   detailRow: {
@@ -234,22 +220,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#21262D', // Using theme color directly
   },
   detailLabel: {
-    fontSize: 16,
-    color: '#666',
     flex: 1,
   },
   detailValue: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
     flex: 2,
     textAlign: 'right',
   },
   licensePlate: {
-    color: '#007AFF',
+    color: '#58A6FF', // Using theme color directly
     fontWeight: '600',
     fontSize: 18,
   },
@@ -258,29 +239,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 40,
     gap: 12,
-  },
-  editButton: {
-    flex: 1,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  editButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  deleteButton: {
-    flex: 1,
-    backgroundColor: '#FF3B30',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
