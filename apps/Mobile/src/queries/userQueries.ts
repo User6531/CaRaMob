@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createApiClient } from '../api/client';
 import { queryKeys } from './queryKeys';
-import { User, CreateUserDto, UpdateUserDto } from '../types/api';
+import { User, CreateUserDto, UpdateUserDto, UpdateUserRequest, MeResponse } from '../types/api';
 import { useAuth } from '../context/AuthContext';
 
 // Query hooks
@@ -10,11 +10,25 @@ export const useMe = () => {
   
   return useQuery({
     queryKey: queryKeys.me,
-    queryFn: () => {
-      const apiClient = createApiClient(getAccessToken);
-      return apiClient.get<User>('/users/me');
+    queryFn: async () => {
+      try {
+        const apiClient = createApiClient(getAccessToken);
+        return await apiClient.get<MeResponse>('/users/me');
+      } catch (error) {
+        console.error('Error in useMe query:', error);
+        throw error;
+      }
     },
     enabled: true, // Включити тільки коли користувач авторизований
+    retry: (failureCount, error) => {
+      // Не повторюємо запит якщо помилка 401 (неавторизований) або 404 (користувач не знайдений)
+      if (error instanceof Error && (error.message.includes('401') || error.message.includes('404'))) {
+        return false;
+      }
+      // Повторюємо максимум 2 рази для інших помилок
+      return failureCount < 2;
+    },
+    retryDelay: 1000, // 1 секунда між спробами
   });
 };
 
@@ -49,13 +63,27 @@ export const useCreateUser = () => {
   const { getAccessToken } = useAuth();
 
   return useMutation({
-    mutationFn: (userData: CreateUserDto) => {
-      const apiClient = createApiClient(getAccessToken);
-      return apiClient.post<User>('/users', userData);
+    mutationFn: async (userData: CreateUserDto) => {
+      try {
+        console.log('Creating user with data:', userData);
+        const apiClient = createApiClient(getAccessToken);
+        const result = await apiClient.post<User>('/users', userData);
+        console.log('User created successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('Error in useCreateUser mutation:', error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('User creation successful, invalidating queries');
       // Інвалідувати список користувачів після створення
       queryClient.invalidateQueries({ queryKey: queryKeys.users });
+      // Також інвалідуємо запит me
+      queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    },
+    onError: (error) => {
+      console.error('User creation failed:', error);
     },
   });
 };
@@ -74,6 +102,43 @@ export const useUpdateUser = () => {
       queryClient.setQueryData(queryKeys.user(updatedUser.id), updatedUser);
       // Інвалідувати список користувачів
       queryClient.invalidateQueries({ queryKey: queryKeys.users });
+    },
+  });
+};
+
+// Новий hook для оновлення користувача через /api/users/update
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
+  const { getAccessToken } = useAuth();
+
+  return useMutation({
+    mutationFn: async (userData: UpdateUserRequest) => {
+      try {
+        console.log('Updating user profile with data:', userData);
+        const apiClient = createApiClient(getAccessToken);
+        const result = await apiClient.put<User>('/users/update', userData);
+        console.log('User profile updated successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('Error in useUpdateUserProfile mutation:', error);
+        throw error;
+      }
+    },
+    onSuccess: (updatedUser) => {
+      console.log('User profile update successful, invalidating queries');
+      
+      // Якщо updatedUser порожній (API повернув 200 без тіла), просто інвалідуємо кеш
+      if (updatedUser && Object.keys(updatedUser).length > 0) {
+        // Оновити кеш для конкретного користувача
+        queryClient.setQueryData(queryKeys.user(updatedUser.id), updatedUser);
+      }
+      
+      // Інвалідувати список користувачів та me запит
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+      queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    },
+    onError: (error) => {
+      console.error('User profile update failed:', error);
     },
   });
 };

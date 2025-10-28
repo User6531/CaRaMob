@@ -2,7 +2,7 @@
 export const API_CONFIG = {
   // Змініть ці URL на ваші реальні
   BASE_URL: __DEV__ 
-    ? 'https://kivvo3k-bublick-8082.exp.direct/api'  // Development
+    ? 'http://localhost:5001/api'  // Development - Docker контейнер на порту 5001
     : 'https://kivvo3k-bublick-8082.exp.direct/api',  // Production
     
   // Timeouts

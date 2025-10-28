@@ -5,85 +5,84 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
   Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { useAuth } from '../../context/AuthContext';
-import { useCreateUser } from '../../queries/userQueries';
+import { useMe, useUpdateUserProfile } from '../../queries/userQueries';
 
-interface ProfileSetupScreenProps {
+interface ProfileEditScreenProps {
   navigation: any;
 }
 
-export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
-  const { } = useAuth();
-  const createUserMutation = useCreateUser();
+export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
+  const { data: meData, isLoading: isLoadingMe } = useMe();
+  const updateUserMutation = useUpdateUserProfile();
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Завантажуємо дані користувача
   useEffect(() => {
-    // Profile setup screen - no longer loading from Microsoft Graph
-    setIsLoadingProfile(false);
-  }, []);
-
-
-  const handleCancel = () => {
-    const hasData = name.trim() || email.trim();
-    
-    if (hasData) {
-      Alert.alert(
-        'Скасувати створення профілю?',
-        'Ви вже ввели деякі дані. Ви впевнені, що хочете скасувати?',
-        [
-          {
-            text: 'Продовжити редагування',
-            style: 'cancel'
-          },
-          {
-            text: 'Скасувати',
-            style: 'destructive',
-            onPress: () => navigation.navigate('Home')
-          }
-        ]
-      );
-    } else {
-      navigation.navigate('Home');
+    if (meData && meData.userData) {
+      setName(meData.userData.name || '');
+      setEmail(meData.userData.email || '');
+      setIsLoading(false);
+    } else if (!isLoadingMe) {
+      setIsLoading(false);
     }
-  };
+  }, [meData, isLoadingMe]);
 
-  const handleContinue = async () => {
+  const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('Error', 'Будь ласка, введи своє імʼя');
+      Alert.alert('Помилка', 'Будь ласка, введіть ваше ім\'я');
       return;
     }
+
     if (!email.trim()) {
-      Alert.alert('Error', 'Будь ласка, введи свою пошту');
+      Alert.alert('Помилка', 'Будь ласка, введіть вашу пошту');
+      return;
+    }
+
+    if (!meData?.userData?.id) {
+      Alert.alert('Помилка', 'Не вдалося отримати ID користувача');
       return;
     }
 
     try {
-      await createUserMutation.mutateAsync({
+      const result = await updateUserMutation.mutateAsync({
+        id: meData.userData.id,
         name: name.trim(),
         email: email.trim(),
       });
       
-      // Після успішного створення користувача переходимо на Home
-      navigation.replace('Home');
-    } catch (error) {
-      console.error('Error creating user:', error);
+      console.log('Update result:', result);
       
-      let errorMessage = 'Не вдалося створити профіль. Спробуйте ще раз.';
+      Alert.alert(
+        'Успішно!',
+        'Профіль успішно оновлено',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack()
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      
+      let errorMessage = 'Не вдалося оновити профіль. Спробуйте ще раз.';
       
       if (error instanceof Error) {
         if (error.message.includes('401')) {
           errorMessage = 'Сесія закінчилася. Будь ласка, увійдіть знову.';
         } else if (error.message.includes('400')) {
           errorMessage = 'Невірні дані. Перевірте правильність введених даних.';
+        } else if (error.message.includes('404')) {
+          errorMessage = 'Користувач не знайдений.';
         } else if (error.message.includes('409')) {
           errorMessage = 'Користувач з такою поштою вже існує.';
         } else if (error.message.includes('JSON Parse error')) {
@@ -97,11 +96,46 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
     }
   };
 
-  if (isLoadingProfile) {
+  const handleCancel = () => {
+    const hasChanges = name !== (meData?.userData?.name || '');
+    
+    if (hasChanges) {
+      Alert.alert(
+        'Скасувати зміни?',
+        'Ви вже внесли зміни. Ви впевнені, що хочете скасувати?',
+        [
+          {
+            text: 'Продовжити редагування',
+            style: 'cancel'
+          },
+          {
+            text: 'Скасувати',
+            style: 'destructive',
+            onPress: () => navigation.goBack()
+          }
+        ]
+      );
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  if (isLoading || isLoadingMe) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Завантаження твого профілю...</Text>
+        <Text style={styles.loadingText}>Завантаження профілю...</Text>
+      </View>
+    );
+  }
+
+  if (!meData?.userData) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <Text style={styles.errorText}>Не вдалося завантажити дані профілю</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.retryButtonText}>Повернутися</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -113,14 +147,14 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
-          <Text style={styles.title}>Давай знайомитись</Text>
-          <Text style={styles.subtitle}>Додай інформацію про себе</Text>
+          <Text style={styles.title}>Редагування профілю</Text>
+          <Text style={styles.subtitle}>Оновіть інформацію про себе</Text>
         </View>
 
         <View style={styles.form}>
           {/* Name Field */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Імʼя *</Text>
+            <Text style={styles.label}>Ім'я *</Text>
             <TextInput
               style={styles.input}
               value={name}
@@ -154,14 +188,14 @@ export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenPro
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.continueButton, createUserMutation.isPending && styles.continueButtonDisabled]} 
-              onPress={handleContinue}
-              disabled={createUserMutation.isPending}
+              style={[styles.saveButton, updateUserMutation.isPending && styles.saveButtonDisabled]} 
+              onPress={handleSave}
+              disabled={updateUserMutation.isPending}
             >
-              {createUserMutation.isPending ? (
+              {updateUserMutation.isPending ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.continueButtonText}>Далі</Text>
+                <Text style={styles.saveButtonText}>Зберегти</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -184,6 +218,23 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: '#666',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF3B30',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -248,17 +299,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  continueButton: {
+  saveButton: {
     flex: 1,
     backgroundColor: '#007AFF',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
   },
-  continueButtonDisabled: {
+  saveButtonDisabled: {
     backgroundColor: '#B0B0B0',
   },
-  continueButtonText: {
+  saveButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',

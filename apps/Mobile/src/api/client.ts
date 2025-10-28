@@ -27,7 +27,24 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Спробуємо отримати текст помилки
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          errorMessage = errorText;
+        }
+      } catch (e) {
+        // Ігноруємо помилки парсингу тексту
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Перевіряємо чи відповідь є JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const responseText = await response.text();
+      throw new Error(`Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`);
     }
 
     return response.json();
@@ -41,7 +58,32 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Спробуємо отримати текст помилки
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          errorMessage = errorText;
+        }
+      } catch (e) {
+        // Ігноруємо помилки парсингу тексту
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Перевіряємо чи є контент для парсингу
+    const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
+    
+    // Якщо немає контенту або content-length = 0, повертаємо порожній об'єкт
+    if (!contentLength || contentLength === '0') {
+      return {} as T;
+    }
+
+    // Перевіряємо чи відповідь є JSON
+    if (!contentType || !contentType.includes('application/json')) {
+      const responseText = await response.text();
+      throw new Error(`Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`);
     }
 
     return response.json();
@@ -55,7 +97,32 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Спробуємо отримати текст помилки
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          errorMessage = errorText;
+        }
+      } catch (e) {
+        // Ігноруємо помилки парсингу тексту
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Перевіряємо чи є контент для парсингу
+    const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
+    
+    // Якщо немає контенту або content-length = 0, повертаємо порожній об'єкт
+    if (!contentLength || contentLength === '0') {
+      return {} as T;
+    }
+
+    // Перевіряємо чи відповідь є JSON
+    if (!contentType || !contentType.includes('application/json')) {
+      const responseText = await response.text();
+      throw new Error(`Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`);
     }
 
     return response.json();

@@ -5,9 +5,11 @@ import {
   View, 
   TouchableOpacity, 
   ScrollView, 
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import { useMe } from '../../queries/userQueries';
 
 interface ProfileScreenProps {
   navigation: any;
@@ -15,9 +17,10 @@ interface ProfileScreenProps {
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { logout } = useAuth();
+  const { data: meData, isLoading, error } = useMe();
 
   const handleEditProfile = () => {
-    navigation.navigate('ProfileSetup');
+    navigation.navigate('ProfileEdit');
   };
 
   const handleLogout = () => {
@@ -38,6 +41,30 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     );
   };
 
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loadingText}>Завантаження профілю...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <Text style={styles.errorText}>Помилка завантаження профілю</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => window.location?.reload?.()}>
+          <Text style={styles.retryButtonText}>Спробувати знову</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  console.log(meData);
+  const userName = meData?.userData?.name || 'Користувач';
+  const userEmail = meData?.userData?.email || 'Не вказано';
+  const isRegistered = meData?.isRegistered || false;
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
@@ -46,8 +73,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           <View style={styles.placeholderImage}>
             <Text style={styles.placeholderText}>👤</Text>
           </View>
-          <Text style={styles.name}>Користувач</Text>
-          <Text style={styles.email}>Профіль користувача</Text>
+          <Text style={styles.name}>{userName}</Text>
+          <Text style={styles.email}>{userEmail}</Text>
         </View>
 
         {/* Profile Info */}
@@ -56,12 +83,23 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Статус:</Text>
-            <Text style={styles.infoValue}>Активний</Text>
+            <Text style={[styles.infoValue, { color: isRegistered ? '#34C759' : '#FF9500' }]}>
+              {isRegistered ? 'Зареєстрований' : 'Не зареєстрований'}
+            </Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Тип акаунту:</Text>
-            <Text style={styles.infoValue}>Стандартний</Text>
+            <Text style={styles.infoLabel}>Email:</Text>
+            <Text style={styles.infoValue}>
+              {userEmail}
+            </Text>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>ID користувача:</Text>
+            <Text style={[styles.infoValue, styles.userIdText]}>
+              {meData?.userData?.id ? meData.userData.id.substring(0, 8) + '...' : 'Не вказано'}
+            </Text>
           </View>
         </View>
 
@@ -93,6 +131,27 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: '#666',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF3B30',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  userIdText: {
+    fontFamily: 'monospace',
+    fontSize: 12,
   },
   content: {
     padding: 24,
