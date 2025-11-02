@@ -8,24 +8,16 @@ public static class UserEndpoints
 {
   public static void MapUserEndpoints(this IEndpointRouteBuilder app)
   {
-    var users = app.MapGroup("/api/users")
-                   .WithTags("Users")
-                   .RequireAuthorization();
+    var users = app.MapGroup("/api/user")
+                   .WithTags("User")
+                   .RequireAuthorization("RequireInternalJwt"); // Only Internal JWT tokens allowed
 
-    // users.MapGet("/", GetAllAsync);
-
-    // users.MapGet("/{id:guid}", GetByIdAsync);
-
-    // users.MapDelete("/{id:guid}", DeleteAsync);
-
-    users.MapPost("/", CreateAsync);
-
-    users.MapPut("/update", UpdateAsync);
+    users.MapPut("/update", UpdateAsync)
+      .Produces(StatusCodes.Status204NoContent);
 
     users
       .MapGet("/me", GetMeAsync)
       .Produces<GetMeDto>(StatusCodes.Status200OK);
-
   }
 
   internal static async Task<IResult> UpdateAsync(
@@ -43,55 +35,22 @@ public static class UserEndpoints
     ILogger<Program> logger
   )
   {
-    var providerId = userClaims.FindFirstValue(ClaimTypes.NameIdentifier);
-    var email = userClaims.FindFirst("preferred_username")?.Value;
-    var name = userClaims.FindFirst("name")?.Value;
-    logger.LogInformation("GetMe called by user: {Name}, Email: {Email}, ProviderId: {ProviderId}", name, email, providerId);
+    // Internal JWT tokens have userId in NameIdentifier claim
+    var userIdClaim = userClaims.FindFirstValue(ClaimTypes.NameIdentifier);
+    var userIdFromCustomClaim = userClaims.FindFirstValue("userId");
 
-    if (string.IsNullOrEmpty(providerId))
+    var userIdString = userIdClaim ?? userIdFromCustomClaim;
+
+    if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
     {
-      logger.LogWarning("GetMe failed: ProviderId (oid) claim is missing");
-      return Results.BadRequest("ProviderId (oid) claim is missing.");
+      logger.LogWarning("GetMe failed: UserId claim is missing or invalid");
+      return Results.BadRequest("UserId claim is missing or invalid.");
     }
 
-    var getMeData = await userService.GetMeAsync(providerId);
+    logger.LogInformation("GetMe called by userId: {UserId}", userId);
+
+    var getMeData = await userService.GetMeByUserIdAsync(userId);
     return Results.Ok(getMeData);
-  }
-  internal static async Task<IResult> GetAllAsync(IUserService userService)
-  {
-    var allUsers = await userService.GetAllAsync();
-    return Results.Ok(allUsers);
-  }
-
-  internal static async Task<IResult> GetByIdAsync(
-    Guid id,
-    IUserService userService
-  )
-  {
-    var user = await userService.GetByIdAsync(id);
-    return user is null ? Results.NotFound() : Results.Ok(user);
-  }
-
-  internal static async Task<IResult> CreateAsync(
-    CreateUserDto userDto,
-    IUserService userService,
-    ClaimsPrincipal userClaims,
-    ILogger<Program> logger
-  )
-  {
-    var providerId = userClaims.FindFirstValue(ClaimTypes.NameIdentifier);
-    var email = userClaims.FindFirst("preferred_username")?.Value;
-    var name = userClaims.FindFirst("name")?.Value;
-    logger.LogInformation("Create internal user called by user: {Name}, Email: {Email}, ProviderId: {ProviderId}", name, email, providerId);
-
-    if (string.IsNullOrEmpty(providerId))
-    {
-      logger.LogWarning("Create internal user failed: ProviderId (oid) claim is missing");
-      return Results.BadRequest("ProviderId (oid) claim is missing.");
-    }
-
-    await userService.CreateAsync(userDto, providerId);
-    return Results.Created();
   }
 
   internal static async Task<IResult> DeleteAsync(

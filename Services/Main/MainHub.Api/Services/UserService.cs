@@ -1,4 +1,3 @@
-
 using MainHub.Api.Models;
 using MainHub.Api.Repositories;
 using MainHub.Api.DTOs;
@@ -22,9 +21,19 @@ public interface IUserService
   /// <param name="providerId">The provider identifier of the user.</param>
   /// <returns>
   /// A task that represents the asynchronous operation. 
+  /// The task result contains a <see cref="UserEntity"/> with the user's information if found; otherwise, <c>null</c>.
+  /// </returns>
+  Task<UserEntity?> GetUserByProviderIdAsync(string providerId);
+
+  /// <summary>
+  /// Retrieves the current user's information based on the user ID asynchronously.
+  /// </summary>
+  /// <param name="userId">The user ID of the user.</param>
+  /// <returns>
+  /// A task that represents the asynchronous operation. 
   /// The task result contains a <see cref="GetMeDto"/> with the user's information.
   /// </returns>
-  Task<GetMeDto> GetMeAsync(string providerId);
+  Task<GetMeDto> GetMeByUserIdAsync(Guid userId);
 
   /// <summary>
   /// Retrieves a list of all users asynchronously.
@@ -48,9 +57,10 @@ public interface IUserService
   /// <summary>
   /// Creates a new user asynchronously.
   /// </summary>
-  /// <param name="user">The user entity to create.</param>
+  /// <param name="name">The name of the user.</param>
+  /// <param name="email">The email of the user.</param>
   /// <returns>A task that represents the asynchronous operation.</returns>
-  Task CreateAsync(CreateUserDto user, string providerId);
+  Task<UserEntity> CreateAsync(string name, string email, string providerId);
 
   /// <summary>
   /// Deletes a user by their unique identifier asynchronously.
@@ -80,47 +90,52 @@ public class UserService(IUserRepository repository) : IUserService
     if (userDto.Email is not null)
       existingUser.Email = userDto.Email;
 
+    // Update the last modified timestamp
+    existingUser.UpdatedAt = DateTime.UtcNow;
+
     await _repository.ReplaceAsync(existingUser);
   }
 
-
-  public async Task<GetMeDto> GetMeAsync(string providerId)
+  public async Task<UserEntity?> GetUserByProviderIdAsync(string providerId)
   {
-    var user = await _repository.GetByProviderIdAsync(providerId);
+    return await _repository.GetByProviderIdAsync(providerId);
+  }
+
+  public async Task<GetMeDto> GetMeByUserIdAsync(Guid userId)
+  {
+    var user = await _repository.GetByIdAsync(userId);
     if (user is null)
     {
-      return new GetMeDto
-      {
-        IsRegistered = false,
-        UserData = null
-      };
+      throw new KeyNotFoundException("User not found.");
     }
 
-    return new GetMeDto
-    {
-      IsRegistered = true,
-      UserData = new UserInfo
-      {
-        Name = user.Name,
-        Id = user.Id
-      }
-    };
+    return (GetMeDto)user;
   }
 
   public async Task<List<UserEntity>> GetAllAsync() => await _repository.GetAllAsync();
 
   public async Task<UserEntity?> GetByIdAsync(Guid id) => await _repository.GetByIdAsync(id);
 
-  public async Task CreateAsync(CreateUserDto user, string providerId)
+  public async Task<UserEntity> CreateAsync(
+    string name,
+    string email,
+    string providerId
+  )
   {
+    var now = DateTime.UtcNow;
     var userEntity = new UserEntity
     {
       Id = Guid.NewGuid(),
-      Name = user.Name,
-      Email = user.Email,
-      ProviderId = providerId
+      Name = name,
+      Email = email,
+      ProviderId = providerId,
+      CreatedAt = now,
+      UpdatedAt = null
     };
+
     await _repository.CreateAsync(userEntity);
+
+    return userEntity;
   }
 
   public async Task DeleteAsync(Guid id) => await _repository.DeleteAsync(id);

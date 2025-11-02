@@ -6,12 +6,18 @@ using MainHub.Api.Services;
 using MainHub.Api.Endpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 🟦 Load MongoDB settings from configuration file
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings")
+);
+
+// 🟦 Load JWT settings from configuration file
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("JwtSettings")
 );
 
 // 🟦 Register MongoDB client as a singleton
@@ -28,6 +34,7 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 // 🟦 Register application services and repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // 🟦 Add controllers and Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -63,9 +70,25 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// 🟦 Azure AD JWT Authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+// 🟦 Configure JWT Settings
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.SecretKey))
+{
+    throw new InvalidOperationException("JwtSettings or SecretKey is not configured properly.");
+}
+
+var jwtSecretKey = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+
+// 🟦 Authentication Configuration
+// Azure AD and Internal JWT authentication schemes
+builder.Services.AddAuthentication(options =>
+{
+    // Default to Azure AD (entry point for authentication)
+    options.DefaultAuthenticateScheme = "AzureAD";
+    options.DefaultChallengeScheme = "AzureAD";
+})
+    // Azure AD JWT Authentication (for initial authentication)
+    .AddJwtBearer("AzureAD", options =>
     {
         options.Authority = "https://login.microsoftonline.com/common/v2.0";
         options.Audience = "0200db18-ed94-4544-925a-d307b6de8603"; // backend client ID
@@ -84,9 +107,40 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 throw new SecurityTokenInvalidIssuerException($"Invalid issuer: {issuer}");
             }
         };
+    })
+    // Internal JWT Authentication (for custom tokens)
+    .AddJwtBearer("InternalJwt", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(jwtSecretKey),
+            ClockSkew = TimeSpan.Zero // Remove delay of expiration validation
+        };
     });
 
-builder.Services.AddAuthorization();
+// Authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    // Policy that only accepts Azure AD tokens (for token generation endpoints)
+    options.AddPolicy("RequireAzureAD", policy =>
+    {
+        policy.AuthenticationSchemes.Add("AzureAD");
+        policy.RequireAuthenticatedUser();
+    });
+
+    // Policy that only accepts Internal JWT tokens (for regular API calls)
+    options.AddPolicy("RequireInternalJwt", policy =>
+    {
+        policy.AuthenticationSchemes.Add("InternalJwt");
+        policy.RequireAuthenticatedUser();
+    });
+});
 
 var app = builder.Build();
 
@@ -102,6 +156,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapAuthEndpoints();
 app.MapUserEndpoints();
 
 app.Run();

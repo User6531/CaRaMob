@@ -32,5 +32,18 @@ namespace MainHub.Api.Models
     /// </summary>
     [BsonElement("providerId")]
     public required string ProviderId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the date and time when the user was created.
+    /// </summary>
+    [BsonElement("createdAt")]
+    public required DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the date and time when the user was last modified.
+    /// Can be null if the user has not been modified.
+    /// </summary>
+    [BsonElement("updatedAt")]
+    public required DateTime? UpdatedAt { get; set; }
   }
 }

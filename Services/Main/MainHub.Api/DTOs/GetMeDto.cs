@@ -1,3 +1,5 @@
+using MainHub.Api.Models;
+
 namespace MainHub.Api.DTOs;
 
 /// <summary>
@@ -6,28 +8,38 @@ namespace MainHub.Api.DTOs;
 public class GetMeDto
 {
   /// <summary>
-  /// Represent if the user is registered in the system.
+  /// Represents the unique identifier of the user.
   /// </summary>
-  public required bool IsRegistered { get; set; }
+  public required Guid Id { get; set; }
 
-  /// <summary>
-  /// Represents the user's information if registered and null otherwise.
-  /// </summary>
-  public required UserInfo? UserData { get; set; }
-}
-
-/// <summary>
-/// Represents user information details.
-/// </summary>
-public class UserInfo
-{
   /// <summary>
   /// Represents the name of the user.
   /// </summary>
   public required string Name { get; set; }
 
   /// <summary>
-  /// Represents the unique identifier of the user.
+  /// Represents the email of the user.
   /// </summary>
-  public required Guid Id { get; set; }
+  public string? Email { get; set; }
+
+  /// <summary>
+  /// Represents the date and time when the user was last modified.
+  /// </summary>
+  public required DateTime? UpdatedAt { get; set; }
+
+  /// <summary>
+  /// Explicitly converts a <see cref="UserEntity"/> to a <see cref="GetMeDto"/>.
+  /// </summary>
+  /// <param name="user">The user entity to convert.</param>
+  /// <returns>A <see cref="GetMeDto"/> containing the user's information.</returns>
+  public static explicit operator GetMeDto(UserEntity user)
+  {
+    return new GetMeDto
+    {
+      Id = user.Id,
+      Name = user.Name,
+      Email = user.Email,
+      UpdatedAt = user.UpdatedAt
+    };
+  }
 }

@@ -65,6 +65,7 @@ public class UserRepository : IUserRepository
 {
     private readonly IMongoCollection<UserEntity> _users;
 
+
     public UserRepository(IMongoClient client, IOptions<MongoDbSettings> settings)
     {
         var database = client.GetDatabase(settings.Value.DatabaseName);
@@ -86,8 +87,10 @@ public class UserRepository : IUserRepository
     public async Task<UserEntity?> GetByIdAsync(Guid id) =>
         await _users.Find(u => u.Id == id).FirstOrDefaultAsync();
 
-    public async Task CreateAsync(UserEntity user) =>
+    public async Task CreateAsync(UserEntity user)
+    {
         await _users.InsertOneAsync(user);
+    }
 
     public async Task DeleteAsync(Guid id) =>
         await _users.DeleteOneAsync(u => u.Id == id);
