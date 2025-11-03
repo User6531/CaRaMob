@@ -8,11 +8,6 @@ namespace MainHub.Api.DTOs;
 public class GetMeDto
 {
   /// <summary>
-  /// Represents the unique identifier of the user.
-  /// </summary>
-  public required Guid Id { get; set; }
-
-  /// <summary>
   /// Represents the name of the user.
   /// </summary>
   public required string Name { get; set; }
@@ -36,7 +31,6 @@ public class GetMeDto
   {
     return new GetMeDto
     {
-      Id = user.Id,
       Name = user.Name,
       Email = user.Email,
       UpdatedAt = user.UpdatedAt

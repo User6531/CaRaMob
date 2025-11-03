@@ -20,6 +20,14 @@ public interface ITokenService
     /// <param name="providerId">The provider identifier of the user.</param>
     /// <returns>A JWT token string.</returns>
     string GenerateToken(Guid userId, string providerId);
+
+    /// <summary>
+    /// Extracts the user ID from ClaimsPrincipal.
+    /// </summary>
+    /// <param name="claims">The ClaimsPrincipal containing the JWT claims.</param>
+    /// <returns>The user ID extracted from the claims.</returns>
+    /// <exception cref="ArgumentException">Thrown when the claims don't contain a valid user ID.</exception>
+    Guid GetUserIdFromClaims(ClaimsPrincipal claims);
 }
 
 /// <summary>
@@ -71,6 +79,24 @@ public class TokenService : ITokenService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public Guid GetUserIdFromClaims(ClaimsPrincipal claims)
+    {
+        if (claims == null)
+        {
+            throw new ArgumentNullException(nameof(claims));
+        }
+
+        // Try to get userId from the claims
+        var userIdClaim = claims.FindFirst("userId") ?? claims.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        {
+            throw new ArgumentException("Claims do not contain a valid user ID.", nameof(claims));
+        }
+
+        return userId;
     }
 }
 

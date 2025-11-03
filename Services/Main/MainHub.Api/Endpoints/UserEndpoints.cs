@@ -21,36 +21,50 @@ public static class UserEndpoints
   }
 
   internal static async Task<IResult> UpdateAsync(
+    ClaimsPrincipal userClaims,
     UpdateUserDto userDto,
-    IUserService userService
+    IUserService userService,
+    ITokenService tokenService,
+    ILogger<Program> logger
   )
   {
-    await userService.UpdateAsync(userDto);
-    return Results.NoContent();
+    try
+    {
+      var userId = tokenService.GetUserIdFromClaims(userClaims);
+
+      logger.LogInformation("UpdateAsync called by userId: {UserId}", userId);
+
+      await userService.UpdateAsync(userDto, userId);
+      return Results.NoContent();
+    }
+    catch (ArgumentException)
+    {
+      logger.LogWarning("UpdateAsync failed: UserId claim is missing or invalid");
+      return Results.BadRequest("UserId claim is missing or invalid.");
+    }
   }
 
   internal static async Task<IResult> GetMeAsync(
     ClaimsPrincipal userClaims,
     IUserService userService,
+    ITokenService tokenService,
     ILogger<Program> logger
   )
   {
-    // Internal JWT tokens have userId in NameIdentifier claim
-    var userIdClaim = userClaims.FindFirstValue(ClaimTypes.NameIdentifier);
-    var userIdFromCustomClaim = userClaims.FindFirstValue("userId");
+    try
+    {
+      var userId = tokenService.GetUserIdFromClaims(userClaims);
 
-    var userIdString = userIdClaim ?? userIdFromCustomClaim;
+      logger.LogInformation("GetMe called by userId: {UserId}", userId);
 
-    if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+      var getMeData = await userService.GetMeByUserIdAsync(userId);
+      return Results.Ok(getMeData);
+    }
+    catch (ArgumentException)
     {
       logger.LogWarning("GetMe failed: UserId claim is missing or invalid");
       return Results.BadRequest("UserId claim is missing or invalid.");
     }
-
-    logger.LogInformation("GetMe called by userId: {UserId}", userId);
-
-    var getMeData = await userService.GetMeByUserIdAsync(userId);
-    return Results.Ok(getMeData);
   }
 
   internal static async Task<IResult> DeleteAsync(

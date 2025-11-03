@@ -6,11 +6,6 @@ namespace MainHub.Api.DTOs
   public class UpdateUserDto
   {
     /// <summary>
-    /// The unique identifier of the user.
-    /// </summary>
-    public required Guid Id { get; set; }
-
-    /// <summary>
     /// The name of the user.
     /// </summary>
     public string? Name { get; set; }

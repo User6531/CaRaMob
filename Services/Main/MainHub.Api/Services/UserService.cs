@@ -13,7 +13,7 @@ public interface IUserService
   /// Updates an existing user asynchronously.
   /// </summary>
   /// <param name="userDto">The user DTO containing updated information.</param>
-  Task UpdateAsync(UpdateUserDto userDto);
+  Task UpdateAsync(UpdateUserDto userDto, Guid userId);
 
   /// <summary>
   /// Retrieves the current user's information based on the provider ID asynchronously.
@@ -74,9 +74,9 @@ public class UserService(IUserRepository repository) : IUserService
 {
   private readonly IUserRepository _repository = repository;
 
-  public async Task UpdateAsync(UpdateUserDto userDto)
+  public async Task UpdateAsync(UpdateUserDto userDto, Guid userId)
   {
-    var existingUser = await _repository.GetByIdAsync(userDto.Id);
+    var existingUser = await _repository.GetByIdAsync(userId);
 
     if (existingUser is null)
     {
