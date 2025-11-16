@@ -13,7 +13,7 @@ export const useMe = () => {
     queryFn: async () => {
       try {
         const apiClient = createApiClient(getAccessToken);
-        return await apiClient.get<MeResponse>('/users/me');
+        return await apiClient.get<MeResponse>('/user/me');
       } catch (error) {
         console.error('Error in useMe query:', error);
         throw error;
@@ -106,7 +106,7 @@ export const useUpdateUser = () => {
   });
 };
 
-// Новий hook для оновлення користувача через /api/users/update
+// Новий hook для оновлення користувача через /api/user/update
 export const useUpdateUserProfile = () => {
   const queryClient = useQueryClient();
   const { getAccessToken } = useAuth();
@@ -116,7 +116,8 @@ export const useUpdateUserProfile = () => {
       try {
         console.log('Updating user profile with data:', userData);
         const apiClient = createApiClient(getAccessToken);
-        const result = await apiClient.put<User>('/users/update', userData);
+        // Бекенд отримує userId з токену, тому просто передаємо name та email
+        const result = await apiClient.put<User>('/user/update', userData);
         console.log('User profile updated successfully:', result);
         return result;
       } catch (error) {
@@ -127,7 +128,7 @@ export const useUpdateUserProfile = () => {
     onSuccess: (updatedUser) => {
       console.log('User profile update successful, invalidating queries');
       
-      // Якщо updatedUser порожній (API повернув 200 без тіла), просто інвалідуємо кеш
+      // Якщо updatedUser порожній (API повернув 204 No Content), просто інвалідуємо кеш
       if (updatedUser && Object.keys(updatedUser).length > 0) {
         // Оновити кеш для конкретного користувача
         queryClient.setQueryData(queryKeys.user(updatedUser.id), updatedUser);

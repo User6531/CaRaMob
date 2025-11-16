@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  StyleSheet, 
   Text, 
   View, 
   TouchableOpacity, 
@@ -13,6 +12,7 @@ import { useMe } from '../../queries/userQueries';
 import { useTheme } from '../../hooks/useTheme';
 import { useStatusBar } from '../../hooks/useStatusBar';
 import { globalStyles } from '../../styles/globalStyles';
+import { styles } from './ProfileScreen.styles';
 
 interface ProfileScreenProps {
   navigation: any;
@@ -65,9 +65,9 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     );
   }
   
-  const userName = meData?.userData?.name || 'Користувач';
-  const userEmail = meData?.userData?.email || 'Не вказано';
-  const isRegistered = meData?.isRegistered || false;
+  const userName = meData?.name || 'Користувач';
+  const userEmail = meData?.email || 'Не вказано';
+  const isRegistered = meData?.updatedAt !== null;
 
   return (
     <>
@@ -103,12 +103,6 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             </Text>
           </View>
           
-          <View style={styles.infoRow}>
-            <Text style={[globalStyles.textSecondary, styles.infoLabel]}>ID користувача:</Text>
-            <Text style={[globalStyles.textTertiary, styles.userIdText]}>
-              {meData?.userData?.id ? meData.userData.id.substring(0, 8) + '...' : 'Не вказано'}
-            </Text>
-          </View>
         </View>
 
         {/* Action Buttons */}
@@ -126,61 +120,3 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    padding: 24,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  placeholderImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#30363D', // Using theme color directly
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  placeholderText: {
-    fontSize: 40,
-    color: '#8B949E', // Using theme color directly
-  },
-  name: {
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  email: {
-    textAlign: 'center',
-  },
-  infoSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    marginBottom: 16,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#21262D', // Using theme color directly
-  },
-  infoLabel: {
-    fontWeight: '500',
-  },
-  infoValue: {
-    flex: 1,
-    textAlign: 'right',
-  },
-  buttonContainer: {
-    gap: 12,
-  },
-  userIdText: {
-    fontFamily: 'monospace',
-    fontSize: 12,
-  },
-});

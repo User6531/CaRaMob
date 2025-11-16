@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useMe } from '../../queries/userQueries';
 import { useAuth } from '../../context/AuthContext';
+import { styles } from './UserCheckScreen.styles';
 
 interface UserCheckScreenProps {
   navigation: any;
@@ -14,12 +15,13 @@ export default function UserCheckScreen({ navigation }: UserCheckScreenProps) {
 
   useEffect(() => {
     if (meData && !isLoading) {
-      if (meData.isRegistered) {
+      // Перевіряємо чи це перший вхід (UpdatedAt === null)
+      if (meData.updatedAt === null) {
+        // Перший вхід - переходимо на ProfileSetup
+        navigation.replace('ProfileSetup');
+      } else {
         // Користувач зареєстрований - переходимо на Home
         navigation.replace('Home');
-      } else {
-        // Користувач не зареєстрований - переходимо на ProfileSetup
-        navigation.replace('ProfileSetup');
       }
     }
   }, [meData, isLoading, navigation]);
@@ -133,31 +135,3 @@ export default function UserCheckScreen({ navigation }: UserCheckScreenProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
-  skipButton: {
-    marginTop: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  skipButtonText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-});

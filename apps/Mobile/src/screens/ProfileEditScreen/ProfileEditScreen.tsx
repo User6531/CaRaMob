@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   Alert,
   ScrollView,
   KeyboardAvoidingView,
@@ -12,8 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useMe, useUpdateUserProfile } from '../../queries/userQueries';
-import { useTheme } from '../../hooks/useTheme';
-import { globalStyles } from '../../styles/globalStyles';
+import { styles } from './ProfileEditScreen.styles';
 
 interface ProfileEditScreenProps {
   navigation: any;
@@ -22,7 +20,6 @@ interface ProfileEditScreenProps {
 export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
   const { data: meData, isLoading: isLoadingMe } = useMe();
   const updateUserMutation = useUpdateUserProfile();
-  const theme = useTheme();
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -30,9 +27,9 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
 
   // Завантажуємо дані користувача
   useEffect(() => {
-    if (meData && meData.userData) {
-      setName(meData.userData.name || '');
-      setEmail(meData.userData.email || '');
+    if (meData) {
+      setName(meData.name || '');
+      setEmail(meData.email || '');
       setIsLoading(false);
     } else if (!isLoadingMe) {
       setIsLoading(false);
@@ -50,14 +47,8 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
       return;
     }
 
-    if (!meData?.userData?.id) {
-      Alert.alert('Помилка', 'Не вдалося отримати ID користувача');
-      return;
-    }
-
     try {
       const result = await updateUserMutation.mutateAsync({
-        id: meData.userData.id,
         name: name.trim(),
         email: email.trim(),
       });
@@ -100,7 +91,7 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
   };
 
   const handleCancel = () => {
-    const hasChanges = name !== (meData?.userData?.name || '');
+    const hasChanges = name !== (meData?.name || '') || email !== (meData?.email || '');
     
     if (hasChanges) {
       Alert.alert(
@@ -132,7 +123,7 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
     );
   }
 
-  if (!meData?.userData) {
+  if (!meData) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <Text style={styles.errorText}>Не вдалося завантажити дані профілю</Text>
@@ -157,12 +148,12 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
         <View style={styles.form}>
           {/* Name Field */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Ім'я *</Text>
+            <Text style={styles.label}>Ім&apos;я *</Text>
             <TextInput
               style={styles.input}
               value={name}
               onChangeText={setName}
-              placeholder="Введіть ваше ім'я"
+              placeholder="Введіть ваше ім&apos;я"
               placeholderTextColor="#999"
             />
           </View>
@@ -207,114 +198,3 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#FF3B30',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-  },
-  header: {
-    alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
-  form: {
-    flex: 1,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    backgroundColor: '#FAFAFA',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    marginBottom: 40,
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  cancelButtonText: {
-    color: '#666',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  saveButton: {
-    flex: 1,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    backgroundColor: '#B0B0B0',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
