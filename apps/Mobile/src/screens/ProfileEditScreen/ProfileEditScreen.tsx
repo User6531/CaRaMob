@@ -12,10 +12,7 @@ import {
 } from 'react-native';
 import { useMe, useUpdateUserProfile } from '../../queries/userQueries';
 import { styles } from './ProfileEditScreen.styles';
-
-interface ProfileEditScreenProps {
-  navigation: any;
-}
+import { ProfileEditScreenProps } from '../../navigation/types';
 
 export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
   const { data: meData, isLoading: isLoadingMe } = useMe();

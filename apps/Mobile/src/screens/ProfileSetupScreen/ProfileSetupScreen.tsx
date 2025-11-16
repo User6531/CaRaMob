@@ -13,10 +13,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useUpdateUserProfile } from '../../queries/userQueries';
 import { styles } from './ProfileSetupScreen.styles';
-
-interface ProfileSetupScreenProps {
-  navigation: any;
-}
+import { ProfileSetupScreenProps } from '../../navigation/types';
 
 export default function ProfileSetupScreen({ navigation }: ProfileSetupScreenProps) {
   const { meData } = useAuth();

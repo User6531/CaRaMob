@@ -6,15 +6,16 @@ import {
   ScrollView, 
   Image,
 } from 'react-native';
-import { useCar } from '../../context/CarContext';
+import { useCar, Car } from '../../context/CarContext';
 import { useStatusBar } from '../../hooks/useStatusBar';
 import { globalStyles } from '../../styles/globalStyles';
 import { styles } from './HomeScreen.styles';
+import { HomeScreenProps } from '../../navigation/types';
 
-export default function HomeScreen({ navigation }: { navigation: any }) {
+export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { cars } = useCar();
 
-  const renderCarCard = ({ item }: { item: any }) => (
+  const renderCarCard = ({ item }: { item: Car }) => (
     <View style={styles.carCard}>
       <TouchableOpacity 
         style={styles.carCardContent}

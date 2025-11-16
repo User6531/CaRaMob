@@ -13,10 +13,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useStatusBar } from '../../hooks/useStatusBar';
 import { globalStyles } from '../../styles/globalStyles';
 import { styles } from './ProfileScreen.styles';
-
-interface ProfileScreenProps {
-  navigation: any;
-}
+import { ProfileScreenProps } from '../../navigation/types';
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { logout } = useAuth();

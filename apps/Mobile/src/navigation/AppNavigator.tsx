@@ -1,5 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { RootStackParamList } from './types';
 import { useAuth } from '../context/AuthContext';
 import { theme } from '../styles/theme';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
@@ -12,7 +13,7 @@ import CarCardScreen from '../screens/CarCardScreen/CarCardScreen';
 import CarEditScreen from '../screens/CarEditScreen/CarEditScreen';
 import CarDetailsScreen from '../screens/CarDetailsScreen/CarDetailsScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 // Dark theme header styles
 const darkHeaderOptions = {

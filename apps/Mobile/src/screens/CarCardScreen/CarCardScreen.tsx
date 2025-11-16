@@ -16,10 +16,7 @@ import { useCar } from '../../context/CarContext';
 import { useTheme } from '../../hooks/useTheme';
 import { globalStyles } from '../../styles/globalStyles';
 import { styles } from './CarCardScreen.styles';
-
-interface CarCardScreenProps {
-  navigation: any;
-}
+import { CarCardScreenProps } from '../../navigation/types';
 
 export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   const { addCar } = useCar();

@@ -16,8 +16,9 @@ import { useCar, Car } from '../../context/CarContext';
 import { useTheme } from '../../hooks/useTheme';
 import { globalStyles } from '../../styles/globalStyles';
 import { styles } from './CarEditScreen.styles';
+import { CarEditScreenProps } from '../../navigation/types';
 
-export default function CarEditScreen({ navigation, route }: any) {
+export default function CarEditScreen({ navigation, route }: CarEditScreenProps) {
   const { getCarById, updateCar, deleteCar } = useCar();
   const theme = useTheme();
   const { carId } = route.params;

@@ -37,6 +37,14 @@ export default defineConfig([
       "react-native/no-inline-styles": "warn",
       "@typescript-eslint/ban-types": "off",
       "react-native/sort-styles": "off",
+      "react-native/no-color-literals": "off", 
+    },
+  },
+  {
+    // Виключаємо правило для файлів стилів
+    files: ["**/*.styles.ts", "**/*.styles.tsx"],
+    rules: {
+      "react-native/no-color-literals": "off",
     },
   },
   prettier,

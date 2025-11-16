@@ -3,10 +3,7 @@ import { View, Text, ActivityIndicator, Alert, TouchableOpacity } from 'react-na
 import { useMe } from '../../queries/userQueries';
 import { useAuth } from '../../context/AuthContext';
 import { styles } from './UserCheckScreen.styles';
-
-interface UserCheckScreenProps {
-  navigation: any;
-}
+import { UserCheckScreenProps } from '../../navigation/types';
 
 export default function UserCheckScreen({ navigation }: UserCheckScreenProps) {
   const { data: meData, isLoading, error } = useMe();
