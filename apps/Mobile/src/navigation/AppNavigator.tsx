@@ -1,17 +1,17 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { RootStackParamList } from './types';
-import { useAuth } from '../context/AuthContext';
-import { theme } from '../styles/theme';
-import HomeScreen from '../screens/HomeScreen/HomeScreen';
-import LoginScreen from '../screens/LoginScreen/LoginScreen';
-import UserCheckScreen from '../screens/UserCheckScreen/UserCheckScreen';
-import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
-import ProfileEditScreen from '../screens/ProfileEditScreen/ProfileEditScreen';
-import ProfileSetupScreen from '../screens/ProfileSetupScreen/ProfileSetupScreen';
-import CarCardScreen from '../screens/CarCardScreen/CarCardScreen';
-import CarEditScreen from '../screens/CarEditScreen/CarEditScreen';
-import CarDetailsScreen from '../screens/CarDetailsScreen/CarDetailsScreen';
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { RootStackParamList } from "./types";
+import { useAuth } from "../context/AuthContext";
+import { theme } from "../styles/theme";
+import HomeScreen from "../screens/HomeScreen/HomeScreen";
+import LoginScreen from "../screens/LoginScreen/LoginScreen";
+import UserCheckScreen from "../screens/UserCheckScreen/UserCheckScreen";
+import ProfileScreen from "../screens/ProfileScreen/ProfileScreen";
+import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
+import ProfileSetupScreen from "../screens/ProfileSetupScreen/ProfileSetupScreen";
+import CarCardScreen from "../screens/CarCardScreen/CarCardScreen";
+import CarEditScreen from "../screens/CarEditScreen/CarEditScreen";
+import CarDetailsScreen from "../screens/CarDetailsScreen/CarDetailsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -21,11 +21,11 @@ const darkHeaderOptions = {
     backgroundColor: theme.colors.background.secondary,
   },
   headerTitleStyle: {
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     color: theme.colors.text.primary,
   },
   headerTintColor: theme.colors.accent.primary,
-  headerBackTitle: 'Назад',
+  headerBackTitle: "Назад",
 };
 
 export default function AppNavigator() {
@@ -38,69 +38,69 @@ export default function AppNavigator() {
       <Stack.Navigator>
         {isAuthenticated ? (
           <>
-            <Stack.Screen 
-              name="UserCheck" 
-              component={UserCheckScreen} 
-              options={{ 
+            <Stack.Screen
+              name="UserCheck"
+              component={UserCheckScreen}
+              options={{
                 headerShown: false,
                 gestureEnabled: false,
-              }} 
+              }}
             />
-            <Stack.Screen 
-              name="Home" 
-              component={HomeScreen} 
-              options={{ 
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{
                 headerShown: false,
                 gestureEnabled: false,
-              }} 
+              }}
             />
-            <Stack.Screen 
-              name="Profile" 
-              component={ProfileScreen} 
-              options={{ 
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={{
                 ...darkHeaderOptions,
-                title: 'Профіль',
-              }} 
+                title: "Профіль",
+              }}
             />
-            <Stack.Screen 
-              name="ProfileEdit" 
-              component={ProfileEditScreen} 
-              options={{ 
+            <Stack.Screen
+              name="ProfileEdit"
+              component={ProfileEditScreen}
+              options={{
                 ...darkHeaderOptions,
-                title: 'Редагування профілю',
-              }} 
+                title: "Редагування профілю",
+              }}
             />
-            <Stack.Screen 
-              name="ProfileSetup" 
-              component={ProfileSetupScreen} 
-              options={{ 
+            <Stack.Screen
+              name="ProfileSetup"
+              component={ProfileSetupScreen}
+              options={{
                 ...darkHeaderOptions,
-                title: 'Налаштування профілю',
-              }} 
+                title: "Налаштування профілю",
+              }}
             />
-            <Stack.Screen 
-              name="CarCard" 
-              component={CarCardScreen} 
-              options={{ 
+            <Stack.Screen
+              name="CarCard"
+              component={CarCardScreen}
+              options={{
                 ...darkHeaderOptions,
-                title: 'Додати автомобіль',
-              }} 
+                title: "Додати автомобіль",
+              }}
             />
-            <Stack.Screen 
-              name="CarEdit" 
-              component={CarEditScreen} 
-              options={{ 
+            <Stack.Screen
+              name="CarEdit"
+              component={CarEditScreen}
+              options={{
                 ...darkHeaderOptions,
-                title: 'Редагувати автомобіль',
-              }} 
+                title: "Редагувати автомобіль",
+              }}
             />
-            <Stack.Screen 
-              name="CarDetails" 
-              component={CarDetailsScreen} 
-              options={{ 
+            <Stack.Screen
+              name="CarDetails"
+              component={CarDetailsScreen}
+              options={{
                 ...darkHeaderOptions,
-                title: 'Деталі автомобіля',
-              }} 
+                title: "Деталі автомобіля",
+              }}
             />
           </>
         ) : (

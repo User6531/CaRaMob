@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   scrollContainer: {
@@ -6,22 +6,22 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
     marginBottom: 40,
   },
   title: {
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   form: {
     flex: 1,
   },
   imageSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   imageContainer: {
@@ -29,10 +29,10 @@ export const styles = StyleSheet.create({
     height: 120,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#30363D', // Using theme color directly
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#30363D", // Using theme color directly
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
   },
   carImage: {
     width: 196,
@@ -40,7 +40,7 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
   placeholderImage: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   placeholderText: {
     fontSize: 32,
@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
   },
   placeholderLabel: {
     fontSize: 14,
-    color: '#8B949E', // Using theme color directly
+    color: "#8B949E", // Using theme color directly
   },
   inputContainer: {
     marginBottom: 20,
@@ -60,11 +60,10 @@ export const styles = StyleSheet.create({
     // Additional input styles if needed
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
     marginBottom: 40,
     gap: 12,
   },
 });
-

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,24 +9,26 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-} from 'react-native';
-import { useMe, useUpdateUserProfile } from '../../queries/userQueries';
-import { styles } from './ProfileEditScreen.styles';
-import { ProfileEditScreenProps } from '../../navigation/types';
+} from "react-native";
+import { useMe, useUpdateUserProfile } from "../../queries/userQueries";
+import { styles } from "./ProfileEditScreen.styles";
+import { ProfileEditScreenProps } from "../../navigation/types";
 
-export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
+export default function ProfileEditScreen({
+  navigation,
+}: ProfileEditScreenProps) {
   const { data: meData, isLoading: isLoadingMe } = useMe();
   const updateUserMutation = useUpdateUserProfile();
-  
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   // Завантажуємо дані користувача
   useEffect(() => {
     if (meData) {
-      setName(meData.name || '');
-      setEmail(meData.email || '');
+      setName(meData.name || "");
+      setEmail(meData.email || "");
       setIsLoading(false);
     } else if (!isLoadingMe) {
       setIsLoading(false);
@@ -35,12 +37,12 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введіть ваше ім\'я');
+      Alert.alert("Помилка", "Будь ласка, введіть ваше ім'я");
       return;
     }
 
     if (!email.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введіть вашу пошту');
+      Alert.alert("Помилка", "Будь ласка, введіть вашу пошту");
       return;
     }
 
@@ -49,61 +51,59 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
         name: name.trim(),
         email: email.trim(),
       });
-      
-      console.log('Update result:', result);
-      
-      Alert.alert(
-        'Успішно!',
-        'Профіль успішно оновлено',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack()
-          }
-        ]
-      );
+
+      console.log("Update result:", result);
+
+      Alert.alert("Успішно!", "Профіль успішно оновлено", [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error) {
-      console.error('Error updating user profile:', error);
-      
-      let errorMessage = 'Не вдалося оновити профіль. Спробуйте ще раз.';
-      
+      console.error("Error updating user profile:", error);
+
+      let errorMessage = "Не вдалося оновити профіль. Спробуйте ще раз.";
+
       if (error instanceof Error) {
-        if (error.message.includes('401')) {
-          errorMessage = 'Сесія закінчилася. Будь ласка, увійдіть знову.';
-        } else if (error.message.includes('400')) {
-          errorMessage = 'Невірні дані. Перевірте правильність введених даних.';
-        } else if (error.message.includes('404')) {
-          errorMessage = 'Користувач не знайдений.';
-        } else if (error.message.includes('409')) {
-          errorMessage = 'Користувач з такою поштою вже існує.';
-        } else if (error.message.includes('JSON Parse error')) {
-          errorMessage = 'Сервер повернув неочікувану відповідь. Спробуйте ще раз.';
+        if (error.message.includes("401")) {
+          errorMessage = "Сесія закінчилася. Будь ласка, увійдіть знову.";
+        } else if (error.message.includes("400")) {
+          errorMessage = "Невірні дані. Перевірте правильність введених даних.";
+        } else if (error.message.includes("404")) {
+          errorMessage = "Користувач не знайдений.";
+        } else if (error.message.includes("409")) {
+          errorMessage = "Користувач з такою поштою вже існує.";
+        } else if (error.message.includes("JSON Parse error")) {
+          errorMessage =
+            "Сервер повернув неочікувану відповідь. Спробуйте ще раз.";
         } else {
           errorMessage = `Помилка: ${error.message}`;
         }
       }
-      
-      Alert.alert('Помилка', errorMessage);
+
+      Alert.alert("Помилка", errorMessage);
     }
   };
 
   const handleCancel = () => {
-    const hasChanges = name !== (meData?.name || '') || email !== (meData?.email || '');
-    
+    const hasChanges =
+      name !== (meData?.name || "") || email !== (meData?.email || "");
+
     if (hasChanges) {
       Alert.alert(
-        'Скасувати зміни?',
-        'Ви вже внесли зміни. Ви впевнені, що хочете скасувати?',
+        "Скасувати зміни?",
+        "Ви вже внесли зміни. Ви впевнені, що хочете скасувати?",
         [
           {
-            text: 'Продовжити редагування',
-            style: 'cancel'
+            text: "Продовжити редагування",
+            style: "cancel",
           },
           {
-            text: 'Скасувати',
-            style: 'destructive',
-            onPress: () => navigation.goBack()
-          }
+            text: "Скасувати",
+            style: "destructive",
+            onPress: () => navigation.goBack(),
+          },
         ]
       );
     } else {
@@ -123,8 +123,13 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
   if (!meData) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
-        <Text style={styles.errorText}>Не вдалося завантажити дані профілю</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.errorText}>
+          Не вдалося завантажити дані профілю
+        </Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => navigation.goBack()}
+        >
           <Text style={styles.retryButtonText}>Повернутися</Text>
         </TouchableOpacity>
       </View>
@@ -132,9 +137,9 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
@@ -150,7 +155,7 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
               style={styles.input}
               value={name}
               onChangeText={setName}
-              placeholder="Введіть ваше ім&apos;я"
+              placeholder="Введіть ваше ім'я"
               placeholderTextColor="#999"
             />
           </View>
@@ -171,15 +176,18 @@ export default function ProfileEditScreen({ navigation }: ProfileEditScreenProps
 
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={styles.cancelButton} 
+            <TouchableOpacity
+              style={styles.cancelButton}
               onPress={handleCancel}
             >
               <Text style={styles.cancelButtonText}>Скасувати</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.saveButton, updateUserMutation.isPending && styles.saveButtonDisabled]} 
+
+            <TouchableOpacity
+              style={[
+                styles.saveButton,
+                updateUserMutation.isPending && styles.saveButtonDisabled,
+              ]}
               onPress={handleSave}
               disabled={updateUserMutation.isPending}
             >

@@ -1,21 +1,21 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions } from "react-native";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const cardWidth = width - 48; // Full width minus padding
 
 export const styles = StyleSheet.create({
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 60,
     paddingBottom: 20,
   },
-  title: { 
+  title: {
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   carsSection: {
     flex: 1,
@@ -32,9 +32,9 @@ export const styles = StyleSheet.create({
   },
   carCard: {
     width: cardWidth,
-    backgroundColor: '#161B22', // Using theme color directly
+    backgroundColor: "#161B22", // Using theme color directly
     borderRadius: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -42,30 +42,30 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3.84,
     elevation: 5,
-    position: 'relative',
+    position: "relative",
   },
   carCardContent: {
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   carImageContainer: {
     width: 80,
     height: 80,
     borderRadius: 8,
     marginRight: 16,
-    backgroundColor: '#21262D', // Using theme color directly
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#21262D", // Using theme color directly
+    justifyContent: "center",
+    alignItems: "center",
   },
   carImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 8,
   },
   placeholderImage: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   placeholderText: {
     fontSize: 24,
@@ -75,36 +75,36 @@ export const styles = StyleSheet.create({
   },
   carBrand: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#F0F6FC', // Using theme color directly
+    fontWeight: "600",
+    color: "#F0F6FC", // Using theme color directly
     marginBottom: 4,
   },
   carModel: {
     fontSize: 16,
-    color: '#8B949E', // Using theme color directly
+    color: "#8B949E", // Using theme color directly
     marginBottom: 4,
   },
   carYear: {
     fontSize: 14,
-    color: '#8B949E', // Using theme color directly
+    color: "#8B949E", // Using theme color directly
     marginBottom: 4,
   },
   carPlate: {
     fontSize: 14,
-    color: '#58A6FF', // Using theme color directly
-    fontWeight: '600',
+    color: "#58A6FF", // Using theme color directly
+    fontWeight: "600",
   },
   editButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 8,
     right: 8,
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#58A6FF', // Using theme color directly
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    backgroundColor: "#58A6FF", // Using theme color directly
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
@@ -115,55 +115,54 @@ export const styles = StyleSheet.create({
   },
   editButtonText: {
     fontSize: 14,
-    color: '#fff',
+    color: "#fff",
   },
   emptyCard: {
     width: cardWidth,
-    backgroundColor: '#161B22', // Using theme color directly
+    backgroundColor: "#161B22", // Using theme color directly
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#30363D', // Using theme color directly
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#30363D", // Using theme color directly
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 40,
   },
   emptyCardContent: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   plusIcon: {
     fontSize: 48,
-    color: '#58A6FF', // Using theme color directly
+    color: "#58A6FF", // Using theme color directly
     marginBottom: 12,
   },
   emptyCardText: {
     fontSize: 16,
-    color: '#8B949E', // Using theme color directly
-    fontWeight: '500',
+    color: "#8B949E", // Using theme color directly
+    fontWeight: "500",
   },
   emptyState: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 24,
   },
   emptyStateText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#F0F6FC', // Using theme color directly
+    fontWeight: "600",
+    color: "#F0F6FC", // Using theme color directly
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#8B949E', // Using theme color directly
-    textAlign: 'center',
+    color: "#8B949E", // Using theme color directly
+    textAlign: "center",
   },
   buttonContainer: {
     paddingHorizontal: 24,
     paddingBottom: 40,
     paddingTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
 });
-

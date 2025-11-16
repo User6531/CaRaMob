@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,31 +10,32 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { useCar } from '../../context/CarContext';
-import { useTheme } from '../../hooks/useTheme';
-import { globalStyles } from '../../styles/globalStyles';
-import { styles } from './CarCardScreen.styles';
-import { CarCardScreenProps } from '../../navigation/types';
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { useCar } from "../../context/CarContext";
+import { useTheme } from "../../hooks/useTheme";
+import { globalStyles } from "../../styles/globalStyles";
+import { styles } from "./CarCardScreen.styles";
+import { CarCardScreenProps } from "../../navigation/types";
 
 export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   const { addCar } = useCar();
   const theme = useTheme();
   const [carImage, setCarImage] = useState<string | null>(null);
-  const [brand, setBrand] = useState('');
-  const [model, setModel] = useState('');
-  const [year, setYear] = useState('');
-  const [color, setColor] = useState('');
-  const [licensePlate, setLicensePlate] = useState('');
-  const [vin, setVin] = useState('');
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const [year, setYear] = useState("");
+  const [color, setColor] = useState("");
+  const [licensePlate, setLicensePlate] = useState("");
+  const [vin, setVin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
     if (permissionResult.granted === false) {
-      Alert.alert('Дозвіл потрібен', 'Потрібен дозвіл для доступу до галереї!');
+      Alert.alert("Дозвіл потрібен", "Потрібен дозвіл для доступу до галереї!");
       return;
     }
 
@@ -51,54 +52,61 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   };
 
   const handleCancel = () => {
-    const hasData = brand.trim() || model.trim() || year.trim() || color.trim() || licensePlate.trim() || vin.trim() || carImage;
-    
+    const hasData =
+      brand.trim() ||
+      model.trim() ||
+      year.trim() ||
+      color.trim() ||
+      licensePlate.trim() ||
+      vin.trim() ||
+      carImage;
+
     if (hasData) {
       Alert.alert(
-        'Скасувати створення?',
-        'Ви вже ввели деякі дані. Ви впевнені, що хочете скасувати?',
+        "Скасувати створення?",
+        "Ви вже ввели деякі дані. Ви впевнені, що хочете скасувати?",
         [
           {
-            text: 'Продовжити редагування',
-            style: 'cancel'
+            text: "Продовжити редагування",
+            style: "cancel",
           },
           {
-            text: 'Скасувати',
-            style: 'destructive',
-            onPress: () => navigation.navigate('Home')
-          }
+            text: "Скасувати",
+            style: "destructive",
+            onPress: () => navigation.navigate("Home"),
+          },
         ]
       );
     } else {
-      navigation.navigate('Home');
+      navigation.navigate("Home");
     }
   };
 
   const handleSave = async () => {
     if (!brand.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи марку автомобіля');
+      Alert.alert("Помилка", "Будь ласка, введи марку автомобіля");
       return;
     }
     if (!model.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи модель автомобіля');
+      Alert.alert("Помилка", "Будь ласка, введи модель автомобіля");
       return;
     }
     if (!year.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи рік випуску');
+      Alert.alert("Помилка", "Будь ласка, введи рік випуску");
       return;
     }
     if (!color.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи колір автомобіля');
+      Alert.alert("Помилка", "Будь ласка, введи колір автомобіля");
       return;
     }
     if (!licensePlate.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи номерний знак');
+      Alert.alert("Помилка", "Будь ласка, введи номерний знак");
       return;
     }
 
     try {
       setIsLoading(true);
-      
+
       addCar({
         brand,
         model,
@@ -108,19 +116,15 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
         vin,
         carImage,
       });
-      
-      Alert.alert(
-        'Успішно!', 
-        'Картка автомобіля створена',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('Home')
-          }
-        ]
-      );
+
+      Alert.alert("Успішно!", "Картка автомобіля створена", [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("Home"),
+        },
+      ]);
     } catch (error) {
-      Alert.alert('Помилка', 'Не вдалося зберегти дані');
+      Alert.alert("Помилка", "Не вдалося зберегти дані");
     } finally {
       setIsLoading(false);
     }
@@ -128,7 +132,13 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
   if (isLoading) {
     return (
-      <View style={[globalStyles.container, globalStyles.pageBackground, globalStyles.loadingContainer]}>
+      <View
+        style={[
+          globalStyles.container,
+          globalStyles.pageBackground,
+          globalStyles.loadingContainer,
+        ]}
+      >
         <ActivityIndicator size="large" color={theme.colors.accent.primary} />
         <Text style={globalStyles.loadingText}>Збереження даних...</Text>
       </View>
@@ -136,14 +146,18 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={[globalStyles.container, globalStyles.pageBackground]} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      style={[globalStyles.container, globalStyles.pageBackground]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
-          <Text style={[globalStyles.textLarge, styles.title]}>Додай свій автомобіль</Text>
-          <Text style={[globalStyles.textSecondary, styles.subtitle]}>Створи картку твого авто</Text>
+          <Text style={[globalStyles.textLarge, styles.title]}>
+            Додай свій автомобіль
+          </Text>
+          <Text style={[globalStyles.textSecondary, styles.subtitle]}>
+            Створи картку твого авто
+          </Text>
         </View>
 
         <View style={styles.form}>
@@ -163,7 +177,9 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* Brand Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Марка *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Марка *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={brand}
@@ -175,7 +191,9 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* Model Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Модель *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Модель *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={model}
@@ -187,7 +205,9 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* Year Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Рік випуску *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Рік випуску *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={year}
@@ -201,7 +221,9 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* Color Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Колір *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Колір *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={color}
@@ -213,7 +235,9 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* License Plate Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Номерний знак *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Номерний знак *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={licensePlate}
@@ -226,7 +250,9 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* VIN Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>VIN номер</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              VIN номер
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={vin}
@@ -240,14 +266,17 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={globalStyles.buttonSecondary} 
+            <TouchableOpacity
+              style={globalStyles.buttonSecondary}
               onPress={handleCancel}
             >
               <Text style={globalStyles.buttonSecondaryText}>Скасувати</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={globalStyles.buttonPrimary} onPress={handleSave}>
+
+            <TouchableOpacity
+              style={globalStyles.buttonPrimary}
+              onPress={handleSave}
+            >
               <Text style={globalStyles.buttonPrimaryText}>Зберегти</Text>
             </TouchableOpacity>
           </View>

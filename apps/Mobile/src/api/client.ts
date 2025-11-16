@@ -1,4 +1,4 @@
-import { API_CONFIG } from '../config/api';
+import { API_CONFIG } from "../config/api";
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
@@ -6,23 +6,26 @@ export class ApiClient {
   private baseURL: string;
   private getAccessToken: () => Promise<string | null>;
 
-  constructor(baseURL: string = API_BASE_URL, getAccessToken: () => Promise<string | null>) {
+  constructor(
+    baseURL: string = API_BASE_URL,
+    getAccessToken: () => Promise<string | null>
+  ) {
     this.baseURL = baseURL;
     this.getAccessToken = getAccessToken;
   }
 
   private async getHeaders(): Promise<HeadersInit> {
     const token = await this.getAccessToken();
-    
+
     return {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
 
   async get<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'GET',
+      method: "GET",
       headers: await this.getHeaders(),
     });
 
@@ -41,10 +44,12 @@ export class ApiClient {
     }
 
     // Перевіряємо чи відповідь є JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
       const responseText = await response.text();
-      throw new Error(`Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`);
+      throw new Error(
+        `Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`
+      );
     }
 
     return response.json();
@@ -52,7 +57,7 @@ export class ApiClient {
 
   async post<T>(endpoint: string, data: any): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'POST',
+      method: "POST",
       headers: await this.getHeaders(),
       body: JSON.stringify(data),
     });
@@ -72,18 +77,20 @@ export class ApiClient {
     }
 
     // Перевіряємо чи є контент для парсингу
-    const contentType = response.headers.get('content-type');
-    const contentLength = response.headers.get('content-length');
-    
+    const contentType = response.headers.get("content-type");
+    const contentLength = response.headers.get("content-length");
+
     // Якщо немає контенту або content-length = 0, повертаємо порожній об'єкт
-    if (!contentLength || contentLength === '0') {
+    if (!contentLength || contentLength === "0") {
       return {} as T;
     }
 
     // Перевіряємо чи відповідь є JSON
-    if (!contentType || !contentType.includes('application/json')) {
+    if (!contentType || !contentType.includes("application/json")) {
       const responseText = await response.text();
-      throw new Error(`Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`);
+      throw new Error(
+        `Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`
+      );
     }
 
     return response.json();
@@ -91,7 +98,7 @@ export class ApiClient {
 
   async put<T>(endpoint: string, data: any): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: await this.getHeaders(),
       body: JSON.stringify(data),
     });
@@ -111,18 +118,20 @@ export class ApiClient {
     }
 
     // Перевіряємо чи є контент для парсингу
-    const contentType = response.headers.get('content-type');
-    const contentLength = response.headers.get('content-length');
-    
+    const contentType = response.headers.get("content-type");
+    const contentLength = response.headers.get("content-length");
+
     // Якщо немає контенту або content-length = 0, повертаємо порожній об'єкт
-    if (!contentLength || contentLength === '0') {
+    if (!contentLength || contentLength === "0") {
       return {} as T;
     }
 
     // Перевіряємо чи відповідь є JSON
-    if (!contentType || !contentType.includes('application/json')) {
+    if (!contentType || !contentType.includes("application/json")) {
       const responseText = await response.text();
-      throw new Error(`Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`);
+      throw new Error(
+        `Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`
+      );
     }
 
     return response.json();
@@ -130,7 +139,7 @@ export class ApiClient {
 
   async delete<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: await this.getHeaders(),
     });
 
@@ -143,6 +152,8 @@ export class ApiClient {
 }
 
 // Функція для створення API клієнта з токеном
-export const createApiClient = (getAccessToken: () => Promise<string | null>) => {
+export const createApiClient = (
+  getAccessToken: () => Promise<string | null>
+) => {
   return new ApiClient(API_BASE_URL, getAccessToken);
 };

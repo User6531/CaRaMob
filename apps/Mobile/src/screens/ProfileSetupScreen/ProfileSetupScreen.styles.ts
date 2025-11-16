@@ -1,39 +1,39 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   scrollContainer: {
     flexGrow: 1,
     paddingHorizontal: 24,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 60,
     marginBottom: 40,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   form: {
     flex: 1,
@@ -43,54 +43,53 @@ export const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: "#FAFAFA",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
     marginBottom: 40,
     gap: 12,
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
   },
   cancelButtonText: {
-    color: '#666',
+    color: "#666",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   continueButton: {
     flex: 1,
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   continueButtonDisabled: {
-    backgroundColor: '#B0B0B0',
+    backgroundColor: "#B0B0B0",
   },
   continueButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
-

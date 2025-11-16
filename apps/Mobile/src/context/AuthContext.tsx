@@ -23,7 +23,6 @@ import React, {
 import { queryClient } from "../lib/queryClient";
 import { checkAuthSession, GetMeDto } from "../api/services/authService";
 
-
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -102,8 +101,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (token.accessToken) {
           try {
             const authResponse = await checkAuthSession(token.accessToken);
-            await SecureStore.setItemAsync(INTERNAL_TOKEN_KEY, authResponse.internalToken);
-            await SecureStore.setItemAsync(ME_DATA_KEY, JSON.stringify(authResponse.meData));
+            await SecureStore.setItemAsync(
+              INTERNAL_TOKEN_KEY,
+              authResponse.internalToken
+            );
+            await SecureStore.setItemAsync(
+              ME_DATA_KEY,
+              JSON.stringify(authResponse.meData)
+            );
             setMeData(authResponse.meData);
             setIsAuthenticated(true);
           } catch (error) {
@@ -132,7 +137,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuthStatus = async () => {
     try {
       const storedTokenJson = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-      const storedInternalToken = await SecureStore.getItemAsync(INTERNAL_TOKEN_KEY);
+      const storedInternalToken =
+        await SecureStore.getItemAsync(INTERNAL_TOKEN_KEY);
       const storedMeDataJson = await SecureStore.getItemAsync(ME_DATA_KEY);
 
       if (storedTokenJson) {
@@ -157,9 +163,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Оновлюємо внутрішній токен після оновлення Azure AD токену
             if (refreshedToken.accessToken) {
               try {
-                const authResponse = await checkAuthSession(refreshedToken.accessToken);
-                await SecureStore.setItemAsync(INTERNAL_TOKEN_KEY, authResponse.internalToken);
-                await SecureStore.setItemAsync(ME_DATA_KEY, JSON.stringify(authResponse.meData));
+                const authResponse = await checkAuthSession(
+                  refreshedToken.accessToken
+                );
+                await SecureStore.setItemAsync(
+                  INTERNAL_TOKEN_KEY,
+                  authResponse.internalToken
+                );
+                await SecureStore.setItemAsync(
+                  ME_DATA_KEY,
+                  JSON.stringify(authResponse.meData)
+                );
                 setMeData(authResponse.meData);
               } catch (error) {
                 console.error("Error refreshing auth session:", error);
@@ -178,7 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } else {
           setTokenResponse(token);
-          
+
           // Відновлюємо збережені дані
           if (storedInternalToken) {
             // Внутрішній токен вже збережений
@@ -235,7 +249,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       // Очистити кеш React Query при логауті
       queryClient.clear();
-      
+
       await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
       await SecureStore.deleteItemAsync(INTERNAL_TOKEN_KEY);
       await SecureStore.deleteItemAsync(ME_DATA_KEY);
@@ -258,8 +272,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!tokenResponse.shouldRefresh() && tokenResponse.accessToken) {
       try {
         const authResponse = await checkAuthSession(tokenResponse.accessToken);
-        await SecureStore.setItemAsync(INTERNAL_TOKEN_KEY, authResponse.internalToken);
-        await SecureStore.setItemAsync(ME_DATA_KEY, JSON.stringify(authResponse.meData));
+        await SecureStore.setItemAsync(
+          INTERNAL_TOKEN_KEY,
+          authResponse.internalToken
+        );
+        await SecureStore.setItemAsync(
+          ME_DATA_KEY,
+          JSON.stringify(authResponse.meData)
+        );
         setMeData(authResponse.meData);
         return authResponse.internalToken;
       } catch (error) {
@@ -286,9 +306,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Отримуємо внутрішній токен після оновлення Azure AD токену
         if (refreshedToken.accessToken) {
           try {
-            const authResponse = await checkAuthSession(refreshedToken.accessToken);
-            await SecureStore.setItemAsync(INTERNAL_TOKEN_KEY, authResponse.internalToken);
-            await SecureStore.setItemAsync(ME_DATA_KEY, JSON.stringify(authResponse.meData));
+            const authResponse = await checkAuthSession(
+              refreshedToken.accessToken
+            );
+            await SecureStore.setItemAsync(
+              INTERNAL_TOKEN_KEY,
+              authResponse.internalToken
+            );
+            await SecureStore.setItemAsync(
+              ME_DATA_KEY,
+              JSON.stringify(authResponse.meData)
+            );
             setMeData(authResponse.meData);
             return authResponse.internalToken;
           } catch (error) {
@@ -305,7 +333,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return null;
   };
-
 
   return (
     <AuthContext.Provider

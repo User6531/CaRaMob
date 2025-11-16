@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,26 +10,29 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { useCar, Car } from '../../context/CarContext';
-import { useTheme } from '../../hooks/useTheme';
-import { globalStyles } from '../../styles/globalStyles';
-import { styles } from './CarEditScreen.styles';
-import { CarEditScreenProps } from '../../navigation/types';
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { useCar, Car } from "../../context/CarContext";
+import { useTheme } from "../../hooks/useTheme";
+import { globalStyles } from "../../styles/globalStyles";
+import { styles } from "./CarEditScreen.styles";
+import { CarEditScreenProps } from "../../navigation/types";
 
-export default function CarEditScreen({ navigation, route }: CarEditScreenProps) {
+export default function CarEditScreen({
+  navigation,
+  route,
+}: CarEditScreenProps) {
   const { getCarById, updateCar, deleteCar } = useCar();
   const theme = useTheme();
   const { carId } = route.params;
-  
+
   const [carImage, setCarImage] = useState<string | null>(null);
-  const [brand, setBrand] = useState('');
-  const [model, setModel] = useState('');
-  const [year, setYear] = useState('');
-  const [color, setColor] = useState('');
-  const [licensePlate, setLicensePlate] = useState('');
-  const [vin, setVin] = useState('');
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const [year, setYear] = useState("");
+  const [color, setColor] = useState("");
+  const [licensePlate, setLicensePlate] = useState("");
+  const [vin, setVin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -46,10 +49,11 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
   }, [carId, getCarById]);
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
     if (permissionResult.granted === false) {
-      Alert.alert('Дозвіл потрібен', 'Потрібен дозвіл для доступу до галереї!');
+      Alert.alert("Дозвіл потрібен", "Потрібен дозвіл для доступу до галереї!");
       return;
     }
 
@@ -66,7 +70,7 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
   };
 
   const handleCancel = () => {
-    const hasChanges = 
+    const hasChanges =
       brand !== getCarById(carId)?.brand ||
       model !== getCarById(carId)?.model ||
       year !== getCarById(carId)?.year ||
@@ -74,21 +78,21 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
       licensePlate !== getCarById(carId)?.licensePlate ||
       vin !== getCarById(carId)?.vin ||
       carImage !== getCarById(carId)?.carImage;
-    
+
     if (hasChanges) {
       Alert.alert(
-        'Скасувати зміни?',
-        'Ви внесли зміни. Ви впевнені, що хочете скасувати?',
+        "Скасувати зміни?",
+        "Ви внесли зміни. Ви впевнені, що хочете скасувати?",
         [
           {
-            text: 'Продовжити редагування',
-            style: 'cancel'
+            text: "Продовжити редагування",
+            style: "cancel",
           },
           {
-            text: 'Скасувати',
-            style: 'destructive',
-            onPress: () => navigation.goBack()
-          }
+            text: "Скасувати",
+            style: "destructive",
+            onPress: () => navigation.goBack(),
+          },
         ]
       );
     } else {
@@ -98,29 +102,29 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
   const handleSave = async () => {
     if (!brand.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи марку автомобіля');
+      Alert.alert("Помилка", "Будь ласка, введи марку автомобіля");
       return;
     }
     if (!model.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи модель автомобіля');
+      Alert.alert("Помилка", "Будь ласка, введи модель автомобіля");
       return;
     }
     if (!year.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи рік випуску');
+      Alert.alert("Помилка", "Будь ласка, введи рік випуску");
       return;
     }
     if (!color.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи колір автомобіля');
+      Alert.alert("Помилка", "Будь ласка, введи колір автомобіля");
       return;
     }
     if (!licensePlate.trim()) {
-      Alert.alert('Помилка', 'Будь ласка, введи номерний знак');
+      Alert.alert("Помилка", "Будь ласка, введи номерний знак");
       return;
     }
 
     try {
       setIsLoading(true);
-      
+
       updateCar(carId, {
         brand,
         model,
@@ -130,19 +134,15 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
         vin,
         carImage,
       });
-      
-      Alert.alert(
-        'Успішно!', 
-        'Дані автомобіля оновлені',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack()
-          }
-        ]
-      );
+
+      Alert.alert("Успішно!", "Дані автомобіля оновлені", [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error) {
-      Alert.alert('Помилка', 'Не вдалося зберегти дані');
+      Alert.alert("Помилка", "Не вдалося зберегти дані");
     } finally {
       setIsLoading(false);
     }
@@ -150,28 +150,34 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
   const handleDelete = () => {
     Alert.alert(
-      'Видалити автомобіль?',
-      'Ви впевнені, що хочете видалити цей автомобіль? Цю дію неможливо скасувати.',
+      "Видалити автомобіль?",
+      "Ви впевнені, що хочете видалити цей автомобіль? Цю дію неможливо скасувати.",
       [
         {
-          text: 'Скасувати',
-          style: 'cancel'
+          text: "Скасувати",
+          style: "cancel",
         },
         {
-          text: 'Видалити',
-          style: 'destructive',
+          text: "Видалити",
+          style: "destructive",
           onPress: () => {
             deleteCar(carId);
-            navigation.navigate('Home');
-          }
-        }
+            navigation.navigate("Home");
+          },
+        },
       ]
     );
   };
 
   if (isLoading) {
     return (
-      <View style={[globalStyles.container, globalStyles.pageBackground, globalStyles.loadingContainer]}>
+      <View
+        style={[
+          globalStyles.container,
+          globalStyles.pageBackground,
+          globalStyles.loadingContainer,
+        ]}
+      >
         <ActivityIndicator size="large" color={theme.colors.accent.primary} />
         <Text style={globalStyles.loadingText}>Збереження даних...</Text>
       </View>
@@ -179,14 +185,18 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={[globalStyles.container, globalStyles.pageBackground]} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      style={[globalStyles.container, globalStyles.pageBackground]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
-          <Text style={[globalStyles.textLarge, styles.title]}>Редагувати автомобіль</Text>
-          <Text style={[globalStyles.textSecondary, styles.subtitle]}>Оновити дані твого авто</Text>
+          <Text style={[globalStyles.textLarge, styles.title]}>
+            Редагувати автомобіль
+          </Text>
+          <Text style={[globalStyles.textSecondary, styles.subtitle]}>
+            Оновити дані твого авто
+          </Text>
         </View>
 
         <View style={styles.form}>
@@ -206,7 +216,9 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
           {/* Brand Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Марка *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Марка *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={brand}
@@ -218,7 +230,9 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
           {/* Model Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Модель *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Модель *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={model}
@@ -230,7 +244,9 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
           {/* Year Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Рік випуску *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Рік випуску *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={year}
@@ -244,7 +260,9 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
           {/* Color Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Колір *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Колір *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={color}
@@ -256,7 +274,9 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
           {/* License Plate Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>Номерний знак *</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Номерний знак *
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={licensePlate}
@@ -269,7 +289,9 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
           {/* VIN Field */}
           <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>VIN номер</Text>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              VIN номер
+            </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={vin}
@@ -283,21 +305,24 @@ export default function CarEditScreen({ navigation, route }: CarEditScreenProps)
 
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={globalStyles.buttonDanger} 
+            <TouchableOpacity
+              style={globalStyles.buttonDanger}
               onPress={handleDelete}
             >
               <Text style={globalStyles.buttonDangerText}>Видалити</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={globalStyles.buttonSecondary} 
+
+            <TouchableOpacity
+              style={globalStyles.buttonSecondary}
               onPress={handleCancel}
             >
               <Text style={globalStyles.buttonSecondaryText}>Скасувати</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={globalStyles.buttonPrimary} onPress={handleSave}>
+
+            <TouchableOpacity
+              style={globalStyles.buttonPrimary}
+              onPress={handleSave}
+            >
               <Text style={globalStyles.buttonPrimaryText}>Зберегти</Text>
             </TouchableOpacity>
           </View>

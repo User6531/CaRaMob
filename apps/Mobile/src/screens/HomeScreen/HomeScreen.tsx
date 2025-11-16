@@ -1,25 +1,19 @@
-import React from 'react';
-import { 
-  Text, 
-  View, 
-  TouchableOpacity, 
-  ScrollView, 
-  Image,
-} from 'react-native';
-import { useCar, Car } from '../../context/CarContext';
-import { useStatusBar } from '../../hooks/useStatusBar';
-import { globalStyles } from '../../styles/globalStyles';
-import { styles } from './HomeScreen.styles';
-import { HomeScreenProps } from '../../navigation/types';
+import React from "react";
+import { Text, View, TouchableOpacity, ScrollView, Image } from "react-native";
+import { useCar, Car } from "../../context/CarContext";
+import { useStatusBar } from "../../hooks/useStatusBar";
+import { globalStyles } from "../../styles/globalStyles";
+import { styles } from "./HomeScreen.styles";
+import { HomeScreenProps } from "../../navigation/types";
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { cars } = useCar();
 
   const renderCarCard = ({ item }: { item: Car }) => (
     <View style={styles.carCard}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.carCardContent}
-        onPress={() => navigation.navigate('CarDetails', { carId: item.id })}
+        onPress={() => navigation.navigate("CarDetails", { carId: item.id })}
       >
         <View style={styles.carImageContainer}>
           {item.carImage ? (
@@ -37,10 +31,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           <Text style={styles.carPlate}>{item.licensePlate}</Text>
         </View>
       </TouchableOpacity>
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={styles.editButton}
-        onPress={() => navigation.navigate('CarEdit', { carId: item.id })}
+        onPress={() => navigation.navigate("CarEdit", { carId: item.id })}
       >
         <Text style={styles.editButtonText}>✏️</Text>
       </TouchableOpacity>
@@ -48,9 +42,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   );
 
   const renderEmptyCard = () => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.emptyCard}
-      onPress={() => navigation.navigate('CarCard')}
+      onPress={() => navigation.navigate("CarCard")}
     >
       <View style={styles.emptyCardContent}>
         <Text style={styles.plusIcon}>+</Text>
@@ -64,35 +58,39 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       {useStatusBar()}
       <View style={[globalStyles.container, globalStyles.pageBackground]}>
         <View style={styles.header}>
-        <Text style={[globalStyles.textLarge, styles.title]}>Ласкаво просимо до CARa 🚗</Text>
-        <Text style={[globalStyles.textSecondary, styles.subtitle]}>Твій особистий автомобільний помічник</Text>
-      </View>
-      
-      <View style={styles.carsSection}>
-        <Text style={[globalStyles.textPrimary, styles.sectionTitle]}>Мої автомобілі</Text>
-        <ScrollView 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.carsList}
-        >
-          {cars.map((car) => (
-            <View key={car.id} style={styles.carCardWrapper}>
-              {renderCarCard({ item: car })}
-            </View>
-          ))}
-          <View style={styles.carCardWrapper}>
-            {renderEmptyCard()}
-          </View>
-        </ScrollView>
-      </View>
-      
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={globalStyles.buttonSecondary} 
-          onPress={() => navigation.navigate('Profile')}
-        >
-          <Text style={globalStyles.buttonSecondaryText}>👤 Профіль</Text>
-        </TouchableOpacity>
-      </View>
+          <Text style={[globalStyles.textLarge, styles.title]}>
+            Ласкаво просимо до CARa 🚗
+          </Text>
+          <Text style={[globalStyles.textSecondary, styles.subtitle]}>
+            Твій особистий автомобільний помічник
+          </Text>
+        </View>
+
+        <View style={styles.carsSection}>
+          <Text style={[globalStyles.textPrimary, styles.sectionTitle]}>
+            Мої автомобілі
+          </Text>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.carsList}
+          >
+            {cars.map((car) => (
+              <View key={car.id} style={styles.carCardWrapper}>
+                {renderCarCard({ item: car })}
+              </View>
+            ))}
+            <View style={styles.carCardWrapper}>{renderEmptyCard()}</View>
+          </ScrollView>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={globalStyles.buttonSecondary}
+            onPress={() => navigation.navigate("Profile")}
+          >
+            <Text style={globalStyles.buttonSecondaryText}>👤 Профіль</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </>
   );

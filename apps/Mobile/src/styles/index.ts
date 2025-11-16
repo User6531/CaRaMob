@@ -1,7 +1,11 @@
 // Export all theme-related files
-export { darkTheme, cssVariables, theme } from './theme';
-export { globalStyles } from './globalStyles';
-export { useTheme, getColorWithOpacity, createThemedStyles } from '../hooks/useTheme';
+export { darkTheme, cssVariables, theme } from "./theme";
+export { globalStyles } from "./globalStyles";
+export {
+  useTheme,
+  getColorWithOpacity,
+  createThemedStyles,
+} from "../hooks/useTheme";
 
 // Re-export commonly used theme values for convenience
 export const colors = theme.colors;

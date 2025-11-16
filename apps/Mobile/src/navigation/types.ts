@@ -1,4 +1,4 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 // Визначаємо список всіх скрінів у додатку
 export type RootStackParamList = {
@@ -16,45 +16,45 @@ export type RootStackParamList = {
 // Типи для кожного скріна
 export type LoginScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'Login'
+  "Login"
 >;
 
 export type UserCheckScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'UserCheck'
+  "UserCheck"
 >;
 
 export type HomeScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'Home'
+  "Home"
 >;
 
 export type ProfileScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'Profile'
+  "Profile"
 >;
 
 export type ProfileEditScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'ProfileEdit'
+  "ProfileEdit"
 >;
 
 export type ProfileSetupScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'ProfileSetup'
+  "ProfileSetup"
 >;
 
 export type CarCardScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'CarCard'
+  "CarCard"
 >;
 
 export type CarEditScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'CarEdit'
+  "CarEdit"
 >;
 
 export type CarDetailsScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'CarDetails'
+  "CarDetails"
 >;
