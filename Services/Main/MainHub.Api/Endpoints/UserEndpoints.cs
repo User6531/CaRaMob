@@ -1,5 +1,6 @@
 using MainHub.Api.Services;
 using MainHub.Api.DTOs;
+using MainHub.Api.Filters;
 using System.Security.Claims;
 
 namespace MainHub.Api.Endpoints;
@@ -11,9 +12,13 @@ public static class UserEndpoints
     var users = app.MapGroup("/api/user")
                    .WithTags("User")
                    .RequireAuthorization("RequireInternalJwt"); // Only Internal JWT tokens allowed
+    var _contentType = "application/json";
 
     users.MapPut("/update", UpdateAsync)
-      .Produces(StatusCodes.Status204NoContent);
+      .Accepts<UpdateUserDto>(_contentType)
+      .AddEndpointFilter<ValidationFilter<UpdateUserDto>>()
+      .Produces(StatusCodes.Status204NoContent)
+      .ProducesValidationProblem();
 
     users
       .MapGet("/me", GetMeAsync)

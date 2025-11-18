@@ -4,6 +4,9 @@ using MainHub.Api.Config;
 using MainHub.Api.Repositories;
 using MainHub.Api.Services;
 using MainHub.Api.Endpoints;
+using MainHub.Api.Validators;
+using MainHub.Api.Filters;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -35,6 +38,9 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+// 🟦 Register FluentValidation validators
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserDtoValidator>();
 
 // 🟦 Add controllers and Swagger
 builder.Services.AddEndpointsApiExplorer();

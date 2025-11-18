@@ -12,6 +12,7 @@ public static class AuthEndpoints
       .MapGroup("/api/auth")
       .WithTags("Auth")
       .RequireAuthorization("RequireAzureAD"); // Only Azure AD tokens allowed
+    // var _contentType = "application/json";
 
     authBuilder
       .MapGet("/session", CheckAuthSessionAsync)
