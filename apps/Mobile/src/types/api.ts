@@ -27,14 +27,11 @@ export interface User {
   updatedAt?: string;
 }
 
-// Додати новий тип для відповіді /api/users/me
+// Додати новий тип для відповіді /api/user/me
 export interface MeResponse {
-  isRegistered: boolean;
-  userData?: {
-    name: string;
-    id: string;
-    email: string;
-  };
+  name: string;
+  email?: string;
+  updatedAt: string | null;
 }
 
 export interface CreateUserDto {
@@ -47,11 +44,10 @@ export interface UpdateUserDto {
   email?: string;
 }
 
-// Додати новий тип для PUT /api/users/update
+// Додати новий тип для PUT /api/user/update
 export interface UpdateUserRequest {
-  id: string;
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
 }
 
 // Car types

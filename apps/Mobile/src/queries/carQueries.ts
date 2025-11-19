@@ -1,25 +1,25 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createApiClient } from '../api/client';
-import { queryKeys } from './queryKeys';
-import { Car, CreateCarDto, UpdateCarDto } from '../types/api';
-import { useAuth } from '../context/AuthContext';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createApiClient } from "../api/client";
+import { queryKeys } from "./queryKeys";
+import { Car, CreateCarDto, UpdateCarDto } from "../types/api";
+import { useAuth } from "../context/AuthContext";
 
 // Query hooks
 export const useCars = () => {
   const { getAccessToken } = useAuth();
-  
+
   return useQuery({
     queryKey: queryKeys.cars,
     queryFn: () => {
       const apiClient = createApiClient(getAccessToken);
-      return apiClient.get<Car[]>('/cars');
+      return apiClient.get<Car[]>("/cars");
     },
   });
 };
 
 export const useCar = (id: string) => {
   const { getAccessToken } = useAuth();
-  
+
   return useQuery({
     queryKey: queryKeys.car(id),
     queryFn: () => {
@@ -32,7 +32,7 @@ export const useCar = (id: string) => {
 
 export const useUserCars = (userId: string) => {
   const { getAccessToken } = useAuth();
-  
+
   return useQuery({
     queryKey: queryKeys.userCars(userId),
     queryFn: () => {
@@ -51,14 +51,14 @@ export const useCreateCar = () => {
   return useMutation({
     mutationFn: (carData: CreateCarDto) => {
       const apiClient = createApiClient(getAccessToken);
-      return apiClient.post<Car>('/cars', carData);
+      return apiClient.post<Car>("/cars", carData);
     },
     onSuccess: (newCar) => {
       // Інвалідувати список автомобілів
       queryClient.invalidateQueries({ queryKey: queryKeys.cars });
       // Інвалідувати автомобілі користувача
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.userCars(newCar.userId) 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.userCars(newCar.userId),
       });
     },
   });
@@ -79,8 +79,8 @@ export const useUpdateCar = () => {
       // Інвалідувати список автомобілів
       queryClient.invalidateQueries({ queryKey: queryKeys.cars });
       // Інвалідувати автомобілі користувача
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.userCars(updatedCar.userId) 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.userCars(updatedCar.userId),
       });
     },
   });

@@ -1,28 +1,37 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createApiClient } from '../api/client';
-import { queryKeys } from './queryKeys';
-import { User, CreateUserDto, UpdateUserDto, UpdateUserRequest, MeResponse } from '../types/api';
-import { useAuth } from '../context/AuthContext';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createApiClient } from "../api/client";
+import { queryKeys } from "./queryKeys";
+import {
+  User,
+  CreateUserDto,
+  UpdateUserDto,
+  UpdateUserRequest,
+  MeResponse,
+} from "../types/api";
+import { useAuth } from "../context/AuthContext";
 
 // Query hooks
 export const useMe = () => {
   const { getAccessToken } = useAuth();
-  
+
   return useQuery({
     queryKey: queryKeys.me,
     queryFn: async () => {
       try {
         const apiClient = createApiClient(getAccessToken);
-        return await apiClient.get<MeResponse>('/users/me');
+        return await apiClient.get<MeResponse>("/user/me");
       } catch (error) {
-        console.error('Error in useMe query:', error);
+        console.error("Error in useMe query:", error);
         throw error;
       }
     },
     enabled: true, // Включити тільки коли користувач авторизований
     retry: (failureCount, error) => {
       // Не повторюємо запит якщо помилка 401 (неавторизований) або 404 (користувач не знайдений)
-      if (error instanceof Error && (error.message.includes('401') || error.message.includes('404'))) {
+      if (
+        error instanceof Error &&
+        (error.message.includes("401") || error.message.includes("404"))
+      ) {
         return false;
       }
       // Повторюємо максимум 2 рази для інших помилок
@@ -34,7 +43,7 @@ export const useMe = () => {
 
 export const useUser = (id: string) => {
   const { getAccessToken } = useAuth();
-  
+
   return useQuery({
     queryKey: queryKeys.user(id),
     queryFn: () => {
@@ -47,12 +56,12 @@ export const useUser = (id: string) => {
 
 export const useUsers = () => {
   const { getAccessToken } = useAuth();
-  
+
   return useQuery({
     queryKey: queryKeys.users,
     queryFn: () => {
       const apiClient = createApiClient(getAccessToken);
-      return apiClient.get<User[]>('/users');
+      return apiClient.get<User[]>("/users");
     },
   });
 };
@@ -65,25 +74,25 @@ export const useCreateUser = () => {
   return useMutation({
     mutationFn: async (userData: CreateUserDto) => {
       try {
-        console.log('Creating user with data:', userData);
+        console.log("Creating user with data:", userData);
         const apiClient = createApiClient(getAccessToken);
-        const result = await apiClient.post<User>('/users', userData);
-        console.log('User created successfully:', result);
+        const result = await apiClient.post<User>("/users", userData);
+        console.log("User created successfully:", result);
         return result;
       } catch (error) {
-        console.error('Error in useCreateUser mutation:', error);
+        console.error("Error in useCreateUser mutation:", error);
         throw error;
       }
     },
     onSuccess: (data) => {
-      console.log('User creation successful, invalidating queries');
+      console.log("User creation successful, invalidating queries");
       // Інвалідувати список користувачів після створення
       queryClient.invalidateQueries({ queryKey: queryKeys.users });
       // Також інвалідуємо запит me
       queryClient.invalidateQueries({ queryKey: queryKeys.me });
     },
     onError: (error) => {
-      console.error('User creation failed:', error);
+      console.error("User creation failed:", error);
     },
   });
 };
@@ -106,7 +115,7 @@ export const useUpdateUser = () => {
   });
 };
 
-// Новий hook для оновлення користувача через /api/users/update
+// Новий hook для оновлення користувача через /api/user/update
 export const useUpdateUserProfile = () => {
   const queryClient = useQueryClient();
   const { getAccessToken } = useAuth();
@@ -114,31 +123,32 @@ export const useUpdateUserProfile = () => {
   return useMutation({
     mutationFn: async (userData: UpdateUserRequest) => {
       try {
-        console.log('Updating user profile with data:', userData);
+        console.log("Updating user profile with data:", userData);
         const apiClient = createApiClient(getAccessToken);
-        const result = await apiClient.put<User>('/users/update', userData);
-        console.log('User profile updated successfully:', result);
+        // Бекенд отримує userId з токену, тому просто передаємо name та email
+        const result = await apiClient.put<User>("/user/update", userData);
+        console.log("User profile updated successfully:", result);
         return result;
       } catch (error) {
-        console.error('Error in useUpdateUserProfile mutation:', error);
+        console.error("Error in useUpdateUserProfile mutation:", error);
         throw error;
       }
     },
     onSuccess: (updatedUser) => {
-      console.log('User profile update successful, invalidating queries');
-      
-      // Якщо updatedUser порожній (API повернув 200 без тіла), просто інвалідуємо кеш
+      console.log("User profile update successful, invalidating queries");
+
+      // Якщо updatedUser порожній (API повернув 204 No Content), просто інвалідуємо кеш
       if (updatedUser && Object.keys(updatedUser).length > 0) {
         // Оновити кеш для конкретного користувача
         queryClient.setQueryData(queryKeys.user(updatedUser.id), updatedUser);
       }
-      
+
       // Інвалідувати список користувачів та me запит
       queryClient.invalidateQueries({ queryKey: queryKeys.users });
       queryClient.invalidateQueries({ queryKey: queryKeys.me });
     },
     onError: (error) => {
-      console.error('User profile update failed:', error);
+      console.error("User profile update failed:", error);
     },
   });
 };

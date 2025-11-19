@@ -9,7 +9,9 @@
     "android": "expo start --android --port 8082",
     "ios": "expo start --ios --port 8082",
     "web": "expo start --web --port 8082",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

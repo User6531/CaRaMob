@@ -1,5 +1,5 @@
-import { QueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../queries/queryKeys';
+import { QueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../queries/queryKeys";
 
 // Утиліти для роботи з React Query
 
@@ -29,8 +29,8 @@ export const clearAllData = (queryClient: QueryClient) => {
  * Оновити дані користувача в кеші
  */
 export const updateUserInCache = (
-  queryClient: QueryClient, 
-  userId: string, 
+  queryClient: QueryClient,
+  userId: string,
   updatedUser: any
 ) => {
   queryClient.setQueryData(queryKeys.user(userId), updatedUser);
@@ -41,8 +41,8 @@ export const updateUserInCache = (
  * Оновити дані автомобіля в кеші
  */
 export const updateCarInCache = (
-  queryClient: QueryClient, 
-  carId: string, 
+  queryClient: QueryClient,
+  carId: string,
   updatedCar: any
 ) => {
   queryClient.setQueryData(queryKeys.car(carId), updatedCar);
