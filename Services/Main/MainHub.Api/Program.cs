@@ -5,11 +5,10 @@ using MainHub.Api.Repositories;
 using MainHub.Api.Services;
 using MainHub.Api.Endpoints;
 using MainHub.Api.Validators;
-using MainHub.Api.Filters;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Arex388.NhtsaVpic.Extensions.Microsoft.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +37,8 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddNhtsaVpic();
 
 // 🟦 Register FluentValidation validators
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserDtoValidator>();
@@ -164,5 +165,6 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
+app.MapCarsEndpoints();
 
 app.Run();

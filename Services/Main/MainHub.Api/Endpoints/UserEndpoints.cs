@@ -9,9 +9,10 @@ public static class UserEndpoints
 {
   public static void MapUserEndpoints(this IEndpointRouteBuilder app)
   {
-    var users = app.MapGroup("/api/user")
-                   .WithTags("User")
-                   .RequireAuthorization("RequireInternalJwt"); // Only Internal JWT tokens allowed
+    var users = app
+      .MapGroup("/api/user")
+      .WithTags("User")
+      .RequireAuthorization("RequireInternalJwt"); // Only Internal JWT tokens allowed
     var _contentType = "application/json";
 
     users.MapPut("/update", UpdateAsync)
