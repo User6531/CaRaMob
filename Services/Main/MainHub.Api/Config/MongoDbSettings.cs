@@ -21,8 +21,8 @@ namespace MainHub.Api.Config
     public string UserCollectionName { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the name of the collection that stores cars data.
+    /// Gets or sets the name of the collection that stores vehicle data.
     /// </summary>
-    public string CarsCollectionName { get; set; } = null!;
+    public string VehicleCollectionName { get; set; } = null!;
   }
 }

@@ -4,18 +4,18 @@ using System.Text.RegularExpressions;
 
 namespace MainHub.Api.Endpoints;
 
-public static partial class CarsEndpoints
+public static partial class VehicleEndpoints
 {
-  public static void MapCarsEndpoints(this IEndpointRouteBuilder app)
+  public static void MapVehicleEndpoints(this IEndpointRouteBuilder app)
   {
-    var cars = app
-      .MapGroup("/api/cars")
-      .WithTags("Cars");
-    // .RequireAuthorization("RequireInternalJwt"); // Only Internal JWT tokens allowed
+    var vehicles = app
+      .MapGroup("/api/vehicles")
+      .WithTags("Vehicles")
+      .RequireAuthorization("RequireInternalJwt"); // Only Internal JWT tokens allowed
 
     // var _contentType = "application/json";
 
-    cars
+    vehicles
       .MapGet("/vin-decode/{vin}", DecodeVinAsync)
       .Produces(StatusCodes.Status400BadRequest)
       .Produces<DecodeVinResponseDto>(StatusCodes.Status200OK);

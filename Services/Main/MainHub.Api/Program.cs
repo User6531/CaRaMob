@@ -35,6 +35,7 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 
 // 🟦 Register application services and repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
@@ -165,6 +166,6 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
-app.MapCarsEndpoints();
+app.MapVehicleEndpoints();
 
 app.Run();

@@ -6,17 +6,17 @@ namespace MainHub.Api.DTOs
   public class DecodeVinResponseDto
   {
     /// <summary>
-    /// The car model.
+    /// The Vehicle model.
     /// </summary>
     public required string Model { get; set; }
 
     /// <summary>
-    /// The car brand.
+    /// The Vehicle brand.
     /// </summary>
     public required string Brand { get; set; }
 
     /// <summary>
-    /// The car year.
+    /// The Vehicle year.
     /// </summary>
     public required short Year { get; set; }
   }
