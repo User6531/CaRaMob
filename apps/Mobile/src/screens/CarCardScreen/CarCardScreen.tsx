@@ -18,15 +18,49 @@ import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarCardScreen.styles";
 import { CarCardScreenProps } from "../../navigation/types";
 import { VinDecoder } from "../../components/VinDecoder";
+import { Select, SelectOption } from "../../components/Select";
+
+// Моки для селектів
+const BRAND_OPTIONS: SelectOption[] = [
+  { label: "Toyota", value: "toyota" },
+  { label: "BMW", value: "bmw" },
+  { label: "Mercedes-Benz", value: "mercedes" },
+  { label: "Audi", value: "audi" },
+  { label: "Volkswagen", value: "volkswagen" },
+];
+
+const MODEL_OPTIONS: SelectOption[] = [
+  { label: "Camry", value: "camry" },
+  { label: "X5", value: "x5" },
+  { label: "C-Class", value: "c-class" },
+  { label: "A4", value: "a4" },
+  { label: "Golf", value: "golf" },
+];
+
+const YEAR_OPTIONS: SelectOption[] = [
+  { label: "2024", value: "2024" },
+  { label: "2023", value: "2023" },
+  { label: "2022", value: "2022" },
+  { label: "2021", value: "2021" },
+  { label: "2020", value: "2020" },
+];
+
+const COLOR_OPTIONS: SelectOption[] = [
+  { label: "Чорний", value: "black" },
+  { label: "Білий", value: "white" },
+  { label: "Сірий", value: "gray" },
+  { label: "Сріблястий", value: "silver" },
+  { label: "Червоний", value: "red" },
+];
 
 export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   const { addCar } = useCar();
   const theme = useTheme();
   const [carImage, setCarImage] = useState<string | null>(null);
-  const [brand, setBrand] = useState("");
-  const [model, setModel] = useState("");
-  const [year, setYear] = useState("");
-  const [color, setColor] = useState("");
+  const [brand, setBrand] = useState<string | number | undefined>(undefined);
+  const [model, setModel] = useState<string | number | undefined>(undefined);
+  const [year, setYear] = useState<string | number | undefined>(undefined);
+  const [color, setColor] = useState<string | number | undefined>(undefined);
   const [licensePlate, setLicensePlate] = useState("");
   const [vin, setVin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -37,9 +71,18 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
     year: string;
     vin: string;
   }) => {
-    setBrand(data.brand);
-    setModel(data.model);
-    setYear(data.year);
+    // Знаходимо відповідні значення в опціях
+    const brandOption = BRAND_OPTIONS.find(
+      (opt) => opt.label.toLowerCase() === data.brand.toLowerCase()
+    );
+    const modelOption = MODEL_OPTIONS.find(
+      (opt) => opt.label.toLowerCase() === data.model.toLowerCase()
+    );
+    const yearOption = YEAR_OPTIONS.find((opt) => opt.value === data.year);
+
+    setBrand(brandOption?.value || data.brand);
+    setModel(modelOption?.value || data.model);
+    setYear(yearOption?.value || data.year);
     setVin(data.vin);
   };
 
@@ -66,10 +109,10 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
   const handleCancel = () => {
     const hasData =
-      brand.trim() ||
-      model.trim() ||
-      year.trim() ||
-      color.trim() ||
+      brand !== undefined ||
+      model !== undefined ||
+      year !== undefined ||
+      color !== undefined ||
       licensePlate.trim() ||
       vin.trim() ||
       carImage;
@@ -96,20 +139,20 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   };
 
   const handleSave = async () => {
-    if (!brand.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи марку автомобіля");
+    if (!brand) {
+      Alert.alert("Помилка", "Будь ласка, вибери марку автомобіля");
       return;
     }
-    if (!model.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи модель автомобіля");
+    if (!model) {
+      Alert.alert("Помилка", "Будь ласка, вибери модель автомобіля");
       return;
     }
-    if (!year.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи рік випуску");
+    if (!year) {
+      Alert.alert("Помилка", "Будь ласка, вибери рік випуску");
       return;
     }
-    if (!color.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи колір автомобіля");
+    if (!color) {
+      Alert.alert("Помилка", "Будь ласка, вибери колір автомобіля");
       return;
     }
     if (!licensePlate.trim()) {
@@ -120,11 +163,24 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
     try {
       setIsLoading(true);
 
+      // Отримуємо label для збереження
+      const brandLabel =
+        BRAND_OPTIONS.find((opt) => opt.value === brand)?.label ||
+        String(brand);
+      const modelLabel =
+        MODEL_OPTIONS.find((opt) => opt.value === model)?.label ||
+        String(model);
+      const yearLabel =
+        YEAR_OPTIONS.find((opt) => opt.value === year)?.label || String(year);
+      const colorLabel =
+        COLOR_OPTIONS.find((opt) => opt.value === color)?.label ||
+        String(color);
+
       addCar({
-        brand,
-        model,
-        year,
-        color,
+        brand: brandLabel,
+        model: modelLabel,
+        year: yearLabel,
+        color: colorLabel,
         licensePlate,
         vin,
         carImage,
@@ -193,62 +249,40 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
           </View>
 
           {/* Brand Field */}
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Марка *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={brand}
-              onChangeText={setBrand}
-              placeholder="Наприклад: Toyota, BMW, Mercedes"
-              placeholderTextColor={theme.colors.special.placeholder}
-            />
-          </View>
+          <Select
+            label="Марка *"
+            options={BRAND_OPTIONS}
+            value={brand}
+            onValueChange={setBrand}
+            placeholder="Виберіть марку автомобіля"
+          />
 
           {/* Model Field */}
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Модель *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={model}
-              onChangeText={setModel}
-              placeholder="Наприклад: Camry, X5, C-Class"
-              placeholderTextColor={theme.colors.special.placeholder}
-            />
-          </View>
+          <Select
+            label="Модель *"
+            options={MODEL_OPTIONS}
+            value={model}
+            onValueChange={setModel}
+            placeholder="Виберіть модель автомобіля"
+          />
 
           {/* Year Field */}
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Рік випуску *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={year}
-              onChangeText={setYear}
-              placeholder="Наприклад: 2020"
-              placeholderTextColor={theme.colors.special.placeholder}
-              keyboardType="numeric"
-              maxLength={4}
-            />
-          </View>
+          <Select
+            label="Рік випуску *"
+            options={YEAR_OPTIONS}
+            value={year}
+            onValueChange={setYear}
+            placeholder="Виберіть рік випуску"
+          />
 
           {/* Color Field */}
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Колір *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={color}
-              onChangeText={setColor}
-              placeholder="Наприклад: Чорний, Білий, Сірий"
-              placeholderTextColor={theme.colors.special.placeholder}
-            />
-          </View>
+          <Select
+            label="Колір *"
+            options={COLOR_OPTIONS}
+            value={color}
+            onValueChange={setColor}
+            placeholder="Виберіть колір автомобіля"
+          />
 
           {/* License Plate Field */}
           <View style={styles.inputContainer}>

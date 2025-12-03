@@ -46,7 +46,12 @@ public class VehicleService(
     var vehicleEntities = await _repository.GetByIdsAsync(user.VehicleIds);
     var vehicles = vehicleEntities.Select(v => new VehicleDto
     {
-      Vin = v.Vin,
+      Id = v.Id,
+      LicensePlate = v.LicensePlate,
+      Brand = v.Brand,
+      Model = v.Model,
+      Year = v.Year,
+      PhotoUrl = v.PhotoUrl,
     }).ToList();
 
     return vehicles;
