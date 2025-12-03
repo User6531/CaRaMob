@@ -17,6 +17,7 @@ import { useTheme } from "../../hooks/useTheme";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarCardScreen.styles";
 import { CarCardScreenProps } from "../../navigation/types";
+import { VinDecoder } from "../../components/VinDecoder";
 
 export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   const { addCar } = useCar();
@@ -29,6 +30,18 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   const [licensePlate, setLicensePlate] = useState("");
   const [vin, setVin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleVinDecodeSuccess = (data: {
+    brand: string;
+    model: string;
+    year: string;
+    vin: string;
+  }) => {
+    setBrand(data.brand);
+    setModel(data.model);
+    setYear(data.year);
+    setVin(data.vin);
+  };
 
   const pickImage = async () => {
     const permissionResult =
@@ -124,6 +137,7 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
         },
       ]);
     } catch (error) {
+      console.error("Error saving car:", error);
       Alert.alert("Помилка", "Не вдалося зберегти дані");
     } finally {
       setIsLoading(false);
@@ -161,6 +175,9 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
         </View>
 
         <View style={styles.form}>
+          {/* VIN Decode Field */}
+          <VinDecoder onDecodeSuccess={handleVinDecodeSuccess} />
+
           {/* Car Image */}
           <View style={styles.imageSection}>
             <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>

@@ -32,7 +32,7 @@ export const styles = StyleSheet.create({
   },
   carCard: {
     width: cardWidth,
-    backgroundColor: "#161B22", // Using theme color directly
+    backgroundColor: "#2a343d", // Using theme color directly
     borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: {
@@ -119,11 +119,16 @@ export const styles = StyleSheet.create({
   },
   emptyCard: {
     width: cardWidth,
-    backgroundColor: "#161B22", // Using theme color directly
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#30363D", // Using theme color directly
-    borderStyle: "dashed",
+    backgroundColor: "#2a343d", // Using theme color directly
+    borderRadius: 12, // Using theme color directly
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 2.84,
+    elevation: 2,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 40,

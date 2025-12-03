@@ -59,6 +59,23 @@ export const styles = StyleSheet.create({
   input: {
     // Additional input styles if needed
   },
+  vinDecodeContainer: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "flex-start",
+  },
+  vinDecodeInput: {
+    flex: 1,
+  },
+  decodeButton: {
+    minWidth: 120,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  decodeButtonDisabled: {
+    opacity: 0.6,
+  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

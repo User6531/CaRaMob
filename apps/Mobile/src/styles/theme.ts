@@ -2,8 +2,8 @@
 export const darkTheme = {
   // Background colors
   background: {
-    primary: "#0D1117", // Main background
-    secondary: "#161B22", // Card backgrounds
+    primary: "#202936", // Main background
+    secondary: "#202936", // Card backgrounds
     tertiary: "#21262D", // Elevated surfaces
     quaternary: "#30363D", // Borders and dividers
   },
