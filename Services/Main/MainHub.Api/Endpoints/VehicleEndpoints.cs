@@ -1,6 +1,9 @@
 using MainHub.Api.DTOs;
 using Arex388.NhtsaVpic;
 using System.Text.RegularExpressions;
+using MainHub.Api.Filters;
+using System.Security.Claims;
+using MainHub.Api.Services;
 
 namespace MainHub.Api.Endpoints;
 
@@ -13,12 +16,65 @@ public static partial class VehicleEndpoints
       .WithTags("Vehicles")
       .RequireAuthorization("RequireInternalJwt"); // Only Internal JWT tokens allowed
 
-    // var _contentType = "application/json";
+    var _contentType = "application/json";
+
+    vehicles
+      .MapPost("/", CreateAsync)
+      .Accepts<CreateVehicleDto>(_contentType)
+      .AddEndpointFilter<ValidationFilter<CreateVehicleDto>>()
+      .Produces(StatusCodes.Status201Created)
+      .Produces<string>(StatusCodes.Status400BadRequest)
+      .ProducesValidationProblem();
+
+    vehicles
+      .MapGet("/", GetAllByUserAsync)
+      .Produces<string>(StatusCodes.Status400BadRequest)
+      .Produces<List<VehicleDto>>(StatusCodes.Status200OK);
 
     vehicles
       .MapGet("/vin-decode/{vin}", DecodeVinAsync)
-      .Produces(StatusCodes.Status400BadRequest)
+      .Produces<string>(StatusCodes.Status400BadRequest)
       .Produces<DecodeVinResponseDto>(StatusCodes.Status200OK);
+  }
+
+  internal static async Task<IResult> GetAllByUserAsync(
+    ClaimsPrincipal userClaims,
+    IVehicleService vehicleService,
+    ITokenService tokenService,
+    ILogger<Program> logger
+  )
+  {
+    try
+    {
+      var userId = tokenService.GetUserIdFromClaims(userClaims);
+      var vehicles = await vehicleService.GetAllByUserAsync(userId);
+      return Results.Ok(vehicles);
+    }
+    catch (Exception ex)
+    {
+      return Results.BadRequest(ex.Message);
+    }
+  }
+
+  internal static async Task<IResult> CreateAsync(
+    ClaimsPrincipal userClaims,
+    CreateVehicleDto createVehicleDto,
+    IVehicleService vehicleService,
+    ITokenService tokenService,
+    ILogger<Program> logger
+  )
+  {
+    try
+    {
+      var userId = tokenService.GetUserIdFromClaims(userClaims);
+
+      await vehicleService.CreateAsync(createVehicleDto, userId);
+      return Results.StatusCode(StatusCodes.Status201Created);
+    }
+    catch (Exception ex)
+    {
+      return Results.BadRequest(ex.Message);
+    }
   }
 
   internal static async Task<IResult> DecodeVinAsync(

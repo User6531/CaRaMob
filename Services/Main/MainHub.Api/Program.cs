@@ -1,4 +1,7 @@
 using Microsoft.OpenApi.Models;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using MainHub.Api.Config;
 using MainHub.Api.Repositories;
@@ -9,8 +12,13 @@ using FluentValidation;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Arex388.NhtsaVpic.Extensions.Microsoft.DependencyInjection;
+using MainHub.Api.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 🟦 Configure MongoDB Guid representation globally
+// Register a serializer for Guid to serialize as strings (matching the entity Id representation)
+BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
 
 // 🟦 Load MongoDB settings from configuration file
 builder.Services.Configure<MongoDbSettings>(
@@ -38,18 +46,19 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 builder.Services.AddNhtsaVpic();
 
 // 🟦 Register FluentValidation validators
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateVehicleDto>();
 
 // 🟦 Add controllers and Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "MainHub API", Version = "v1" });
-
     // Add the "Authorization" header input field
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {

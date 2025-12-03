@@ -45,5 +45,11 @@ namespace MainHub.Api.Models
     /// </summary>
     [BsonElement("updatedAt")]
     public required DateTime? UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets users's associated vehicles.
+    /// </summary>
+    [BsonElement("vehicleIds")]
+    public required List<Guid> VehicleIds { get; set; } = [];
   }
 }
