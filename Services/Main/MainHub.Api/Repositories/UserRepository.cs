@@ -59,17 +59,35 @@ public interface IUserRepository
     /// <param name="id">The unique identifier of the user to delete.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task DeleteAsync(Guid id);
+
+    /// <summary>
+    /// Updates an existing user entity asynchronously.
+    /// </summary>
+    /// <param name="filter">The filter definition to locate the user.</param>
+    /// <param name="update">The update definition containing the fields to update.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task<UpdateResult> UpdateOneAsync(
+        FilterDefinition<UserEntity> filter,
+        UpdateDefinition<UserEntity> update
+    );
 }
 
 public class UserRepository : IUserRepository
 {
     private readonly IMongoCollection<UserEntity> _users;
 
-
     public UserRepository(IMongoClient client, IOptions<MongoDbSettings> settings)
     {
         var database = client.GetDatabase(settings.Value.DatabaseName);
         _users = database.GetCollection<UserEntity>(settings.Value.UserCollectionName);
+    }
+
+    public async Task<UpdateResult> UpdateOneAsync(
+        FilterDefinition<UserEntity> filter,
+        UpdateDefinition<UserEntity> update
+    )
+    {
+        return await _users.UpdateOneAsync(filter, update);
     }
 
     public async Task ReplaceAsync(UserEntity user)

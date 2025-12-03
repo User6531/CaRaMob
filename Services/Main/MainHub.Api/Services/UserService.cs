@@ -1,6 +1,7 @@
 using MainHub.Api.Models;
 using MainHub.Api.Repositories;
 using MainHub.Api.DTOs;
+using MongoDB.Driver;
 
 namespace MainHub.Api.Services;
 
@@ -68,32 +69,53 @@ public interface IUserService
   /// <param name="id">The unique identifier of the user to delete.</param>
   /// <returns>A task that represents the asynchronous operation.</returns>
   Task DeleteAsync(Guid id);
+
+  /// <summary>
+  /// Attach a new vehicle to user asynchronously.
+  /// </summary>
+  Task AttachVehicleAsync(Guid vehicleId, Guid userId);
 }
 
 public class UserService(IUserRepository repository) : IUserService
 {
   private readonly IUserRepository _repository = repository;
 
+  public async Task AttachVehicleAsync(Guid vehicleId, Guid userId)
+  {
+    var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, userId);
+    var update = Builders<UserEntity>.Update
+      .AddToSet(u => u.VehicleIds, vehicleId)
+      .Set(u => u.UpdatedAt, DateTime.UtcNow);
+
+    var result = await _repository.UpdateOneAsync(filter, update);
+
+    if (result.MatchedCount == 0)
+    {
+      throw new KeyNotFoundException($"User with ID {userId} not found.");
+    }
+  }
+
   public async Task UpdateAsync(UpdateUserDto userDto, Guid userId)
   {
-    var existingUser = await _repository.GetByIdAsync(userId);
+    var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, userId);
+    var updateBuilder = Builders<UserEntity>.Update.Set(u => u.UpdatedAt, DateTime.UtcNow);
 
-    if (existingUser is null)
+    if (!string.IsNullOrWhiteSpace(userDto.Name))
     {
-      throw new KeyNotFoundException("User not found.");
+      updateBuilder = updateBuilder.Set(u => u.Name, userDto.Name);
     }
 
-    // Update only the fields that are provided in the DTO
-    if (userDto.Name is not null)
-      existingUser.Name = userDto.Name;
+    if (!string.IsNullOrWhiteSpace(userDto.Email))
+    {
+      updateBuilder = updateBuilder.Set(u => u.Email, userDto.Email);
+    }
 
-    if (userDto.Email is not null)
-      existingUser.Email = userDto.Email;
+    var result = await _repository.UpdateOneAsync(filter, updateBuilder);
 
-    // Update the last modified timestamp
-    existingUser.UpdatedAt = DateTime.UtcNow;
-
-    await _repository.ReplaceAsync(existingUser);
+    if (result.MatchedCount == 0)
+    {
+      throw new KeyNotFoundException($"User with ID {userId} not found.");
+    }
   }
 
   public async Task<UserEntity?> GetUserByProviderIdAsync(string providerId)
@@ -130,7 +152,8 @@ public class UserService(IUserRepository repository) : IUserService
       Email = email,
       ProviderId = providerId,
       CreatedAt = now,
-      UpdatedAt = null
+      UpdatedAt = null,
+      VehicleIds = []
     };
 
     await _repository.CreateAsync(userEntity);

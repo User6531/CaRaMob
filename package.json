@@ -11,4 +11,3 @@
     "lint": "cd apps/Mobile && npm run lint"
   }
 }
-
