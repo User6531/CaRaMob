@@ -74,18 +74,36 @@ public interface IUserService
   /// Attach a new vehicle to user asynchronously.
   /// </summary>
   Task AttachVehicleAsync(Guid vehicleId, Guid userId);
+
+  /// <summary>
+  /// Detach a vehicle from user asynchronously.
+  /// </summary>
+  Task DetachVehicleAsync(Guid vehicleId, Guid userId);
 }
 
 public class UserService(IUserRepository repository) : IUserService
 {
   private readonly IUserRepository _repository = repository;
 
+  public async Task DetachVehicleAsync(Guid vehicleId, Guid userId)
+  {
+    var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, userId);
+    var update = Builders<UserEntity>.Update
+      .Pull(u => u.VehicleIds, vehicleId);
+
+    var result = await _repository.UpdateOneAsync(filter, update);
+
+    if (result.MatchedCount == 0)
+    {
+      throw new KeyNotFoundException($"User with ID {userId} not found.");
+    }
+  }
+
   public async Task AttachVehicleAsync(Guid vehicleId, Guid userId)
   {
     var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, userId);
     var update = Builders<UserEntity>.Update
-      .AddToSet(u => u.VehicleIds, vehicleId)
-      .Set(u => u.UpdatedAt, DateTime.UtcNow);
+      .AddToSet(u => u.VehicleIds, vehicleId);
 
     var result = await _repository.UpdateOneAsync(filter, update);
 

@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Arex388.NhtsaVpic.Extensions.Microsoft.DependencyInjection;
 using MainHub.Api.DTOs;
+using AspNetCore.Swagger.Themes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +54,7 @@ builder.Services.AddNhtsaVpic();
 // 🟦 Register FluentValidation validators
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateVehicleDto>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateVehicleDtoValidator>();
 
 // 🟦 Add controllers and Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -166,7 +168,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(Theme.Dark);
 }
 
 app.UseHttpsRedirection();

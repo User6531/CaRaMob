@@ -29,12 +29,90 @@ public static partial class VehicleEndpoints
     vehicles
       .MapGet("/", GetAllByUserAsync)
       .Produces<string>(StatusCodes.Status400BadRequest)
-      .Produces<List<VehicleDto>>(StatusCodes.Status200OK);
+      .Produces<List<VehicleListItemDto>>(StatusCodes.Status200OK);
+
+    vehicles
+      .MapGet("/{vehicleId}", GetVehicleByIdAsync)
+      .Produces<string>(StatusCodes.Status400BadRequest)
+      .Produces<VehicleDto>(StatusCodes.Status200OK);
+
+    vehicles
+      .MapDelete("/{vehicleId}", DeleteAsync)
+      .Produces(StatusCodes.Status204NoContent);
 
     vehicles
       .MapGet("/vin-decode/{vin}", DecodeVinAsync)
       .Produces<string>(StatusCodes.Status400BadRequest)
       .Produces<DecodeVinResponseDto>(StatusCodes.Status200OK);
+
+    vehicles
+      .MapPut("/{vehicleId}", UpdateAsync)
+      .Accepts<UpdateVehicleDto>(_contentType)
+      .AddEndpointFilter<ValidationFilter<UpdateVehicleDto>>()
+      .Produces(StatusCodes.Status201Created)
+      .Produces<string>(StatusCodes.Status400BadRequest)
+      .ProducesValidationProblem();
+  }
+
+  internal static async Task<IResult> GetVehicleByIdAsync(
+    Guid vehicleId,
+    ClaimsPrincipal userClaims,
+    IVehicleService vehicleService,
+    ITokenService tokenService,
+    ILogger<Program> logger
+  )
+  {
+    try
+    {
+      var userId = tokenService.GetUserIdFromClaims(userClaims);
+      var vehicle = await vehicleService.GetVehicleByIdAsync(vehicleId, userId);
+      return Results.Ok(vehicle);
+    }
+    catch (Exception ex)
+    {
+      return Results.BadRequest(ex.Message);
+    }
+  }
+
+  internal static async Task<IResult> UpdateAsync(
+    Guid vehicleId,
+    UpdateVehicleDto updateVehicleDto,
+    ClaimsPrincipal userClaims,
+    IVehicleService vehicleService,
+    ITokenService tokenService,
+    ILogger<Program> logger
+  )
+  {
+    try
+    {
+      var userId = tokenService.GetUserIdFromClaims(userClaims);
+      await vehicleService.UpdateAsync(vehicleId, updateVehicleDto, userId);
+      return Results.StatusCode(StatusCodes.Status201Created);
+    }
+    catch (Exception ex)
+    {
+      return Results.BadRequest(ex.Message);
+    }
+  }
+
+  internal static async Task<IResult> DeleteAsync(
+    Guid vehicleId,
+    ClaimsPrincipal userClaims,
+    IVehicleService vehicleService,
+    ITokenService tokenService,
+    ILogger<Program> logger
+  )
+  {
+    try
+    {
+      var userId = tokenService.GetUserIdFromClaims(userClaims);
+      await vehicleService.DeleteAsync(vehicleId, userId);
+      return Results.NoContent();
+    }
+    catch (Exception ex)
+    {
+      return Results.BadRequest(ex.Message);
+    }
   }
 
   internal static async Task<IResult> GetAllByUserAsync(

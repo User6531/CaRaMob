@@ -24,11 +24,27 @@ public interface IVehicleRepository
   Task<List<VehicleEntity>> GetByIdsAsync(List<Guid> ids);
 
   /// <summary>
-  /// Checks if a VIN already exists in the database asynchronously.
+  /// Retrieves vehicle entities by ID asynchronously.
   /// </summary>
-  /// <param name="vin">The VIN to check for duplicates.</param>
-  /// <returns>True if a duplicate VIN exists, false otherwise.</returns>
-  Task<bool> VinExistsAsync(string vin);
+  /// <param name="id">The unique identifier of the vehicle.</param>
+  Task<VehicleEntity> GetByIdAsync(Guid userId);
+
+  /// <summary>
+  /// Deletes a vehicle entity by its unique identifier asynchronously.
+  /// </summary>
+  /// <param name="vehicleId">The unique identifier of the vehicle to delete.</param>
+  Task DeleteAsync(Guid vehicleId);
+
+  /// <summary>
+  /// Updates a vehicle entity asynchronously.
+  /// </summary>
+  /// <param name="filter">The filter to locate the vehicle to update.</param>
+  /// <param name="update">The update definition containing the fields to update.</param>
+  /// <returns>A task that represents the asynchronous operation. The task result contains the update result.</returns>
+  Task<UpdateResult> UpdateOneAsync(
+    FilterDefinition<VehicleEntity> filter,
+    UpdateDefinition<VehicleEntity> update
+  );
 }
 
 public class VehicleRepository : IVehicleRepository
@@ -39,6 +55,20 @@ public class VehicleRepository : IVehicleRepository
   {
     var database = client.GetDatabase(settings.Value.DatabaseName);
     _vehicles = database.GetCollection<VehicleEntity>(settings.Value.VehicleCollectionName);
+  }
+
+  public async Task<VehicleEntity> GetByIdAsync(Guid id)
+  {
+    var filter = Builders<VehicleEntity>.Filter.Eq(v => v.Id, id);
+    return await _vehicles.Find(filter).FirstOrDefaultAsync();
+  }
+
+  public async Task<UpdateResult> UpdateOneAsync(
+    FilterDefinition<VehicleEntity> filter,
+    UpdateDefinition<VehicleEntity> update
+  )
+  {
+    return await _vehicles.UpdateOneAsync(filter, update);
   }
 
   public async Task<List<VehicleEntity>> GetByIdsAsync(List<Guid> ids)
@@ -52,10 +82,9 @@ public class VehicleRepository : IVehicleRepository
     await _vehicles.InsertOneAsync(vehicle);
   }
 
-  public async Task<bool> VinExistsAsync(string vin)
+  public async Task DeleteAsync(Guid vehicleId)
   {
-    var filter = Builders<VehicleEntity>.Filter.Eq(v => v.Vin, vin);
-    var existingVehicle = await _vehicles.Find(filter).FirstOrDefaultAsync();
-    return existingVehicle != null;
+    var filter = Builders<VehicleEntity>.Filter.Eq(v => v.Id, vehicleId);
+    await _vehicles.DeleteOneAsync(filter);
   }
 }

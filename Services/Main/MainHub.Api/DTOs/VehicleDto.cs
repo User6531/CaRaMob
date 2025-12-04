@@ -1,3 +1,5 @@
+using MainHub.Api.Shared;
+
 namespace MainHub.Api.DTOs
 {
   /// <summary>
@@ -8,12 +10,17 @@ namespace MainHub.Api.DTOs
     /// <summary>
     /// The unique identifier for the vehicle.
     /// </summary>
-    public required Guid Id { get; set; } 
+    public required Guid Id { get; set; }
 
     /// <summary>
     /// License Plate of the vehicle.
     /// </summary>
     public required string LicensePlate { get; set; }
+
+    /// <summary>
+    /// Vin number of the vehicle.
+    /// </summary>
+    public required string Vin { get; set; }
 
     /// <summary>
     /// Brand of the vehicle.
@@ -29,6 +36,56 @@ namespace MainHub.Api.DTOs
     /// The year when the Year of the vehicle.
     /// </summary>
     public required int Year { get; set; }
+
+    /// <summary>
+    /// The date and time when the vehicle was bought.
+    /// </summary>
+    public required DateTime? BoughtAt { get; set; } = null;
+
+    /// <summary>
+    /// The Wheel Drive Type of the vehicle.
+    /// </summary>
+    public required WheelDriveType WheelDriveType { get; set; }
+
+    /// <summary>
+    /// The Engine Capacity of the vehicle.
+    /// </summary>
+    public required int EngineCapacity { get; set; }
+
+    /// <summary>
+    /// The Fuel Type of the vehicle.
+    /// </summary>
+    public required FuelType FuelType { get; set; }
+
+    /// <summary>
+    /// The engine power of the vehicle in horsepower.
+    /// </summary>
+    public required int EnginePower { get; set; }
+
+    /// <summary>
+    /// The color of the vehicle.
+    /// </summary>
+    public required string Color { get; set; }
+
+    /// <summary>
+    /// The transmission type of the vehicle.
+    /// </summary>
+    public required TransmissionType TransmissionType { get; set; }
+
+    /// <summary>
+    /// The mileage of the vehicle.
+    /// </summary>
+    public required int Mileage { get; set; }
+
+    /// <summary>
+    /// The date and time when the vehicle was created.
+    /// </summary>
+    public required DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// The date and time when the vehicle was last modified.
+    /// </summary>
+    public required DateTime? UpdatedAt { get; set; } = null;
 
     /// <summary>
     /// The photo URL of the vehicle.
