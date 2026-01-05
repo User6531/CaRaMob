@@ -35,6 +35,33 @@ services:
     networks:
       - mainhub-network
 
+  mobile-expo:
+    build:
+      context: ../../apps/Mobile
+      dockerfile: Dockerfile
+    container_name: mobile-expo
+    restart: unless-stopped
+    environment:
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+      - EXPO_HOST=0.0.0.0      
+      - CI=0                    
+      - EXPO_PUBLIC_API_URL=http://mainhub-api:5001
+    ports:
+      - "8081:8081"   
+      - "19000:19000"
+      - "19001:19001" 
+      - "19002:19002" 
+    stdin_open: true
+    tty: true
+    depends_on:
+      - mainhub-api
+    networks:
+      - mainhub-network
+    command: npx expo start --tunnel --clear
+    volumes:
+      - ../../apps/Mobile:/app
+      - /app/node_modules
+
 volumes:
   mongodb_data:
 
