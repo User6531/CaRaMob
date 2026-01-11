@@ -1,17 +1,20 @@
-﻿FROM node:18-alpine
+# Use Node.js LTS version
+FROM node:20-alpine
 
+# Set working directory
 WORKDIR /app
 
-RUN apk add --no-cache bash
+# Copy package files
+COPY package*.json ./
 
-COPY package.json package-lock.json ./
+# Install dependencies
+RUN npm ci
 
-RUN npm install
-
-RUN npm install -g @expo/ngrok@4.1.0
-
+# Copy application files
 COPY . .
 
-EXPOSE 8081 19000 19001 19002
+# Expose Metro bundler ports
+EXPOSE 8081 
 
-CMD ["npx", "expo", "start", "--tunnel", "--clear"]
+# Start Expo using the Docker script from package.json
+CMD npm run start:docker
