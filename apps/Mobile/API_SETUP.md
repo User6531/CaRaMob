@@ -26,6 +26,34 @@ BASE_URL: 'https://kivvo3k-bublick-8082.exp.direct/api'
 
 ### 3. Запуск локального API сервера
 
+#### Варіант A: Запуск через Docker (Рекомендовано)
+
+1. Запустіть всі сервіси через Docker Compose:
+```bash
+cd infrastructure/docker
+docker-compose up -d
+```
+
+2. Перевірте що сервер працює:
+```bash
+curl http://localhost:5001/api/users/me
+```
+
+3. Metro Bundler буде доступний на `http://localhost:8081`
+
+**Налаштування API URL для реального пристрою:**
+Якщо ви підключаєтеся з реального пристрою, вам потрібно налаштувати API URL на IP адресу вашого хоста:
+
+```bash
+# Дізнайтеся IP адресу хоста (Windows)
+ipconfig
+
+# Потім оновіть EXPO_PUBLIC_API_URL в docker-compose.yml або запустіть:
+docker-compose up -d --env EXPO_PUBLIC_API_URL=http://<YOUR_IP>:5001/api mobile
+```
+
+#### Варіант B: Запуск без Docker
+
 1. Перейдіть в папку з API сервером:
 ```bash
 cd Services/Main/MainHub.Api

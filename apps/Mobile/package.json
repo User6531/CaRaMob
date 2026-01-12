@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "expo start --tunnel --port 8082",
+    "start:docker": "expo start --lan --port 8081 --clear",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android --port 8082",
     "ios": "expo start --ios --port 8082",
