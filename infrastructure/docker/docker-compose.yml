@@ -35,6 +35,25 @@ services:
     networks:
       - mainhub-network
 
+  expo-mobile:
+    build:
+      context: ../../apps/Mobile
+      dockerfile: Dockerfile
+    container_name: expo-mobile
+    volumes:
+      - ../../apps/Mobile:/app
+      - /app/node_modules
+    ports:
+      - "8082:8082"
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
+    environment:
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+    stdin_open: true
+    tty: true
+    command: npm start
+
 volumes:
   mongodb_data:
 
