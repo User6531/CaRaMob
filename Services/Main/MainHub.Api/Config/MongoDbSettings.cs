@@ -24,5 +24,8 @@ namespace MainHub.Api.Config
     /// Gets or sets the name of the collection that stores vehicle data.
     /// </summary>
     public string VehicleCollectionName { get; set; } = null!;
-  }
+
+    public string ServiceHistoryCollectionName { get; set; } = null!;
+
+    }
 }

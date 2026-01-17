@@ -13,13 +13,13 @@ namespace MainHub.Api.Models
         /// </summary>
         [BsonId]
         [BsonRepresentation(BsonType.String)]
-        public required string Id { get; set; }
+        public required Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier of the vehicle associated with this service record.
         /// </summary>
         [BsonElement("vehicleId")]
-        public required string VehicleId { get; set; }
+        public required Guid VehicleId { get; set; }
 
         /// <summary>
         /// Gets or sets the title or name of the service performed.

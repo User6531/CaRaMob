@@ -48,6 +48,8 @@ builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IServiceHistoryRepository, ServiceHistoryRepository>();
+
 
 builder.Services.AddNhtsaVpic();
 
