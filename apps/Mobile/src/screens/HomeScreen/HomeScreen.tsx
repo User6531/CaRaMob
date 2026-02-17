@@ -1,23 +1,35 @@
 import React from "react";
-import { Text, View, TouchableOpacity, ScrollView, Image } from "react-native";
-import { useCar, Car } from "../../context/CarContext";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { useStatusBar } from "../../hooks/useStatusBar";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./HomeScreen.styles";
 import { HomeScreenProps } from "../../navigation/types";
+import { useVehicles } from "../../queries";
+import { useTheme } from "../../hooks/useTheme";
+import type { VehicleListItem } from "../../types/api";
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
-  const { cars } = useCar();
+  useStatusBar();
+  const theme = useTheme();
+  const { data: vehicles = [], isLoading, isError, error, refetch, isRefetching } = useVehicles();
 
-  const renderCarCard = ({ item }: { item: Car }) => (
+  const renderCarCard = ({ item }: { item: VehicleListItem }) => (
     <View style={styles.carCard}>
       <TouchableOpacity
         style={styles.carCardContent}
         onPress={() => navigation.navigate("CarDetails", { carId: item.id })}
       >
         <View style={styles.carImageContainer}>
-          {item.carImage ? (
-            <Image source={{ uri: item.carImage }} style={styles.carImage} />
+          {item.photoUrl ? (
+            <Image source={{ uri: item.photoUrl }} style={styles.carImage} />
           ) : (
             <View style={styles.placeholderImage}>
               <Text style={styles.placeholderText}>🚗</Text>
@@ -53,9 +65,53 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     </TouchableOpacity>
   );
 
+  if (isLoading && !vehicles.length) {
+    return (
+      <>
+        <View
+          style={[
+            globalStyles.container,
+            globalStyles.pageBackground,
+            globalStyles.loadingContainer,
+          ]}
+        >
+          <ActivityIndicator size="large" color={theme.colors.accent.primary} />
+          <Text style={globalStyles.loadingText}>Завантаження автомобілів...</Text>
+        </View>
+      </>
+    );
+  }
+
+  if (isError) {
+    return (
+      <>
+        <View style={[globalStyles.container, globalStyles.pageBackground]}>
+          <View style={styles.header}>
+            <Text style={[globalStyles.textLarge, styles.title]}>
+              Ласкаво просимо до CARa 🚗
+            </Text>
+          </View>
+          <View style={styles.errorStateContainer}>
+            <Text style={[globalStyles.textPrimary, styles.errorMessage]}>
+              Не вдалося завантажити список авто
+            </Text>
+            <Text style={globalStyles.textSecondary}>
+              {error instanceof Error ? error.message : "Помилка мережі"}
+            </Text>
+            <TouchableOpacity
+              style={[globalStyles.buttonPrimary, styles.retryButtonMargin]}
+              onPress={() => refetch()}
+            >
+              <Text style={globalStyles.buttonPrimaryText}>Повторити</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
-      {useStatusBar()}
       <View style={[globalStyles.container, globalStyles.pageBackground]}>
         <View style={styles.header}>
           <Text style={[globalStyles.textLarge, styles.title]}>
@@ -73,10 +129,17 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.carsList}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching && vehicles.length > 0}
+                onRefresh={refetch}
+                colors={[theme.colors.accent.primary]}
+              />
+            }
           >
-            {cars.map((car) => (
-              <View key={car.id} style={styles.carCardWrapper}>
-                {renderCarCard({ item: car })}
+            {vehicles.map((vehicle) => (
+              <View key={vehicle.id} style={styles.carCardWrapper}>
+                {renderCarCard({ item: vehicle })}
               </View>
             ))}
             <View style={styles.carCardWrapper}>{renderEmptyCard()}</View>

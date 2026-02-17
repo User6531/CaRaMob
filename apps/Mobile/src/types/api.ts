@@ -75,3 +75,85 @@ export interface UpdateCarDto {
   year?: number;
   color?: string;
 }
+
+// Vehicle list item (GET /api/vehicles) - matches backend VehicleListItemDto
+export interface VehicleListItem {
+  id: string;
+  licensePlate: string;
+  brand: string;
+  model: string;
+  year: number;
+  photoUrl: string | null;
+}
+
+// Full vehicle (GET /api/vehicles/{id}) - matches backend VehicleDto
+export interface VehicleDto {
+  id: string;
+  licensePlate: string;
+  vin: string;
+  brand: string;
+  model: string;
+  year: number;
+  boughtAt: string | null;
+  wheelDriveType: WheelDriveType;
+  engineCapacity: number;
+  fuelType: FuelType;
+  enginePower: number;
+  color: string;
+  transmissionType: TransmissionType;
+  mileage: number;
+  createdAt: string;
+  updatedAt: string | null;
+  photoUrl: string | null;
+}
+
+// Vehicle API (POST /api/vehicles) - matches backend CreateVehicleDto
+export enum WheelDriveType {
+  FWD = 0,
+  RWD = 1,
+  AWD = 2,
+  FourWD = 3,
+}
+
+export enum FuelType {
+  Gasoline = 0,
+  Diesel = 1,
+  Electric = 2,
+  Hybrid = 3,
+  PlugInHybrid = 4,
+  Hydrogen = 5,
+}
+
+export enum TransmissionType {
+  Manual = 0,
+  Automatic = 1,
+  CVT = 2,
+  SemiAutomatic = 3,
+  DualClutch = 4,
+}
+
+export interface CreateVehicleDto {
+  licensePlate: string;
+  vin: string;
+  brand: string;
+  model: string;
+  year: number;
+  boughtAt: string | null;
+  wheelDriveType: WheelDriveType;
+  engineCapacity: number;
+  fuelType: FuelType;
+  enginePower: number;
+  color: string;
+  transmissionType: TransmissionType;
+  mileage: number;
+  photoUrl?: string | null;
+}
+
+// PUT /api/vehicles/{id} - matches backend UpdateVehicleDto
+export interface UpdateVehicleDto {
+  licensePlate?: string | null;
+  boughtAt?: string | null;
+  color?: string | null;
+  mileage?: number | null;
+  photoUrl?: string | null;
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,31 +6,57 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
+  StyleSheet,
 } from "react-native";
-import { useCar } from "../../context/CarContext";
 import { useTheme } from "../../hooks/useTheme";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarDetailsScreen.styles";
 import { CarDetailsScreenProps } from "../../navigation/types";
+import { useVehicle, useDeleteVehicle } from "../../queries";
+import {
+  FuelType,
+  TransmissionType,
+  WheelDriveType,
+} from "../../types/api";
+
+const FUEL_LABELS: Record<FuelType, string> = {
+  [FuelType.Gasoline]: "Бензин",
+  [FuelType.Diesel]: "Дизель",
+  [FuelType.Electric]: "Електро",
+  [FuelType.Hybrid]: "Гібрид",
+  [FuelType.PlugInHybrid]: "Плагін-гібрид",
+  [FuelType.Hydrogen]: "Водень",
+};
+
+const TRANSMISSION_LABELS: Record<TransmissionType, string> = {
+  [TransmissionType.Manual]: "Механіка",
+  [TransmissionType.Automatic]: "Автомат",
+  [TransmissionType.CVT]: "CVT",
+  [TransmissionType.SemiAutomatic]: "Робот",
+  [TransmissionType.DualClutch]: "Преселективна",
+};
+
+const WHEEL_DRIVE_LABELS: Record<WheelDriveType, string> = {
+  [WheelDriveType.FWD]: "Передній (FWD)",
+  [WheelDriveType.RWD]: "Задній (RWD)",
+  [WheelDriveType.AWD]: "Повний (AWD)",
+  [WheelDriveType.FourWD]: "4WD",
+};
+
+const errorBlockStyles = StyleSheet.create({
+  errorMessage: { marginBottom: 12 },
+  retryButtonMargin: { marginTop: 16 },
+});
 
 export default function CarDetailsScreen({
   navigation,
   route,
 }: CarDetailsScreenProps) {
-  const { getCarById, deleteCar } = useCar();
   const theme = useTheme();
   const { carId } = route.params;
-  const [car, setCar] = useState<any>(null);
-
-  useEffect(() => {
-    const carData = getCarById(carId);
-    if (carData) {
-      setCar(carData);
-    } else {
-      Alert.alert("Помилка", "Автомобіль не знайдено");
-      navigation.goBack();
-    }
-  }, [carId, getCarById, navigation]);
+  const { data: car, isLoading, isError, error } = useVehicle(carId);
+  const deleteVehicle = useDeleteVehicle();
 
   const handleEdit = () => {
     navigation.navigate("CarEdit", { carId });
@@ -48,16 +74,23 @@ export default function CarDetailsScreen({
         {
           text: "Видалити",
           style: "destructive",
-          onPress: () => {
-            deleteCar(carId);
-            navigation.navigate("Home");
+          onPress: async () => {
+            try {
+              await deleteVehicle.mutateAsync(carId);
+              navigation.navigate("Home");
+            } catch (e) {
+              Alert.alert(
+                "Помилка",
+                e instanceof Error ? e.message : "Не вдалося видалити автомобіль"
+              );
+            }
           },
         },
       ]
     );
   };
 
-  if (!car) {
+  if (isLoading || !car) {
     return (
       <View
         style={[
@@ -66,7 +99,39 @@ export default function CarDetailsScreen({
           globalStyles.loadingContainer,
         ]}
       >
-        <Text style={globalStyles.loadingText}>Завантаження...</Text>
+        {isLoading ? (
+          <>
+            <ActivityIndicator size="large" color={theme.colors.accent.primary} />
+            <Text style={globalStyles.loadingText}>Завантаження...</Text>
+          </>
+        ) : (
+          <Text style={globalStyles.loadingText}>Автомобіль не знайдено</Text>
+        )}
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View
+        style={[
+          globalStyles.container,
+          globalStyles.pageBackground,
+          globalStyles.loadingContainer,
+        ]}
+      >
+        <Text style={[globalStyles.textPrimary, errorBlockStyles.errorMessage]}>
+          Не вдалося завантажити дані
+        </Text>
+        <Text style={globalStyles.textSecondary}>
+          {error instanceof Error ? error.message : "Помилка мережі"}
+        </Text>
+        <TouchableOpacity
+          style={[globalStyles.buttonPrimary, errorBlockStyles.retryButtonMargin]}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={globalStyles.buttonPrimaryText}>Назад</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -75,8 +140,8 @@ export default function CarDetailsScreen({
     <ScrollView style={[globalStyles.container, globalStyles.pageBackground]}>
       {/* Car Image */}
       <View style={styles.imageContainer}>
-        {car.carImage ? (
-          <Image source={{ uri: car.carImage }} style={styles.carImage} />
+        {car.photoUrl ? (
+          <Image source={{ uri: car.photoUrl }} style={styles.carImage} />
         ) : (
           <View style={styles.placeholderImage}>
             <Text style={styles.placeholderText}>🚗</Text>
@@ -152,13 +217,82 @@ export default function CarDetailsScreen({
             </Text>
           </View>
 
-          {car.vin && (
+          <View style={styles.detailRow}>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
+              VIN номер:
+            </Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>
+              {car.vin}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
+              Пробіг:
+            </Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>
+              {car.mileage.toLocaleString("uk-UA")} км
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
+              Потужність:
+            </Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>
+              {car.enginePower} к.с.
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
+              Об&apos;єм двигуна:
+            </Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>
+              {car.engineCapacity / 1000} л
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
+              Тип палива:
+            </Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>
+              {FUEL_LABELS[car.fuelType as FuelType] ?? car.fuelType}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
+              Коробка передач:
+            </Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>
+              {TRANSMISSION_LABELS[car.transmissionType as TransmissionType] ??
+                car.transmissionType}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
+              Привід:
+            </Text>
+            <Text style={[globalStyles.textPrimary, styles.detailValue]}>
+              {WHEEL_DRIVE_LABELS[car.wheelDriveType as WheelDriveType] ??
+                car.wheelDriveType}
+            </Text>
+          </View>
+
+          {car.boughtAt && (
             <View style={styles.detailRow}>
               <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
-                VIN номер:
+                Дата купівлі:
               </Text>
               <Text style={[globalStyles.textPrimary, styles.detailValue]}>
-                {car.vin}
+                {new Date(car.boughtAt).toLocaleDateString("uk-UA", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
               </Text>
             </View>
           )}
@@ -180,7 +314,7 @@ export default function CarDetailsScreen({
             </Text>
           </View>
 
-          {car.updatedAt && car.updatedAt !== car.createdAt && (
+          {car.updatedAt && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Оновлено:</Text>
               <Text style={styles.detailValue}>
@@ -209,8 +343,11 @@ export default function CarDetailsScreen({
         <TouchableOpacity
           style={globalStyles.buttonDanger}
           onPress={handleDelete}
+          disabled={deleteVehicle.isPending}
         >
-          <Text style={globalStyles.buttonDangerText}>🗑️ Видалити</Text>
+          <Text style={globalStyles.buttonDangerText}>
+            {deleteVehicle.isPending ? "..." : "🗑️ Видалити"}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

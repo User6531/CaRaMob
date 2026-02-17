@@ -8,4 +8,8 @@ export const queryKeys = {
   cars: ["cars"] as const,
   car: (id: string) => ["cars", id] as const,
   userCars: (userId: string) => ["users", userId, "cars"] as const,
+
+  // Vehicle queries (GET /api/vehicles)
+  vehicles: ["vehicles"] as const,
+  vehicle: (id: string) => ["vehicles", id] as const,
 } as const;

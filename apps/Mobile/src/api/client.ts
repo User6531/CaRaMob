@@ -147,6 +147,10 @@ export class ApiClient {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
+    // 204 No Content — тіла немає, не викликаємо .json()
+    if (response.status === 204) {
+      return {} as T;
+    }
     return response.json();
   }
 }

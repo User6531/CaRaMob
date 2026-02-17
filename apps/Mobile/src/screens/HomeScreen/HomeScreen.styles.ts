@@ -170,4 +170,16 @@ export const styles = StyleSheet.create({
     paddingTop: 20,
     alignItems: "center",
   },
+  errorStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  errorMessage: {
+    marginBottom: 12,
+  },
+  retryButtonMargin: {
+    marginTop: 16,
+  },
 });

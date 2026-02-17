@@ -11,20 +11,29 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
-import { useCar } from "../../context/CarContext";
+import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../hooks/useTheme";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarCardScreen.styles";
 import { CarCardScreenProps } from "../../navigation/types";
-// import { VinDecoder } from "../../components/VinDecoder";
 import { Select, SelectOption } from "../../components/Select";
 import {
   getAllMakes,
   getModelsForMakeId,
   generateYearOptions,
-  getVariableValues,
 } from "../../api/services/nhtsaService";
+import { useQueryClient } from "@tanstack/react-query";
+import { createApiClient } from "../../api/client";
+import { ENDPOINTS } from "../../config/api";
+import { queryKeys } from "../../queries/queryKeys";
+import {
+  CreateVehicleDto,
+  FuelType,
+  TransmissionType,
+  WheelDriveType,
+} from "../../types/api";
 
 const COLOR_OPTIONS: SelectOption[] = [
   { label: "Чорний", value: "black" },
@@ -46,21 +55,34 @@ const BODY_CLASS_OPTIONS: SelectOption[] = [
   { label: "Pickup", value: "Pickup" },
 ];
 
+// Відповідають enum FuelType на бекенді (0–5)
 const FUEL_TYPE_OPTIONS: SelectOption[] = [
-  { label: "Gasoline", value: "Gasoline" },
-  { label: "Diesel", value: "Diesel" },
-  { label: "LPG (Liquefied Petroleum Gas)", value: "LPG" },
-  { label: "CNG (Compressed Natural Gas)", value: "CNG" },
-  { label: "LPG + Petrol (Bi-Fuel)", value: "LPG + Petrol" },
-  { label: "CNG + Petrol (Bi-Fuel)", value: "CNG + Petrol" },
-  { label: "Hybrid (HEV)", value: "Hybrid" },
-  { label: "Plug-in Hybrid (PHEV)", value: "Plug-in Hybrid" },
-  { label: "Mild Hybrid (MHEV)", value: "Mild Hybrid" },
-  { label: "Electric", value: "Electric" },
+  { label: "Бензин", value: FuelType.Gasoline },
+  { label: "Дизель", value: FuelType.Diesel },
+  { label: "Електро", value: FuelType.Electric },
+  { label: "Гібрид", value: FuelType.Hybrid },
+  { label: "Плагін-гібрид", value: FuelType.PlugInHybrid },
+  { label: "Водень", value: FuelType.Hydrogen },
+];
+
+const TRANSMISSION_API_OPTIONS: SelectOption[] = [
+  { label: "Механіка", value: TransmissionType.Manual },
+  { label: "Автомат", value: TransmissionType.Automatic },
+  { label: "CVT", value: TransmissionType.CVT },
+  { label: "Робот", value: TransmissionType.SemiAutomatic },
+  { label: "Преселективна", value: TransmissionType.DualClutch },
+];
+
+const WHEEL_DRIVE_API_OPTIONS: SelectOption[] = [
+  { label: "Передній (FWD)", value: WheelDriveType.FWD },
+  { label: "Задній (RWD)", value: WheelDriveType.RWD },
+  { label: "Повний (AWD)", value: WheelDriveType.AWD },
+  { label: "4WD", value: WheelDriveType.FourWD },
 ];
 
 export default function CarCardScreen({ navigation }: CarCardScreenProps) {
-  const { addCar } = useCar();
+  const { getAccessToken } = useAuth();
+  const queryClient = useQueryClient();
   const theme = useTheme();
   const [carImage, setCarImage] = useState<string | null>(null);
   const [brand, setBrand] = useState<string | number | undefined>(undefined);
@@ -70,18 +92,20 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   const [licensePlate, setLicensePlate] = useState("");
   const [vin, setVin] = useState("");
   const [bodyClass, setBodyClass] = useState<string | number | undefined>(undefined);
-  const [fuelType, setFuelType] = useState<string | number | undefined>(undefined);
+  const [fuelType, setFuelType] = useState<number | undefined>(undefined);
   const [displacement, setDisplacement] = useState("");
-  const [transmission, setTransmission] = useState<string | number | undefined>(undefined);
-  const [driveType, setDriveType] = useState<string | number | undefined>(undefined);
+  const [transmission, setTransmission] = useState<number | undefined>(undefined);
+  const [driveType, setDriveType] = useState<number | undefined>(undefined);
+  const [boughtAt, setBoughtAt] = useState<Date | null>(null);
+  const [showBoughtAtPicker, setShowBoughtAtPicker] = useState(false);
+  const [mileage, setMileage] = useState("");
+  const [enginePower, setEnginePower] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // NHTSA API дані
   const [brandOptions, setBrandOptions] = useState<SelectOption[]>([]);
   const [modelOptions, setModelOptions] = useState<SelectOption[]>([]);
   const [yearOptions] = useState<SelectOption[]>(generateYearOptions());
-  const [transmissionOptions, setTransmissionOptions] = useState<SelectOption[]>([]);
-  const [driveTypeOptions, setDriveTypeOptions] = useState<SelectOption[]>([]);
   const [isLoadingBrands, setIsLoadingBrands] = useState(false);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
 
@@ -108,29 +132,6 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
     };
 
     loadBrands();
-  }, []);
-
-  // Завантаження опцій для нових полів
-  useEffect(() => {
-    const loadOptions = async () => {
-      try {
-        // Завантажуємо опції для коробки передач
-        const transmissions = await getVariableValues("Transmission Style");
-        setTransmissionOptions(
-          transmissions.map((item) => ({ label: item, value: item }))
-        );
-
-        // Завантажуємо опції для приводу
-        const driveTypes = await getVariableValues("Drive Type");
-        setDriveTypeOptions(
-          driveTypes.map((item) => ({ label: item, value: item }))
-        );
-      } catch (error) {
-        console.error("Error loading options:", error);
-      }
-    };
-
-    loadOptions();
   }, []);
 
   // Завантаження моделей при зміні марки
@@ -274,7 +275,10 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
       color !== undefined ||
       licensePlate.trim() ||
       vin.trim() ||
-      carImage;
+      carImage ||
+      mileage.trim() !== "" ||
+      enginePower.trim() !== "" ||
+      boughtAt !== null;
 
     if (hasData) {
       Alert.alert(
@@ -318,57 +322,99 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
       Alert.alert("Помилка", "Будь ласка, введи номерний знак");
       return;
     }
+    if (vin.trim().length !== 0 && vin.trim().length !== 17) {
+      Alert.alert("Помилка", "VIN має містити рівно 17 символів");
+      return;
+    }
+    if (!vin.trim()) {
+      Alert.alert("Помилка", "Будь ласка, введи VIN номер (17 символів)");
+      return;
+    }
+    if (fuelType === undefined) {
+      Alert.alert("Помилка", "Будь ласка, вибери тип палива");
+      return;
+    }
+    if (transmission === undefined) {
+      Alert.alert("Помилка", "Будь ласка, вибери коробку передач");
+      return;
+    }
+    if (driveType === undefined) {
+      Alert.alert("Помилка", "Будь ласка, вибери тип приводу");
+      return;
+    }
+    const displacementNum = displacement.trim() ? parseFloat(displacement.replace(",", ".")) : 0;
+    if (!displacement.trim() || isNaN(displacementNum) || displacementNum <= 0) {
+      Alert.alert("Помилка", "Введіть об'єм двигуна в літрах (наприклад 2.0)");
+      return;
+    }
+    const engineCapacityCc = Math.round(displacementNum * 1000);
+    if (engineCapacityCc <= 0 || engineCapacityCc > 10000) {
+      Alert.alert("Помилка", "Об'єм двигуна має бути від 0.001 до 10 л");
+      return;
+    }
+    const mileageNum = parseInt(mileage.trim(), 10);
+    if (mileage.trim() === "" || isNaN(mileageNum) || mileageNum < 0) {
+      Alert.alert("Помилка", "Введіть пробіг (км)");
+      return;
+    }
+    if (mileageNum > 1000000) {
+      Alert.alert("Помилка", "Пробіг не може перевищувати 1 000 000 км");
+      return;
+    }
+    const enginePowerNum = parseInt(enginePower.trim(), 10);
+    if (!enginePower.trim() || isNaN(enginePowerNum) || enginePowerNum <= 0) {
+      Alert.alert("Помилка", "Введіть потужність двигуна (к.с.)");
+      return;
+    }
+    if (enginePowerNum > 1000) {
+      Alert.alert("Помилка", "Потужність не може перевищувати 1000 к.с.");
+      return;
+    }
 
     try {
       setIsLoading(true);
 
-      // Отримуємо label для збереження
       const brandLabel =
         brandOptions.find((opt) => opt.value === brand)?.label || String(brand);
       const modelLabel =
         modelOptions.find((opt) => opt.value === model)?.label || String(model);
-      const yearLabel =
-        yearOptions.find((opt) => opt.value === year)?.label || String(year);
+      const yearNum = typeof year === "number" ? year : parseInt(String(year), 10);
       const colorLabel =
         COLOR_OPTIONS.find((opt) => opt.value === color)?.label ||
         String(color);
-      const bodyClassLabel =
-        BODY_CLASS_OPTIONS.find((opt) => opt.value === bodyClass)?.label ||
-        String(bodyClass || "");
-      const fuelTypeLabel =
-        FUEL_TYPE_OPTIONS.find((opt) => opt.value === fuelType)?.label ||
-        String(fuelType || "");
-      const transmissionLabel =
-        transmissionOptions.find((opt) => opt.value === transmission)?.label ||
-        String(transmission || "");
-      const driveTypeLabel =
-        driveTypeOptions.find((opt) => opt.value === driveType)?.label ||
-        String(driveType || "");
 
-      addCar({
+      const dto: CreateVehicleDto = {
+        licensePlate: licensePlate.trim(),
+        vin: vin.trim(),
         brand: brandLabel,
         model: modelLabel,
-        year: yearLabel,
+        year: yearNum,
+        boughtAt: boughtAt ? boughtAt.toISOString() : null,
+        wheelDriveType: driveType as WheelDriveType,
+        engineCapacity: engineCapacityCc,
+        fuelType: fuelType as FuelType,
+        enginePower: enginePowerNum,
         color: colorLabel,
-        licensePlate,
-        vin,
-        carImage,
-        bodyClass: bodyClassLabel,
-        fuelType: fuelTypeLabel,
-        displacement,
-        transmission: transmissionLabel,
-        driveType: driveTypeLabel,
-      });
+        transmissionType: transmission as TransmissionType,
+        mileage: mileageNum,
+        photoUrl: carImage && (carImage.startsWith("http") ? carImage : null) ? carImage : null,
+      };
 
-      Alert.alert("Успішно!", "Картка автомобіля створена", [
+      const apiClient = createApiClient(getAccessToken);
+      await apiClient.post<unknown>(ENDPOINTS.VEHICLES, dto);
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.vehicles });
+
+      Alert.alert("Успішно!", "Автомобіль додано в базу", [
         {
           text: "OK",
           onPress: () => navigation.navigate("Home"),
         },
       ]);
     } catch (error) {
-      console.error("Error saving car:", error);
-      Alert.alert("Помилка", "Не вдалося зберегти дані");
+      console.error("Error saving vehicle:", error);
+      const message = error instanceof Error ? error.message : "Не вдалося зберегти дані";
+      Alert.alert("Помилка", message);
     } finally {
       setIsLoading(false);
     }
@@ -507,16 +553,83 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
           {/* VIN Field */}
           <View style={styles.inputContainer}>
             <Text style={[globalStyles.textPrimary, styles.label]}>
-              VIN номер
+              VIN номер *
             </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
               value={vin}
               onChangeText={setVin}
-              placeholder="17-значний VIN номер (необов'язково)"
+              placeholder="17 символів (обов'язково)"
               placeholderTextColor={theme.colors.special.placeholder}
               autoCapitalize="characters"
               maxLength={17}
+            />
+          </View>
+
+          {/* Date bought */}
+          <View style={styles.inputContainer}>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Дата купівлі
+            </Text>
+            <TouchableOpacity
+              style={[globalStyles.input, styles.input]}
+              onPress={() => setShowBoughtAtPicker(true)}
+            >
+              <Text
+                style={
+                  boughtAt
+                    ? [globalStyles.textPrimary, { paddingVertical: 12 }]
+                    : [
+                        { color: theme.colors.special.placeholder, paddingVertical: 12 },
+                      ]
+                }
+              >
+                {boughtAt
+                  ? boughtAt.toLocaleDateString("uk-UA")
+                  : "Оберіть дату (необов'язково)"}
+              </Text>
+            </TouchableOpacity>
+            {showBoughtAtPicker && (
+              <DateTimePicker
+                value={boughtAt ?? new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                maximumDate={new Date()}
+                onChange={(_, date) => {
+                  setShowBoughtAtPicker(Platform.OS === "ios");
+                  if (date) setBoughtAt(date);
+                }}
+              />
+            )}
+          </View>
+
+          {/* Mileage */}
+          <View style={styles.inputContainer}>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Пробіг (км) *
+            </Text>
+            <TextInput
+              style={[globalStyles.input, styles.input]}
+              value={mileage}
+              onChangeText={setMileage}
+              placeholder="Наприклад: 50000"
+              placeholderTextColor={theme.colors.special.placeholder}
+              keyboardType="number-pad"
+            />
+          </View>
+
+          {/* Engine power */}
+          <View style={styles.inputContainer}>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Потужність двигуна (к.с.) *
+            </Text>
+            <TextInput
+              style={[globalStyles.input, styles.input]}
+              value={enginePower}
+              onChangeText={setEnginePower}
+              placeholder="Наприклад: 150"
+              placeholderTextColor={theme.colors.special.placeholder}
+              keyboardType="number-pad"
             />
           </View>
 
@@ -531,17 +644,17 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* Fuel Type Field */}
           <Select
-            label="Тип палива"
+            label="Тип палива *"
             options={FUEL_TYPE_OPTIONS}
             value={fuelType}
-            onValueChange={setFuelType}
+            onValueChange={(v) => setFuelType(v as number)}
             placeholder="Виберіть тип палива"
           />
 
           {/* Displacement Field */}
           <View style={styles.inputContainer}>
             <Text style={[globalStyles.textPrimary, styles.label]}>
-              Об&apos;єм двигуна (л)
+              Об&apos;єм двигуна (л) *
             </Text>
             <TextInput
               style={[globalStyles.input, styles.input]}
@@ -555,19 +668,19 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {/* Transmission Field */}
           <Select
-            label="Коробка передач"
-            options={transmissionOptions}
+            label="Коробка передач *"
+            options={TRANSMISSION_API_OPTIONS}
             value={transmission}
-            onValueChange={setTransmission}
+            onValueChange={(v) => setTransmission(v as number)}
             placeholder="Виберіть коробку передач"
           />
 
           {/* Drive Type Field */}
           <Select
-            label="Привід"
-            options={driveTypeOptions}
+            label="Привід *"
+            options={WHEEL_DRIVE_API_OPTIONS}
             value={driveType}
-            onValueChange={setDriveType}
+            onValueChange={(v) => setDriveType(v as number)}
             placeholder="Виберіть тип приводу"
           />
 

@@ -24,4 +24,8 @@ export const ENDPOINTS = {
   CARS: "/cars",
   CAR_BY_ID: (id: string) => `/cars/${id}`,
   USER_CARS: (userId: string) => `/users/${userId}/cars`,
+
+  // Vehicle endpoints (backend /api/vehicles)
+  VEHICLES: "/vehicles",
+  VEHICLE_BY_ID: (id: string) => `/vehicles/${id}`,
 } as const;

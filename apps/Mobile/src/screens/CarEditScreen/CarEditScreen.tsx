@@ -11,88 +11,96 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
-import { useCar, Car } from "../../context/CarContext";
 import { useTheme } from "../../hooks/useTheme";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarEditScreen.styles";
 import { CarEditScreenProps } from "../../navigation/types";
+import { Select, SelectOption } from "../../components/Select";
+import { useVehicle, useUpdateVehicle, useDeleteVehicle } from "../../queries";
+
+const COLOR_OPTIONS: SelectOption[] = [
+  { label: "Чорний", value: "black" },
+  { label: "Білий", value: "white" },
+  { label: "Сірий", value: "gray" },
+  { label: "Сріблястий", value: "silver" },
+  { label: "Червоний", value: "red" },
+];
 
 export default function CarEditScreen({
   navigation,
   route,
 }: CarEditScreenProps) {
-  const { getCarById, updateCar, deleteCar } = useCar();
   const theme = useTheme();
   const { carId } = route.params;
+  const { data: vehicle, isLoading: isLoadingVehicle, isError, error } = useVehicle(carId);
+  const updateVehicle = useUpdateVehicle();
+  const deleteVehicle = useDeleteVehicle();
 
-  const [carImage, setCarImage] = useState<string | null>(null);
-  const [brand, setBrand] = useState("");
-  const [model, setModel] = useState("");
-  const [year, setYear] = useState("");
-  const [color, setColor] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
-  const [vin, setVin] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [boughtAt, setBoughtAt] = useState<Date | null>(null);
+  const [showBoughtAtPicker, setShowBoughtAtPicker] = useState(false);
+  const [color, setColor] = useState<string | number | undefined>(undefined);
+  const [mileage, setMileage] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const car = getCarById(carId);
-    if (car) {
-      setCarImage(car.carImage);
-      setBrand(car.brand);
-      setModel(car.model);
-      setYear(car.year);
-      setColor(car.color);
-      setLicensePlate(car.licensePlate);
-      setVin(car.vin);
-    }
-  }, [carId, getCarById]);
+    if (!vehicle) return;
+    setLicensePlate(vehicle.licensePlate);
+    setBoughtAt(vehicle.boughtAt ? new Date(vehicle.boughtAt) : null);
+    setMileage(String(vehicle.mileage));
+    setPhotoUrl(vehicle.photoUrl);
+    const colorOption = COLOR_OPTIONS.find((o) => o.label === vehicle.color);
+    setColor(colorOption ? colorOption.value : undefined);
+  }, [vehicle]);
 
   const pickImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       Alert.alert("Дозвіл потрібен", "Потрібен дозвіл для доступу до галереї!");
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [16, 9],
       quality: 1,
     });
-
     if (!result.canceled) {
-      setCarImage(result.assets[0].uri);
+      setPhotoUrl(result.assets[0].uri);
     }
   };
 
-  const handleCancel = () => {
-    const hasChanges =
-      brand !== getCarById(carId)?.brand ||
-      model !== getCarById(carId)?.model ||
-      year !== getCarById(carId)?.year ||
-      color !== getCarById(carId)?.color ||
-      licensePlate !== getCarById(carId)?.licensePlate ||
-      vin !== getCarById(carId)?.vin ||
-      carImage !== getCarById(carId)?.carImage;
+  const getInitialBoughtAt = () => (vehicle?.boughtAt ? new Date(vehicle.boughtAt) : null);
+  const getInitialMileage = () => (vehicle ? String(vehicle.mileage) : "");
+  const getInitialColor = () => {
+    if (!vehicle?.color) return undefined;
+    const opt = COLOR_OPTIONS.find((o) => o.label === vehicle.color);
+    return opt?.value;
+  };
 
-    if (hasChanges) {
+  const hasChanges = () => {
+    if (!vehicle) return false;
+    const colorLabel = COLOR_OPTIONS.find((o) => o.value === color)?.label ?? String(color ?? "");
+    return (
+      licensePlate.trim() !== vehicle.licensePlate ||
+      (boughtAt?.getTime() ?? 0) !== (getInitialBoughtAt()?.getTime() ?? 0) ||
+      mileage.trim() !== getInitialMileage() ||
+      colorLabel !== vehicle.color ||
+      photoUrl !== (vehicle.photoUrl ?? null)
+    );
+  };
+
+  const handleCancel = () => {
+    if (hasChanges()) {
       Alert.alert(
         "Скасувати зміни?",
         "Ви внесли зміни. Ви впевнені, що хочете скасувати?",
         [
-          {
-            text: "Продовжити редагування",
-            style: "cancel",
-          },
-          {
-            text: "Скасувати",
-            style: "destructive",
-            onPress: () => navigation.goBack(),
-          },
+          { text: "Продовжити редагування", style: "cancel" },
+          { text: "Скасувати", style: "destructive", onPress: () => navigation.goBack() },
         ]
       );
     } else {
@@ -101,50 +109,40 @@ export default function CarEditScreen({
   };
 
   const handleSave = async () => {
-    if (!brand.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи марку автомобіля");
-      return;
-    }
-    if (!model.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи модель автомобіля");
-      return;
-    }
-    if (!year.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи рік випуску");
-      return;
-    }
-    if (!color.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи колір автомобіля");
-      return;
-    }
     if (!licensePlate.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введи номерний знак");
+      Alert.alert("Помилка", "Введіть номерний знак");
       return;
     }
+    const mileageNum = parseInt(mileage.trim(), 10);
+    if (mileage.trim() === "" || isNaN(mileageNum) || mileageNum < 0) {
+      Alert.alert("Помилка", "Введіть коректний пробіг (км)");
+      return;
+    }
+    if (mileageNum > 1000000) {
+      Alert.alert("Помилка", "Пробіг не може перевищувати 1 000 000 км");
+      return;
+    }
+
+    const colorLabel = COLOR_OPTIONS.find((o) => o.value === color)?.label ?? String(color ?? "");
+
+    const dto = {
+      licensePlate: licensePlate.trim(),
+      boughtAt: boughtAt ? boughtAt.toISOString() : null,
+      color: colorLabel,
+      mileage: mileageNum,
+      photoUrl: photoUrl && photoUrl.startsWith("http") ? photoUrl : null,
+    };
 
     try {
-      setIsLoading(true);
-
-      updateCar(carId, {
-        brand,
-        model,
-        year,
-        color,
-        licensePlate,
-        vin,
-        carImage,
-      });
-
+      await updateVehicle.mutateAsync({ vehicleId: carId, data: dto });
       Alert.alert("Успішно!", "Дані автомобіля оновлені", [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack(),
-        },
+        { text: "OK", onPress: () => navigation.goBack() },
       ]);
-    } catch (error) {
-      Alert.alert("Помилка", "Не вдалося зберегти дані");
-    } finally {
-      setIsLoading(false);
+    } catch (e) {
+      Alert.alert(
+        "Помилка",
+        e instanceof Error ? e.message : "Не вдалося зберегти зміни"
+      );
     }
   };
 
@@ -153,23 +151,27 @@ export default function CarEditScreen({
       "Видалити автомобіль?",
       "Ви впевнені, що хочете видалити цей автомобіль? Цю дію неможливо скасувати.",
       [
-        {
-          text: "Скасувати",
-          style: "cancel",
-        },
+        { text: "Скасувати", style: "cancel" },
         {
           text: "Видалити",
           style: "destructive",
-          onPress: () => {
-            deleteCar(carId);
-            navigation.navigate("Home");
+          onPress: async () => {
+            try {
+              await deleteVehicle.mutateAsync(carId);
+              navigation.navigate("Home");
+            } catch (e) {
+              Alert.alert(
+                "Помилка",
+                e instanceof Error ? e.message : "Не вдалося видалити"
+              );
+            }
           },
         },
       ]
     );
   };
 
-  if (isLoading) {
+  if (isLoadingVehicle || !vehicle) {
     return (
       <View
         style={[
@@ -178,11 +180,41 @@ export default function CarEditScreen({
           globalStyles.loadingContainer,
         ]}
       >
-        <ActivityIndicator size="large" color={theme.colors.accent.primary} />
-        <Text style={globalStyles.loadingText}>Збереження даних...</Text>
+        {isLoadingVehicle ? (
+          <>
+            <ActivityIndicator size="large" color={theme.colors.accent.primary} />
+            <Text style={globalStyles.loadingText}>Завантаження...</Text>
+          </>
+        ) : (
+          <Text style={globalStyles.loadingText}>Автомобіль не знайдено</Text>
+        )}
       </View>
     );
   }
+
+  if (isError) {
+    return (
+      <View
+        style={[
+          globalStyles.container,
+          globalStyles.pageBackground,
+          globalStyles.loadingContainer,
+        ]}
+      >
+        <Text style={globalStyles.textPrimary}>
+          {error instanceof Error ? error.message : "Помилка завантаження"}
+        </Text>
+        <TouchableOpacity
+          style={[globalStyles.buttonPrimary, { marginTop: 16 }]}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={globalStyles.buttonPrimaryText}>Назад</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const isSaving = updateVehicle.isPending;
 
   return (
     <KeyboardAvoidingView
@@ -195,16 +227,15 @@ export default function CarEditScreen({
             Редагувати автомобіль
           </Text>
           <Text style={[globalStyles.textSecondary, styles.subtitle]}>
-            Оновити дані твого авто
+            Можна змінити номерний знак, дату купівлі, колір, пробіг та фото
           </Text>
         </View>
 
         <View style={styles.form}>
-          {/* Car Image */}
           <View style={styles.imageSection}>
             <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
-              {carImage ? (
-                <Image source={{ uri: carImage }} style={styles.carImage} />
+              {photoUrl ? (
+                <Image source={{ uri: photoUrl }} style={styles.carImage} />
               ) : (
                 <View style={styles.placeholderImage}>
                   <Text style={styles.placeholderText}>🚗</Text>
@@ -214,65 +245,6 @@ export default function CarEditScreen({
             </TouchableOpacity>
           </View>
 
-          {/* Brand Field */}
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Марка *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={brand}
-              onChangeText={setBrand}
-              placeholder="Наприклад: Toyota, BMW, Mercedes"
-              placeholderTextColor={theme.colors.special.placeholder}
-            />
-          </View>
-
-          {/* Model Field */}
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Модель *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={model}
-              onChangeText={setModel}
-              placeholder="Наприклад: Camry, X5, C-Class"
-              placeholderTextColor={theme.colors.special.placeholder}
-            />
-          </View>
-
-          {/* Year Field */}
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Рік випуску *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={year}
-              onChangeText={setYear}
-              placeholder="Наприклад: 2020"
-              placeholderTextColor={theme.colors.special.placeholder}
-              keyboardType="numeric"
-              maxLength={4}
-            />
-          </View>
-
-          {/* Color Field */}
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Колір *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={color}
-              onChangeText={setColor}
-              placeholder="Наприклад: Чорний, Білий, Сірий"
-              placeholderTextColor={theme.colors.special.placeholder}
-            />
-          </View>
-
-          {/* License Plate Field */}
           <View style={styles.inputContainer}>
             <Text style={[globalStyles.textPrimary, styles.label]}>
               Номерний знак *
@@ -287,34 +259,84 @@ export default function CarEditScreen({
             />
           </View>
 
-          {/* VIN Field */}
           <View style={styles.inputContainer}>
             <Text style={[globalStyles.textPrimary, styles.label]}>
-              VIN номер
+              Дата купівлі
             </Text>
-            <TextInput
+            <TouchableOpacity
               style={[globalStyles.input, styles.input]}
-              value={vin}
-              onChangeText={setVin}
-              placeholder="17-значний VIN номер (необов'язково)"
-              placeholderTextColor={theme.colors.special.placeholder}
-              autoCapitalize="characters"
-              maxLength={17}
+              onPress={() => setShowBoughtAtPicker(true)}
+            >
+              <Text
+                style={
+                  boughtAt
+                    ? [globalStyles.textPrimary, { paddingVertical: 12 }]
+                    : [
+                        {
+                          color: theme.colors.special.placeholder,
+                          paddingVertical: 12,
+                        },
+                      ]
+                }
+              >
+                {boughtAt
+                  ? boughtAt.toLocaleDateString("uk-UA")
+                  : "Оберіть дату (необов'язково)"}
+              </Text>
+            </TouchableOpacity>
+            {showBoughtAtPicker && (
+              <DateTimePicker
+                value={boughtAt ?? new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                maximumDate={new Date()}
+                onChange={(_, date) => {
+                  setShowBoughtAtPicker(Platform.OS === "ios");
+                  if (date) setBoughtAt(date);
+                }}
+              />
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Select
+              label="Колір *"
+              options={COLOR_OPTIONS}
+              value={color}
+              onValueChange={setColor}
+              placeholder="Виберіть колір"
             />
           </View>
 
-          {/* Action Buttons */}
+          <View style={styles.inputContainer}>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Пробіг (км) *
+            </Text>
+            <TextInput
+              style={[globalStyles.input, styles.input]}
+              value={mileage}
+              onChangeText={setMileage}
+              placeholder="Наприклад: 50000"
+              placeholderTextColor={theme.colors.special.placeholder}
+              keyboardType="number-pad"
+            />
+          </View>
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={globalStyles.buttonDanger}
               onPress={handleDelete}
+              disabled={deleteVehicle.isPending}
             >
-              <Text style={globalStyles.buttonDangerText}>Видалити</Text>
+              <Text style={globalStyles.buttonDangerText}>
+                {deleteVehicle.isPending ? "..." : "🗑️ Видалити"}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={globalStyles.buttonSecondary}
               onPress={handleCancel}
+              disabled={isSaving}
             >
               <Text style={globalStyles.buttonSecondaryText}>Скасувати</Text>
             </TouchableOpacity>
@@ -322,8 +344,11 @@ export default function CarEditScreen({
             <TouchableOpacity
               style={globalStyles.buttonPrimary}
               onPress={handleSave}
+              disabled={isSaving}
             >
-              <Text style={globalStyles.buttonPrimaryText}>Зберегти</Text>
+              <Text style={globalStyles.buttonPrimaryText}>
+                {isSaving ? "Збереження..." : "Зберегти"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
