@@ -9,6 +9,11 @@ export interface Car {
   licensePlate: string;
   vin: string;
   carImage: string | null;
+  bodyClass?: string;
+  fuelType?: string;
+  displacement?: string;
+  transmission?: string;
+  driveType?: string;
   createdAt: Date;
   updatedAt: Date;
 }

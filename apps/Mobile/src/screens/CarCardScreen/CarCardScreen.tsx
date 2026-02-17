@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,33 +17,14 @@ import { useTheme } from "../../hooks/useTheme";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarCardScreen.styles";
 import { CarCardScreenProps } from "../../navigation/types";
-import { VinDecoder } from "../../components/VinDecoder";
+// import { VinDecoder } from "../../components/VinDecoder";
 import { Select, SelectOption } from "../../components/Select";
-
-// Моки для селектів
-const BRAND_OPTIONS: SelectOption[] = [
-  { label: "Toyota", value: "toyota" },
-  { label: "BMW", value: "bmw" },
-  { label: "Mercedes-Benz", value: "mercedes" },
-  { label: "Audi", value: "audi" },
-  { label: "Volkswagen", value: "volkswagen" },
-];
-
-const MODEL_OPTIONS: SelectOption[] = [
-  { label: "Camry", value: "camry" },
-  { label: "X5", value: "x5" },
-  { label: "C-Class", value: "c-class" },
-  { label: "A4", value: "a4" },
-  { label: "Golf", value: "golf" },
-];
-
-const YEAR_OPTIONS: SelectOption[] = [
-  { label: "2024", value: "2024" },
-  { label: "2023", value: "2023" },
-  { label: "2022", value: "2022" },
-  { label: "2021", value: "2021" },
-  { label: "2020", value: "2020" },
-];
+import {
+  getAllMakes,
+  getModelsForMakeId,
+  generateYearOptions,
+  getVariableValues,
+} from "../../api/services/nhtsaService";
 
 const COLOR_OPTIONS: SelectOption[] = [
   { label: "Чорний", value: "black" },
@@ -51,6 +32,31 @@ const COLOR_OPTIONS: SelectOption[] = [
   { label: "Сірий", value: "gray" },
   { label: "Сріблястий", value: "silver" },
   { label: "Червоний", value: "red" },
+];
+
+const BODY_CLASS_OPTIONS: SelectOption[] = [
+  { label: "Sedan", value: "Sedan" },
+  { label: "Hatchback", value: "Hatchback" },
+  { label: "Universal", value: "Universal" },
+  { label: "Coupe", value: "Coupe" },
+  { label: "Convertible", value: "Convertible" },
+  { label: "SUV", value: "SUV" },
+  { label: "Crossover", value: "Crossover" },
+  { label: "Minivan", value: "Minivan" },
+  { label: "Pickup", value: "Pickup" },
+];
+
+const FUEL_TYPE_OPTIONS: SelectOption[] = [
+  { label: "Gasoline", value: "Gasoline" },
+  { label: "Diesel", value: "Diesel" },
+  { label: "LPG (Liquefied Petroleum Gas)", value: "LPG" },
+  { label: "CNG (Compressed Natural Gas)", value: "CNG" },
+  { label: "LPG + Petrol (Bi-Fuel)", value: "LPG + Petrol" },
+  { label: "CNG + Petrol (Bi-Fuel)", value: "CNG + Petrol" },
+  { label: "Hybrid (HEV)", value: "Hybrid" },
+  { label: "Plug-in Hybrid (PHEV)", value: "Plug-in Hybrid" },
+  { label: "Mild Hybrid (MHEV)", value: "Mild Hybrid" },
+  { label: "Electric", value: "Electric" },
 ];
 
 export default function CarCardScreen({ navigation }: CarCardScreenProps) {
@@ -63,28 +69,181 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   const [color, setColor] = useState<string | number | undefined>(undefined);
   const [licensePlate, setLicensePlate] = useState("");
   const [vin, setVin] = useState("");
+  const [bodyClass, setBodyClass] = useState<string | number | undefined>(undefined);
+  const [fuelType, setFuelType] = useState<string | number | undefined>(undefined);
+  const [displacement, setDisplacement] = useState("");
+  const [transmission, setTransmission] = useState<string | number | undefined>(undefined);
+  const [driveType, setDriveType] = useState<string | number | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleVinDecodeSuccess = (data: {
-    brand: string;
-    model: string;
-    year: string;
-    vin: string;
-  }) => {
-    // Знаходимо відповідні значення в опціях
-    const brandOption = BRAND_OPTIONS.find(
-      (opt) => opt.label.toLowerCase() === data.brand.toLowerCase()
-    );
-    const modelOption = MODEL_OPTIONS.find(
-      (opt) => opt.label.toLowerCase() === data.model.toLowerCase()
-    );
-    const yearOption = YEAR_OPTIONS.find((opt) => opt.value === data.year);
+  // NHTSA API дані
+  const [brandOptions, setBrandOptions] = useState<SelectOption[]>([]);
+  const [modelOptions, setModelOptions] = useState<SelectOption[]>([]);
+  const [yearOptions] = useState<SelectOption[]>(generateYearOptions());
+  const [transmissionOptions, setTransmissionOptions] = useState<SelectOption[]>([]);
+  const [driveTypeOptions, setDriveTypeOptions] = useState<SelectOption[]>([]);
+  const [isLoadingBrands, setIsLoadingBrands] = useState(false);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
 
-    setBrand(brandOption?.value || data.brand);
-    setModel(modelOption?.value || data.model);
-    setYear(yearOption?.value || data.year);
-    setVin(data.vin);
-  };
+  // Завантаження марок при монтуванні компонента
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        setIsLoadingBrands(true);
+        const makes = await getAllMakes();
+        const options: SelectOption[] = makes.map((make) => ({
+          label: make.MakeName,
+          value: make.MakeId,
+        }));
+        setBrandOptions(options);
+      } catch (error) {
+        console.error("Error loading brands:", error);
+        Alert.alert(
+          "Помилка",
+          "Не вдалося завантажити список марок. Спробуйте пізніше."
+        );
+      } finally {
+        setIsLoadingBrands(false);
+      }
+    };
+
+    loadBrands();
+  }, []);
+
+  // Завантаження опцій для нових полів
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        // Завантажуємо опції для коробки передач
+        const transmissions = await getVariableValues("Transmission Style");
+        setTransmissionOptions(
+          transmissions.map((item) => ({ label: item, value: item }))
+        );
+
+        // Завантажуємо опції для приводу
+        const driveTypes = await getVariableValues("Drive Type");
+        setDriveTypeOptions(
+          driveTypes.map((item) => ({ label: item, value: item }))
+        );
+      } catch (error) {
+        console.error("Error loading options:", error);
+      }
+    };
+
+    loadOptions();
+  }, []);
+
+  // Завантаження моделей при зміні марки
+  useEffect(() => {
+    const loadModels = async () => {
+      if (!brand || typeof brand !== "number") {
+        setModelOptions([]);
+        setModel(undefined);
+      return;
+    }
+
+    try {
+        setIsLoadingModels(true);
+        const models = await getModelsForMakeId(brand);
+        const options: SelectOption[] = models.map((model) => ({
+          label: model.Model_Name,
+          value: model.Model_ID,
+        }));
+        setModelOptions(options);
+        // Скидаємо вибір моделі при зміні марки
+        setModel(undefined);
+      } catch (error) {
+        console.error("Error loading models:", error);
+        Alert.alert(
+          "Помилка",
+          "Не вдалося завантажити список моделей. Спробуйте пізніше."
+        );
+        setModelOptions([]);
+      } finally {
+        setIsLoadingModels(false);
+      }
+    };
+
+    loadModels();
+  }, [brand]);
+
+  // const handleVinDecodeSuccess = async (data: {
+  //   brand: string;
+  //   model: string;
+  //   year: string;
+  //   vin: string;
+  //   bodyClass?: string;
+  //   fuelType?: string;
+  //   displacement?: string;
+  //   transmission?: string;
+  //   driveType?: string;
+  // }) => {
+  //   try {
+  //     // Знаходимо марку за назвою
+  //     const brandOption = brandOptions.find(
+  //       (opt) => opt.label.toLowerCase() === data.brand.toLowerCase()
+  //     );
+
+  //     if (brandOption) {
+  //       setBrand(brandOption.value as number);
+  //       setVin(data.vin);
+
+  //       // Завантажуємо моделі для знайденої марки
+  //       const models = await getModelsForMakeId(brandOption.value as number);
+  //       const modelOptions: SelectOption[] = models.map((m) => ({
+  //         label: m.Model_Name,
+  //         value: m.Model_ID,
+  //       }));
+  //       setModelOptions(modelOptions);
+
+  //       // Знаходимо модель
+  //       const modelOption = modelOptions.find(
+  //         (opt) => opt.label.toLowerCase() === data.model.toLowerCase()
+  //       );
+  //       if (modelOption) {
+  //         setModel(modelOption.value as number);
+  //       }
+
+  //       // Встановлюємо рік
+  //       const yearOption = yearOptions.find((opt) => opt.value === data.year);
+  //       if (yearOption) {
+  //         setYear(yearOption.value);
+  //       }
+
+  //       // Встановлюємо нові поля з VIN декодування
+  //       if (data.bodyClass) {
+  //         setBodyClass(data.bodyClass);
+  //       }
+  //       if (data.fuelType) {
+  //         setFuelType(data.fuelType);
+  //       }
+  //       if (data.displacement) {
+  //         setDisplacement(data.displacement);
+  //       }
+  //       if (data.transmission) {
+  //         setTransmission(data.transmission);
+  //       }
+  //       if (data.driveType) {
+  //         setDriveType(data.driveType);
+  //       }
+  //     } else {
+  //       // Якщо марку не знайдено, встановлюємо тільки VIN та нові поля
+  //       setVin(data.vin);
+  //       if (data.bodyClass) setBodyClass(data.bodyClass);
+  //       if (data.fuelType) setFuelType(data.fuelType);
+  //       if (data.displacement) setDisplacement(data.displacement);
+  //       if (data.transmission) setTransmission(data.transmission);
+  //       if (data.driveType) setDriveType(data.driveType);
+  //       Alert.alert(
+  //         "Увага",
+  //         "Марку не знайдено в списку. Будь ласка, виберіть марку вручну."
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("Error processing VIN decode:", error);
+  //     setVin(data.vin);
+  //   }
+  // };
 
   const pickImage = async () => {
     const permissionResult =
@@ -165,16 +324,26 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
       // Отримуємо label для збереження
       const brandLabel =
-        BRAND_OPTIONS.find((opt) => opt.value === brand)?.label ||
-        String(brand);
+        brandOptions.find((opt) => opt.value === brand)?.label || String(brand);
       const modelLabel =
-        MODEL_OPTIONS.find((opt) => opt.value === model)?.label ||
-        String(model);
+        modelOptions.find((opt) => opt.value === model)?.label || String(model);
       const yearLabel =
-        YEAR_OPTIONS.find((opt) => opt.value === year)?.label || String(year);
+        yearOptions.find((opt) => opt.value === year)?.label || String(year);
       const colorLabel =
         COLOR_OPTIONS.find((opt) => opt.value === color)?.label ||
         String(color);
+      const bodyClassLabel =
+        BODY_CLASS_OPTIONS.find((opt) => opt.value === bodyClass)?.label ||
+        String(bodyClass || "");
+      const fuelTypeLabel =
+        FUEL_TYPE_OPTIONS.find((opt) => opt.value === fuelType)?.label ||
+        String(fuelType || "");
+      const transmissionLabel =
+        transmissionOptions.find((opt) => opt.value === transmission)?.label ||
+        String(transmission || "");
+      const driveTypeLabel =
+        driveTypeOptions.find((opt) => opt.value === driveType)?.label ||
+        String(driveType || "");
 
       addCar({
         brand: brandLabel,
@@ -184,6 +353,11 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
         licensePlate,
         vin,
         carImage,
+        bodyClass: bodyClassLabel,
+        fuelType: fuelTypeLabel,
+        displacement,
+        transmission: transmissionLabel,
+        driveType: driveTypeLabel,
       });
 
       Alert.alert("Успішно!", "Картка автомобіля створена", [
@@ -232,7 +406,7 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
         <View style={styles.form}>
           {/* VIN Decode Field */}
-          <VinDecoder onDecodeSuccess={handleVinDecodeSuccess} />
+          {/* <VinDecoder onDecodeSuccess={handleVinDecodeSuccess} /> */}
 
           {/* Car Image */}
           <View style={styles.imageSection}>
@@ -249,28 +423,59 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
           </View>
 
           {/* Brand Field */}
-          <Select
-            label="Марка *"
-            options={BRAND_OPTIONS}
-            value={brand}
-            onValueChange={setBrand}
-            placeholder="Виберіть марку автомобіля"
-          />
+          <View style={styles.inputContainer}>
+            <Select
+              label="Марка *"
+              options={brandOptions}
+              value={brand}
+              onValueChange={setBrand}
+              placeholder={
+                isLoadingBrands
+                  ? "Завантаження марок..."
+                  : "Виберіть марку автомобіля"
+              }
+            />
+            {isLoadingBrands && (
+              <View style={styles.loadingIndicator}>
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.accent.primary}
+                />
+              </View>
+            )}
+          </View>
 
           {/* Model Field */}
-          <Select
-            label="Модель *"
-            options={MODEL_OPTIONS}
-            value={model}
-            onValueChange={setModel}
-            placeholder="Виберіть модель автомобіля"
-          />
+          <View style={styles.inputContainer}>
+            <Select
+              label="Модель *"
+              options={modelOptions}
+              value={model}
+              onValueChange={setModel}
+              placeholder={
+                !brand
+                  ? "Спочатку виберіть марку"
+                  : isLoadingModels
+                    ? "Завантаження моделей..."
+                    : "Виберіть модель автомобіля"
+              }
+              disabled={!brand || isLoadingModels}
+            />
+            {isLoadingModels && (
+              <View style={styles.loadingIndicator}>
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.accent.primary}
+                />
+              </View>
+            )}
+          </View>
 
           {/* Year Field */}
           <Select
             label="Рік випуску *"
-            options={YEAR_OPTIONS}
-            value={year}
+            options={yearOptions}
+              value={year}
             onValueChange={setYear}
             placeholder="Виберіть рік випуску"
           />
@@ -279,10 +484,10 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
           <Select
             label="Колір *"
             options={COLOR_OPTIONS}
-            value={color}
+              value={color}
             onValueChange={setColor}
             placeholder="Виберіть колір автомобіля"
-          />
+            />
 
           {/* License Plate Field */}
           <View style={styles.inputContainer}>
@@ -314,6 +519,57 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
               maxLength={17}
             />
           </View>
+
+          {/* Body Class Field */}
+          <Select
+            label="Тип кузова"
+            options={BODY_CLASS_OPTIONS}
+            value={bodyClass}
+            onValueChange={setBodyClass}
+            placeholder="Виберіть тип кузова"
+          />
+
+          {/* Fuel Type Field */}
+          <Select
+            label="Тип палива"
+            options={FUEL_TYPE_OPTIONS}
+            value={fuelType}
+            onValueChange={setFuelType}
+            placeholder="Виберіть тип палива"
+          />
+
+          {/* Displacement Field */}
+          <View style={styles.inputContainer}>
+            <Text style={[globalStyles.textPrimary, styles.label]}>
+              Об&apos;єм двигуна (л)
+            </Text>
+            <TextInput
+              style={[globalStyles.input, styles.input]}
+              value={displacement}
+              onChangeText={setDisplacement}
+              placeholder="Наприклад: 2.0, 3.5"
+              placeholderTextColor={theme.colors.special.placeholder}
+              keyboardType="decimal-pad"
+            />
+          </View>
+
+          {/* Transmission Field */}
+          <Select
+            label="Коробка передач"
+            options={transmissionOptions}
+            value={transmission}
+            onValueChange={setTransmission}
+            placeholder="Виберіть коробку передач"
+          />
+
+          {/* Drive Type Field */}
+          <Select
+            label="Привід"
+            options={driveTypeOptions}
+            value={driveType}
+            onValueChange={setDriveType}
+            placeholder="Виберіть тип приводу"
+          />
 
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>

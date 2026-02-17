@@ -83,4 +83,8 @@ export const styles = StyleSheet.create({
     marginBottom: 40,
     gap: 12,
   },
+  loadingIndicator: {
+    marginTop: 8,
+    alignItems: "center",
+  },
 });

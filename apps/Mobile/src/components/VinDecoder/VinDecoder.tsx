@@ -3,14 +3,7 @@ import { View, Text, Alert, ActivityIndicator, StyleSheet } from "react-native";
 import { useTheme } from "../../hooks/useTheme";
 import { globalStyles } from "../../styles/globalStyles";
 import { Input } from "../Input";
-import { useAuth } from "../../context/AuthContext";
-import { createApiClient } from "../../api/client";
-
-interface DecodeVinResponse {
-  brand: string;
-  model: string;
-  year: number;
-}
+import { decodeVinExtended, VinDecodeData } from "../../api/services/nhtsaService";
 
 interface VinDecoderProps {
   onDecodeSuccess: (data: {
@@ -18,6 +11,11 @@ interface VinDecoderProps {
     model: string;
     year: string;
     vin: string;
+    bodyClass?: string;
+    fuelType?: string;
+    displacement?: string;
+    transmission?: string;
+    driveType?: string;
   }) => void;
   containerStyle?: object;
 }
@@ -27,7 +25,6 @@ export const VinDecoder: React.FC<VinDecoderProps> = ({
   containerStyle,
 }) => {
   const theme = useTheme();
-  const { getAccessToken } = useAuth();
   const [vinDecode, setVinDecode] = useState("");
   const [isDecodingVin, setIsDecodingVin] = useState(false);
 
@@ -41,17 +38,20 @@ export const VinDecoder: React.FC<VinDecoderProps> = ({
 
       try {
         setIsDecodingVin(true);
-        const apiClient = createApiClient(getAccessToken);
-        const response = await apiClient.get<DecodeVinResponse>(
-          `/cars/vin-decode/${trimmedVin}`
-        );
+        // Використовуємо NHTSA API напряму для отримання розширених даних
+        const vinData = await decodeVinExtended(trimmedVin);
 
         // Автоматично заповнюємо поля через callback
         onDecodeSuccess({
-          brand: response.brand || "",
-          model: response.model || "",
-          year: response.year?.toString() || "",
+          brand: vinData.Make || "",
+          model: vinData.Model || "",
+          year: vinData.ModelYear || "",
           vin: trimmedVin,
+          bodyClass: vinData.BodyClass,
+          fuelType: vinData.FuelTypePrimary,
+          displacement: vinData.DisplacementL,
+          transmission: vinData.TransmissionStyle,
+          driveType: vinData.DriveType,
         });
 
         Alert.alert("Успішно!", "Дані про автомобіль отримано та заповнено");
@@ -75,7 +75,7 @@ export const VinDecoder: React.FC<VinDecoderProps> = ({
     }, 500); // 500ms затримка після останнього введення
 
     return () => clearTimeout(timeoutId);
-  }, [vinDecode, getAccessToken, onDecodeSuccess]);
+  }, [vinDecode, onDecodeSuccess]);
 
   return (
     <View style={[styles.container, containerStyle]}>

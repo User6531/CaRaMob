@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   Modal,
   FlatList,
@@ -23,6 +24,7 @@ interface SelectProps {
   label?: string;
   containerStyle?: object;
   error?: string;
+  disabled?: boolean;
 }
 
 export const Select: React.FC<SelectProps> = ({
@@ -33,15 +35,34 @@ export const Select: React.FC<SelectProps> = ({
   label,
   containerStyle,
   error,
+  disabled = false,
 }) => {
   const theme = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const selectedOption = options.find((option) => option.value === value);
+
+  // Фільтруємо опції на основі пошукового запиту
+  const filteredOptions = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return options;
+    }
+    const query = searchQuery.toLowerCase().trim();
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(query)
+    );
+  }, [options, searchQuery]);
 
   const handleSelect = (optionValue: string | number) => {
     onValueChange(optionValue);
     setIsModalVisible(false);
+    setSearchQuery(""); // Очищаємо пошук після вибору
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setSearchQuery(""); // Очищаємо пошук при закритті
   };
 
   return (
@@ -54,8 +75,10 @@ export const Select: React.FC<SelectProps> = ({
           globalStyles.input,
           error && styles.selectError,
           styles.selectButton,
+          disabled && styles.selectDisabled,
         ]}
-        onPress={() => setIsModalVisible(true)}
+        onPress={() => !disabled && setIsModalVisible(true)}
+        disabled={disabled}
       >
         <Text
           style={[
@@ -71,53 +94,85 @@ export const Select: React.FC<SelectProps> = ({
       <Modal
         visible={isModalVisible}
         transparent
-        animationType="slide"
-        onRequestClose={() => setIsModalVisible(false)}
+        animationType="fade"
+        onRequestClose={handleModalClose}
       >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setIsModalVisible(false)}
-        >
-          <View style={styles.modalContent}>
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={handleModalClose}
+          />
+          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+            {/* Заголовок */}
             <View style={styles.modalHeader}>
               <Text style={[globalStyles.textPrimary, styles.modalTitle]}>
                 {label || "Виберіть опцію"}
               </Text>
               <TouchableOpacity
-                onPress={() => setIsModalVisible(false)}
+                onPress={handleModalClose}
                 style={styles.closeButton}
               >
                 <Text style={styles.closeButtonText}>✕</Text>
               </TouchableOpacity>
             </View>
-            <FlatList
-              data={options}
-              keyExtractor={(item) => String(item.value)}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.optionItem,
-                    value === item.value && styles.optionItemSelected,
-                  ]}
-                  onPress={() => handleSelect(item.value)}
-                >
-                  <Text
-                    style={[
-                      globalStyles.textPrimary,
-                      value === item.value && styles.optionTextSelected,
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                  {value === item.value && (
-                    <Text style={styles.checkmark}>✓</Text>
+            {/* Пошукове поле */}
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={[globalStyles.input, styles.searchInput]}
+                placeholder="Пошук..."
+                placeholderTextColor={theme.colors.special.placeholder}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoFocus={true}
+              />
+            </View>
+            {/* Список опцій */}
+            <View style={styles.optionsContainer}>
+              {filteredOptions.length > 0 ? (
+                <FlatList
+                  data={filteredOptions}
+                  keyExtractor={(item) => String(item.value)}
+                  style={styles.optionsList}
+                  contentContainerStyle={styles.optionsListContent}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.optionItem,
+                        value === item.value && styles.optionItemSelected,
+                      ]}
+                      onPress={() => handleSelect(item.value)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          globalStyles.textPrimary,
+                          styles.optionText,
+                          value === item.value && styles.optionTextSelected,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                      {value === item.value && (
+                        <Text style={styles.checkmark}>✓</Text>
+                      )}
+                    </TouchableOpacity>
                   )}
-                </TouchableOpacity>
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={true}
+                />
+              ) : (
+                <View style={styles.noResultsContainer}>
+                  <Text style={styles.noResultsText}>
+                    Нічого не знайдено
+                  </Text>
+                </View>
               )}
-            />
+            </View>
           </View>
-        </TouchableOpacity>
+        </View>
       </Modal>
     </View>
   );
@@ -149,6 +204,9 @@ const styles = StyleSheet.create({
   selectError: {
     borderColor: "#f85149", // theme.colors.accent.error
   },
+  selectDisabled: {
+    opacity: 0.5,
+  },
   errorText: {
     color: "#f85149", // theme.colors.accent.error
     fontSize: 12,
@@ -156,43 +214,101 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
   },
   modalContent: {
     backgroundColor: "#161b22", // theme.colors.background.secondary
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "70%",
-    paddingBottom: 20,
+    borderRadius: 16,
+    width: "90%",
+    maxWidth: 500,
+    height: "80%",
+    maxHeight: 600,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    display: "flex",
+    flexDirection: "column",
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#30363d", // theme.colors.border.primary
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "600",
+    flex: 1,
   },
   closeButton: {
-    padding: 4,
+    padding: 8,
+    marginLeft: 12,
+    borderRadius: 8,
+    minWidth: 32,
+    alignItems: "center",
+    justifyContent: "center",
   },
   closeButtonText: {
     color: "#8b949e", // theme.colors.text.secondary
-    fontSize: 24,
-    lineHeight: 24,
+    fontSize: 20,
+    lineHeight: 20,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#30363d", // theme.colors.border.primary
+  },
+  searchInput: {
+    marginBottom: 0,
+  },
+  optionsContainer: {
+    flex: 1,
+    minHeight: 200,
+  },
+  optionsList: {
+    flex: 1,
+  },
+  optionsListContent: {
+    paddingVertical: 4,
+  },
+  noResultsContainer: {
+    padding: 40,
+    alignItems: "center",
+  },
+  noResultsText: {
+    color: "#8b949e", // theme.colors.text.secondary
+    fontSize: 16,
   },
   optionItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: "#21262d", // theme.colors.border.secondary
+  },
+  optionText: {
+    flex: 1,
   },
   optionItemSelected: {
     backgroundColor: "#21262d", // theme.colors.background.tertiary
@@ -205,6 +321,7 @@ const styles = StyleSheet.create({
     color: "#58a6ff", // theme.colors.accent.primary
     fontSize: 18,
     fontWeight: "bold",
+    marginLeft: 12,
   },
 });
 
