@@ -45,11 +45,13 @@ public interface IVehicleService
 
 public class VehicleService(
   IVehicleRepository repository,
-  IUserService userService
+  IUserService userService,
+  IServiceHistoryService serviceHistoryService
 ) : IVehicleService
 {
   private readonly IVehicleRepository _repository = repository;
   private readonly IUserService _userService = userService;
+  private readonly IServiceHistoryService _serviceHistoryService = serviceHistoryService;
 
   public async Task<VehicleDto> GetVehicleByIdAsync(Guid vehicleId, Guid userId)
   {
@@ -151,6 +153,7 @@ public class VehicleService(
 
     await _repository.DeleteAsync(vehicleId);
     await _userService.DetachVehicleAsync(vehicleId, userId);
+    await _serviceHistoryService.DeleteAllByVehicleIdAsync(vehicleId, userId);
   }
 
   public async Task<List<VehicleListItemDto>> GetAllByUserAsync(Guid userId)

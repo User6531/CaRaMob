@@ -42,12 +42,16 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     return new MongoClient(settings.ConnectionString);
 });
 
-// 🟦 Register application services and repositories
+// 🟦 Register application services 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IServiceHistoryRepository, ServiceHistoryRepository>();
+
+// 🟦 Register application repositories
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IServiceHistoryService, ServiceHistoryService>();
 
 builder.Services.AddNhtsaVpic();
 
@@ -55,6 +59,8 @@ builder.Services.AddNhtsaVpic();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateVehicleDto>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateVehicleDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateServiceHistoryDetailsDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateServiceHistoryRecordDtoValidator>();
 
 // 🟦 Add controllers and Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -175,8 +181,10 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// 🟦 Register application Endpoints
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapVehicleEndpoints();
+app.MapServiceHistoryEndpoints();
 
 app.Run();
