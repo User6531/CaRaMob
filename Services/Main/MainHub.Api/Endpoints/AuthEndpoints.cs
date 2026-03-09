@@ -16,10 +16,12 @@ public static class AuthEndpoints
 
     authBuilder
       .MapGet("/session", CheckAuthSessionAsync)
+      .WithSummary("Check the current authentication session and return user info along with an internal JWT token")
       .Produces<CheckAuthResponseDto>(StatusCodes.Status200OK);
 
     authBuilder
       .MapGet("/internal-token", GetInternalTokenAsync)
+      .WithSummary("Generate an internal JWT token for the authenticated user")
       .Produces<string>(StatusCodes.Status200OK);
   }
 

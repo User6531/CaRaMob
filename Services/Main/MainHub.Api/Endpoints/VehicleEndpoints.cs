@@ -20,6 +20,7 @@ public static partial class VehicleEndpoints
 
     vehicles
       .MapPost("/", CreateAsync)
+      .WithSummary("Create a new vehicle")
       .Accepts<CreateVehicleDto>(_contentType)
       .AddEndpointFilter<ValidationFilter<CreateVehicleDto>>()
       .Produces(StatusCodes.Status201Created)
@@ -28,25 +29,30 @@ public static partial class VehicleEndpoints
 
     vehicles
       .MapGet("/", GetAllByUserAsync)
+      .WithSummary("Get all vehicles associated with the user")
       .Produces<string>(StatusCodes.Status400BadRequest)
       .Produces<List<VehicleListItemDto>>(StatusCodes.Status200OK);
 
     vehicles
       .MapGet("/{vehicleId}", GetVehicleByIdAsync)
+      .WithSummary("Get a vehicle by its id")
       .Produces<string>(StatusCodes.Status400BadRequest)
       .Produces<VehicleDto>(StatusCodes.Status200OK);
 
     vehicles
       .MapDelete("/{vehicleId}", DeleteAsync)
+      .WithSummary("Delete a vehicle by its id")
       .Produces(StatusCodes.Status204NoContent);
 
     vehicles
       .MapGet("/vin-decode/{vin}", DecodeVinAsync)
+      .WithSummary("Decode a VIN to get vehicle information")
       .Produces<string>(StatusCodes.Status400BadRequest)
       .Produces<DecodeVinResponseDto>(StatusCodes.Status200OK);
 
     vehicles
       .MapPut("/{vehicleId}", UpdateAsync)
+      .WithSummary("Update a vehicle by its id")
       .Accepts<UpdateVehicleDto>(_contentType)
       .AddEndpointFilter<ValidationFilter<UpdateVehicleDto>>()
       .Produces(StatusCodes.Status201Created)

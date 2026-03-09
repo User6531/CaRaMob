@@ -16,6 +16,7 @@ public static class UserEndpoints
     var _contentType = "application/json";
 
     users.MapPut("/update", UpdateAsync)
+      .WithSummary("Update the authenticated user's information")
       .Accepts<UpdateUserDto>(_contentType)
       .AddEndpointFilter<ValidationFilter<UpdateUserDto>>()
       .Produces(StatusCodes.Status204NoContent)
@@ -23,6 +24,7 @@ public static class UserEndpoints
 
     users
       .MapGet("/me", GetMeAsync)
+      .WithSummary("Get the authenticated user's information")
       .Produces<GetMeDto>(StatusCodes.Status200OK);
   }
 
