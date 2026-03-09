@@ -16,6 +16,11 @@ public class ServiceHistoryRecordModel
   public required string Title { get; set; }
 
   /// <summary>
+  /// Gets or sets the description of the service history record.
+  /// </summary>
+  public required string Description { get; set; }
+
+  /// <summary>
   /// Gets or sets the price of the service history record.
   /// </summary>
   public required int Price { get; set; }

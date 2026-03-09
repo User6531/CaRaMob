@@ -29,12 +29,6 @@ public class ServiceHistoryEntity
   public required string Title { get; set; }
 
   /// <summary>
-  /// Gets or sets the description of the service history entity.
-  /// </summary>
-  [BsonElement("description")]
-  public required string Description { get; set; }
-
-  /// <summary>
   /// Gets or sets the date and time when the service history entity was created.
   /// </summary>
   [BsonElement("createdAt")]

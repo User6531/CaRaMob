@@ -16,15 +16,11 @@ public class CreateServiceHistoryDetailsDtoValidator : AbstractValidator<CreateS
       .MaximumLength(100)
       .WithMessage("Title must not exceed 100 characters.");
 
-    RuleFor(x => x.Description)
-      .NotEmpty()
-      .WithMessage("Description is required.")
-      .MaximumLength(1000)
-      .WithMessage("Description must not exceed 1000 characters.");
-
     RuleFor(x => x.Records)
       .NotEmpty()
-      .WithMessage("Records are required.");
+      .WithMessage("Records are required.")
+      .Must(records => records.Count > 0)
+      .WithMessage("At least one record is required.");
 
     RuleForEach(x => x.Records).SetValidator(new CreateServiceHistoryRecordDtoValidator());
   }

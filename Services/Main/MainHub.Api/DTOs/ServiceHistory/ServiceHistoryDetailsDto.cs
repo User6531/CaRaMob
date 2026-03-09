@@ -16,11 +16,6 @@ public class ServiceHistoryDetailsDto
   public required string Title { get; set; }
 
   /// <summary>
-  /// The description of the service history dto.
-  /// </summary>
-  public required string Description { get; set; }
-
-  /// <summary>
   /// The date and time when the service history entity was created.
   /// </summary>
   public required DateTime CreatedAt { get; set; }
