@@ -27,7 +27,8 @@ services:
       - MongoDbSettings__ConnectionString=mongodb://admin:admin123@mongodb:27017
       - MongoDbSettings__DatabaseName=Main
       - MongoDbSettings__UserCollectionName=Users
-      - MongoDbSettings__CarsCollectionName=Cars
+      - MongoDbSettings__VehicleCollectionName=Vehicles
+      - MongoDbSettings__ServiceHistoryCollectionName=ServiceHistories
     ports:
       - "5001:5001"
     depends_on:

@@ -36,11 +36,18 @@ import {
 } from "../../types/api";
 
 const COLOR_OPTIONS: SelectOption[] = [
-  { label: "Чорний", value: "black" },
   { label: "Білий", value: "white" },
+  { label: "Чорний", value: "black" },
   { label: "Сірий", value: "gray" },
   { label: "Сріблястий", value: "silver" },
   { label: "Червоний", value: "red" },
+  { label: "Синій", value: "blue" },
+  { label: "Зелений", value: "green" },
+  { label: "Жовтий", value: "yellow" },
+  { label: "Коричневий", value: "brown" },
+  { label: "Бежевий", value: "beige" },
+  { label: "Помаранчевий", value: "orange" },
+  { label: "Фіолетовий", value: "purple" },
 ];
 
 const BODY_CLASS_OPTIONS: SelectOption[] = [

@@ -2,45 +2,45 @@
 export const darkTheme = {
   // Background colors
   background: {
-    primary: "#202936", // Main background
-    secondary: "#202936", // Card backgrounds
-    tertiary: "#21262D", // Elevated surfaces
-    quaternary: "#30363D", // Borders and dividers
+    primary: "#121212", // Main background (deep black)
+    secondary: "#121212", // Card backgrounds
+    tertiary: "#1A1C1E", // Elevated surfaces (graphite)
+    quaternary: "#1F2123", // Borders and dividers
   },
 
   // Text colors
   text: {
-    primary: "#F0F6FC", // Main text
-    secondary: "#8B949E", // Secondary text
-    tertiary: "#6E7681", // Muted text
-    inverse: "#0D1117", // Text on light backgrounds
+    primary: "#FFFFFF", // Main text (white)
+    secondary: "#B0B0B0", // Secondary text (soft gray)
+    tertiary: "#808080", // Muted text
+    inverse: "#121212", // Text on light backgrounds
   },
 
   // Accent colors
   accent: {
-    primary: "#58A6FF", // Primary blue
-    secondary: "#7C3AED", // Purple
+    primary: "#0A3D33", // Primary deep green
+    secondary: "#002B24", // Darker green accent
     success: "#3FB950", // Green
     warning: "#D29922", // Orange
     error: "#F85149", // Red
-    info: "#58A6FF", // Info blue
+    info: "#0A3D33", // Info green
   },
 
   // Interactive elements
   interactive: {
-    primary: "#238636", // Primary button
-    primaryHover: "#2EA043", // Primary button hover
-    secondary: "#21262D", // Secondary button
-    secondaryHover: "#30363D", // Secondary button hover
+    primary: "#0A3D33", // Primary button (deep green)
+    primaryHover: "#002B24", // Primary button hover (darker green)
+    secondary: "#1A1C1E", // Secondary button
+    secondaryHover: "#232527", // Secondary button hover
     danger: "#DA3633", // Danger button
     dangerHover: "#F85149", // Danger button hover
   },
 
   // Borders and shadows
   border: {
-    primary: "#30363D", // Main borders
-    secondary: "#21262D", // Subtle borders
-    focus: "#58A6FF", // Focus borders
+    primary: "#232527", // Main borders
+    secondary: "#1A1C1E", // Subtle borders
+    focus: "#0A3D33", // Focus borders (green)
   },
 
   // Shadows
