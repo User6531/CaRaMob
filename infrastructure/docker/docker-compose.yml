@@ -1,3 +1,5 @@
+name: caramob
+
 services:
   mongodb:
     image: mongo:7.0
