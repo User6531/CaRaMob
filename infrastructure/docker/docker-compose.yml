@@ -1,3 +1,5 @@
+name: caramob
+
 services:
   mongodb:
     image: mongo:7.0
@@ -54,6 +56,23 @@ services:
     stdin_open: true
     tty: true
     command: npm start
+
+  admin-web-ui:
+    build:
+      context: ../../apps/AdminWebUi
+      dockerfile: Dockerfile
+    container_name: admin-web-ui
+    volumes:
+      - ../../apps/AdminWebUi:/app
+      - /app/node_modules
+    ports:
+      - "5100:5100"
+    environment:
+        - NODE_ENV=development
+        - VITE_PORT=5100
+    stdin_open: true
+    tty: true
+    command: npm run dev
 
 volumes:
   mongodb_data:
