@@ -177,6 +177,20 @@ export const styles = StyleSheet.create({
   heroCard: {
     marginBottom: 16,
     borderRadius: 20,
+    overflow: "visible",
+    backgroundColor: "#1A1C1E",
+    zIndex: 40,
+  },
+  heroSelectBackdrop: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 30,
+  },
+  heroMedia: {
+    borderRadius: 20,
     overflow: "hidden",
     backgroundColor: "#1A1C1E",
   },
@@ -196,21 +210,31 @@ export const styles = StyleSheet.create({
     fontSize: 48,
     marginBottom: 8,
   },
+  heroPlaceholderIcon: {
+    marginBottom: 8,
+  },
   heroPlaceholderLabel: {
     fontSize: 16,
-    color: "#B0B0B0",
+    color: "#ffffff",
   },
   heroOverlay: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 14,
     backgroundColor: "rgba(0,0,0,0.6)",
+    borderBottomEndRadius: 12,
+    borderBottomLeftRadius: 12,
+  },
+  heroSelectContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 20,
+    borderBottomEndRadius: 12,
+    borderBottomLeftRadius: 12,
   },
   heroTitleRow: {
     flexDirection: "row",
@@ -231,6 +255,50 @@ export const styles = StyleSheet.create({
   heroChevron: {
     fontSize: 20,
     color: "#FFFFFF",
+  },
+  heroSelectMenu: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: "100%",
+    marginTop: 12,
+    backgroundColor: "#232527",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.08)",
+    paddingVertical: 6,
+    borderRadius: 14,
+    overflow: "hidden",
+    elevation: 6,
+  },
+  heroSelectItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  heroSelectItemText: {
+    fontSize: 14,
+    color: "#B0B0B0",
+    fontWeight: "500",
+  },
+  heroSelectItemTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  heroSelectItemPlate: {
+    marginTop: 2,
+    fontSize: 12,
+    color: "#8E8E93",
+  },
+  heroAddVehicleItem: {
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.08)",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  heroAddVehicleText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#33AD78",
   },
   // Information block
   infoBlock: {
@@ -265,7 +333,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   infoRow: {
-    marginBottom: 14,
+    marginBottom: 8,
   },
   infoLabel: {
     fontSize: 12,
@@ -336,7 +404,7 @@ export const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   serviceMoreBtn: {
-    backgroundColor: "#0A3D33",
+    backgroundColor: "#002B24",
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
@@ -344,7 +412,7 @@ export const styles = StyleSheet.create({
   serviceMoreBtnText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#FFFFFF",
+    color: "#4ade9e",
   },
   serviceList: {
     gap: 16,
@@ -443,11 +511,11 @@ export const styles = StyleSheet.create({
   },
   navItemLabel: {
     fontSize: 8,
-    color: "#B0B0B0",
+    color: "#FFFFFF",
   },
   navItemLabelActive: {
     fontSize: 8,
-    color: "#33AD78",
+    color: "#4ade9e",
     fontWeight: "600",
   },
   errorStateContainer: {

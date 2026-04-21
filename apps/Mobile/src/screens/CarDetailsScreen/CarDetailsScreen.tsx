@@ -14,11 +14,7 @@ import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarDetailsScreen.styles";
 import { CarDetailsScreenProps } from "../../navigation/types";
 import { useVehicle, useDeleteVehicle } from "../../queries";
-import {
-  FuelType,
-  TransmissionType,
-  WheelDriveType,
-} from "../../types/api";
+import { FuelType, TransmissionType, WheelDriveType } from "../../types/api";
 
 const FUEL_LABELS: Record<FuelType, string> = {
   [FuelType.Gasoline]: "Бензин",
@@ -81,7 +77,9 @@ export default function CarDetailsScreen({
             } catch (e) {
               Alert.alert(
                 "Помилка",
-                e instanceof Error ? e.message : "Не вдалося видалити автомобіль"
+                e instanceof Error
+                  ? e.message
+                  : "Не вдалося видалити автомобіль"
               );
             }
           },
@@ -101,7 +99,10 @@ export default function CarDetailsScreen({
       >
         {isLoading ? (
           <>
-            <ActivityIndicator size="large" color={theme.colors.accent.primary} />
+            <ActivityIndicator
+              size="large"
+              color={theme.colors.accent.primary}
+            />
             <Text style={globalStyles.loadingText}>Завантаження...</Text>
           </>
         ) : (
@@ -127,7 +128,10 @@ export default function CarDetailsScreen({
           {error instanceof Error ? error.message : "Помилка мережі"}
         </Text>
         <TouchableOpacity
-          style={[globalStyles.buttonPrimary, errorBlockStyles.retryButtonMargin]}
+          style={[
+            globalStyles.buttonPrimary,
+            errorBlockStyles.retryButtonMargin,
+          ]}
           onPress={() => navigation.goBack()}
         >
           <Text style={globalStyles.buttonPrimaryText}>Назад</Text>
