@@ -12,4 +12,6 @@ export const queryKeys = {
   // Vehicle queries (GET /api/vehicles)
   vehicles: ["vehicles"] as const,
   vehicle: (id: string) => ["vehicles", id] as const,
+  serviceHistory: (vehicleId: string) =>
+    ["vehicles", vehicleId, "service-history"] as const,
 } as const;

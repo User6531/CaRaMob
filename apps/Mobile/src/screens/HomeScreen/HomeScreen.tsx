@@ -16,10 +16,9 @@ import { useStatusBar } from "../../hooks/useStatusBar";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./HomeScreen.styles";
 import { HomeScreenProps } from "../../navigation/types";
-import { useVehicles, useVehicle } from "../../queries";
+import { useVehicles, useVehicle, useServiceHistory } from "../../queries";
 import { useTheme } from "../../hooks/useTheme";
 import { FuelType, TransmissionType, WheelDriveType } from "../../types/api";
-import { MOCK_SERVICE_HISTORY } from "./mockServiceHistory";
 
 const FUEL_LABELS: Record<FuelType, string> = {
   [FuelType.Gasoline]: "Бензин",
@@ -125,6 +124,16 @@ function formatVinShort(vin: string) {
   return `${vin.slice(0, 4)}...${vin.slice(-4)}`;
 }
 
+function formatServiceDate(date: string) {
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return date;
+  return parsedDate.toLocaleDateString("uk-UA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+}
+
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   useStatusBar();
   const theme = useTheme();
@@ -163,11 +172,28 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     vehicles.find((vehicle) => vehicle.id === activeVehicleId) ?? vehicles[0];
 
   const { data: car, isLoading: isLoadingCar } = useVehicle(activeVehicleId);
+  const { data: serviceHistory = [] } = useServiceHistory(activeVehicleId);
+  const recentServiceHistory = serviceHistory.slice(0, 3);
 
   const handleCopyVin = () => {
     if (car?.vin) {
       Alert.alert("VIN-код", car.vin, [{ text: "OK" }]);
     }
+  };
+
+  const openServiceHistory = () => {
+    if (!activeVehicleId) {
+      Alert.alert(
+        "Немає автомобіля",
+        "Додайте авто, щоб переглядати історію обслуговування."
+      );
+      return;
+    }
+
+    navigation.navigate("ServiceHistory", {
+      vehicleId: activeVehicleId,
+      vehicleTitle: `${heroBrand} ${heroModel}`.trim(),
+    });
   };
 
   if (isLoadingList && !vehicles.length) {
@@ -482,12 +508,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 <Text style={styles.serviceBlockTitle}>
                   Історія обслуговування
                 </Text>
-                <TouchableOpacity style={styles.serviceMoreBtn}>
+                <TouchableOpacity
+                  style={styles.serviceMoreBtn}
+                  onPress={openServiceHistory}
+                  activeOpacity={0.8}
+                >
                   <Text style={styles.serviceMoreBtnText}>Більше &gt;</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.serviceList}>
-                {MOCK_SERVICE_HISTORY.map((item) => (
+                {recentServiceHistory.map((item) => (
                   <View key={item.id} style={styles.serviceItem}>
                     <View style={styles.serviceAvatar}>
                       <SvgXml
@@ -500,12 +530,23 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                     <View style={styles.serviceContent}>
                       <View style={styles.serviceTitleRow}>
                         <Text style={styles.serviceTitle}>{item.title}</Text>
-                        <Text style={styles.serviceDate}>{item.date}</Text>
+                        <Text style={styles.serviceDate}>
+                          {formatServiceDate(item.createdAt)}
+                        </Text>
                       </View>
-                      <Text style={styles.serviceDesc}>{item.description}</Text>
+                      <Text style={styles.serviceDesc}>
+                        {item.records?.length
+                          ? item.records.map((record) => record.title).join(", ")
+                          : item.description || "Список робіт поки не заповнений"}
+                      </Text>
                     </View>
                   </View>
                 ))}
+                {!recentServiceHistory.length ? (
+                  <Text style={styles.serviceDesc}>
+                    Ще немає записів обслуговування для цього авто.
+                  </Text>
+                ) : null}
               </View>
             </View>
           </>
@@ -554,7 +595,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               <Text style={styles.navItemLabel}>Мої сервіси</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.navItem}>
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={openServiceHistory}
+              activeOpacity={0.8}
+            >
               <SvgXml
                 xml={HISTORY_NAV_ICON_SVG}
                 width={20}

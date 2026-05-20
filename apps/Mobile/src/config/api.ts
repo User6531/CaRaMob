@@ -28,4 +28,6 @@ export const ENDPOINTS = {
   // Vehicle endpoints (backend /api/vehicles)
   VEHICLES: "/vehicles",
   VEHICLE_BY_ID: (id: string) => `/vehicles/${id}`,
+  SERVICE_HISTORY_BY_VEHICLE: (vehicleId: string) =>
+    `/service-history/${vehicleId}`,
 } as const;

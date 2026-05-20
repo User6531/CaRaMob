@@ -157,3 +157,28 @@ export interface UpdateVehicleDto {
   mileage?: number | null;
   photoUrl?: string | null;
 }
+
+export interface ServiceWorkItemDto {
+  id: string;
+  title: string;
+  price?: number | null;
+}
+
+export interface ServiceHistoryVisitDto {
+  id: string;
+  title: string;
+  description?: string | null;
+  createdAt: string;
+  records?: ServiceWorkItemDto[];
+}
+
+export interface CreateServiceWorkItemDto {
+  title: string;
+  price: number;
+}
+
+export interface CreateServiceHistoryDto {
+  title: string;
+  description?: string;
+  records: CreateServiceWorkItemDto[];
+}
