@@ -205,7 +205,7 @@ public static class AuthEndpoints
     static async Task<TelegramUser?> ValidateIdToken(string idToken, string clientId)
     {
         using var http = new HttpClient();
-        var jwks = await http.GetStringAsync("https://oauth.telegram.org/jwks");
+        var jwks = await http.GetStringAsync("https://oauth.telegram.org/.well-known/jwks.json");
 
         try
         {
@@ -230,8 +230,9 @@ public static class AuthEndpoints
                 jwt.Claims.FirstOrDefault(c => c.Type == "picture")?.Value
             );
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"ValidateIdToken failed: {ex.Message}");
             return null;
         }
     }
