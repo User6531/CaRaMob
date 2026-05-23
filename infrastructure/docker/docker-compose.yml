@@ -38,6 +38,20 @@ services:
     networks:
       - mainhub-network
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    restart: unless-stopped
+    command: http mainhub-api:5001 --url=https://scaling-sediment-automated.ngrok-free.dev
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+    depends_on:
+      - mainhub-api
+    networks:
+      - mainhub-network
+
   expo-mobile:
     build:
       context: ../../apps/Mobile

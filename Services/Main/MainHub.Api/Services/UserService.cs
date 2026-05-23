@@ -61,7 +61,7 @@ public interface IUserService
   /// <param name="name">The name of the user.</param>
   /// <param name="email">The email of the user.</param>
   /// <returns>A task that represents the asynchronous operation.</returns>
-  Task<UserEntity> CreateAsync(string name, string email, string providerId);
+  Task<UserEntity> CreateAsync(string name, string? email, string providerId);
 
   /// <summary>
   /// Deletes a user by their unique identifier asynchronously.
@@ -158,7 +158,7 @@ public class UserService(IUserRepository repository) : IUserService
 
   public async Task<UserEntity> CreateAsync(
     string name,
-    string email,
+    string? email,
     string providerId
   )
   {

@@ -6,9 +6,14 @@ namespace MainHub.Api.DTOs
   public class CheckAuthResponseDto
   {
     /// <summary>
-    /// The internal authentication token.
+    /// The short-lived internal JWT access token.
     /// </summary>
     public required string InternalToken { get; set; }
+
+    /// <summary>
+    /// The long-lived refresh token used to obtain a new access token without re-authentication.
+    /// </summary>
+    public required string RefreshToken { get; set; }
 
     /// <summary>
     /// The user's information.

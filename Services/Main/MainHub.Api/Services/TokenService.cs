@@ -28,6 +28,11 @@ public interface ITokenService
     /// <returns>The user ID extracted from the claims.</returns>
     /// <exception cref="ArgumentException">Thrown when the claims don't contain a valid user ID.</exception>
     Guid GetUserIdFromClaims(ClaimsPrincipal claims);
+
+    /// <summary>
+    /// Generates a cryptographically random opaque refresh token string.
+    /// </summary>
+    string GenerateRefreshToken();
 }
 
 /// <summary>
@@ -97,6 +102,12 @@ public class TokenService : ITokenService
         }
 
         return userId;
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(bytes).Replace("+", "-").Replace("/", "_").TrimEnd('=');
     }
 }
 

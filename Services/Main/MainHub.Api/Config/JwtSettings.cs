@@ -25,5 +25,10 @@ public class JwtSettings
     /// Gets or sets the expiration time in minutes.
     /// </summary>
     public int ExpirationMinutes { get; set; } = 60;
+
+    /// <summary>
+    /// Gets or sets the refresh token expiration time in days.
+    /// </summary>
+    public int RefreshTokenExpirationDays { get; set; } = 30;
 }
 
