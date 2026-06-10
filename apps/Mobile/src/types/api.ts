@@ -161,6 +161,7 @@ export interface UpdateVehicleDto {
 export interface ServiceWorkItemDto {
   id: string;
   title: string;
+  description?: string | null;
   price?: number | null;
 }
 
@@ -174,11 +175,11 @@ export interface ServiceHistoryVisitDto {
 
 export interface CreateServiceWorkItemDto {
   title: string;
+  description: string;
   price: number;
 }
 
 export interface CreateServiceHistoryDto {
   title: string;
-  description?: string;
   records: CreateServiceWorkItemDto[];
 }

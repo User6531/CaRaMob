@@ -18,18 +18,19 @@ export const darkTheme = {
 
   // Accent colors
   accent: {
-    primary: "#0A3D33", // Primary deep green
-    secondary: "#002B24", // Darker green accent
-    success: "#3FB950", // Green
+    primary: "#4ade9e", // Main brand green
+    secondary: "#3bc98e", // Hover / pressed green
+    dark: "#1a4038", // Dark green surfaces
+    success: "#4ade9e",
     warning: "#D29922", // Orange
     error: "#F85149", // Red
-    info: "#0A3D33", // Info green
+    info: "#4ade9e",
   },
 
   // Interactive elements
   interactive: {
-    primary: "#0A3D33", // Primary button (deep green)
-    primaryHover: "#002B24", // Primary button hover (darker green)
+    primary: "#4ade9e", // Primary button
+    primaryHover: "#3bc98e",
     secondary: "#1A1C1E", // Secondary button
     secondaryHover: "#232527", // Secondary button hover
     danger: "#DA3633", // Danger button
@@ -40,7 +41,7 @@ export const darkTheme = {
   border: {
     primary: "#232527", // Main borders
     secondary: "#1A1C1E", // Subtle borders
-    focus: "#0A3D33", // Focus borders (green)
+    focus: "#4ade9e",
   },
 
   // Shadows
@@ -52,7 +53,7 @@ export const darkTheme = {
 
   // Status colors
   status: {
-    online: "#3FB950",
+    online: "#4ade9e",
     offline: "#6E7681",
     away: "#D29922",
     busy: "#F85149",

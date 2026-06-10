@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions } from "react-native";
+import { theme } from "../../styles/theme";
 
 const { width } = Dimensions.get("window");
 const cardWidth = width - 48; // Full width minus padding
@@ -94,7 +95,7 @@ export const styles = StyleSheet.create({
   },
   carPlate: {
     fontSize: 14,
-    color: "#0A3D33",
+    color: theme.colors.accent.primary,
     fontWeight: "600",
   },
   editButton: {
@@ -104,7 +105,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#0A3D33",
+    backgroundColor: theme.colors.accent.primary,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -118,7 +119,7 @@ export const styles = StyleSheet.create({
   },
   editButtonText: {
     fontSize: 14,
-    color: "#fff",
+    color: theme.colors.text.inverse,
   },
   emptyCard: {
     width: cardWidth,
@@ -141,7 +142,7 @@ export const styles = StyleSheet.create({
   },
   plusIcon: {
     fontSize: 48,
-    color: "#0A3D33",
+    color: theme.colors.accent.primary,
     marginBottom: 12,
   },
   emptyCardText: {
@@ -404,7 +405,7 @@ export const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   serviceMoreBtn: {
-    backgroundColor: "#002B24",
+    backgroundColor: theme.colors.accent.dark,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
@@ -412,8 +413,8 @@ export const styles = StyleSheet.create({
   serviceMoreBtnText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#4ade9e",
-  },
+    color: theme.colors.accent.primary,
+    },
   serviceList: {
     gap: 16,
   },
@@ -515,7 +516,7 @@ export const styles = StyleSheet.create({
   },
   navItemLabelActive: {
     fontSize: 8,
-    color: "#4ade9e",
+    color: theme.colors.accent.primary,
     fontWeight: "600",
   },
   errorStateContainer: {

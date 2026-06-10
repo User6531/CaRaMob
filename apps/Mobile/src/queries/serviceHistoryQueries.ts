@@ -27,6 +27,8 @@ const normalizeRecord = (raw: unknown): ServiceWorkItemDto | null => {
     id,
     title,
     price: typeof raw.price === "number" ? raw.price : null,
+    description:
+      typeof raw.description === "string" ? raw.description : null,
   };
 };
 
@@ -43,11 +45,16 @@ const normalizeVisit = (raw: unknown): ServiceHistoryVisitDto | null => {
     ? raw.records.map(normalizeRecord).filter((item): item is ServiceWorkItemDto => !!item)
     : [];
 
+  const firstRecordDescription = records[0]?.description ?? null;
+
   return {
     id,
     title,
     createdAt,
-    description: typeof raw.description === "string" ? raw.description : null,
+    description:
+      typeof raw.description === "string"
+        ? raw.description
+        : firstRecordDescription,
     records,
   };
 };

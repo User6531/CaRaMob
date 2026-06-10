@@ -13,16 +13,16 @@
   --text-inverse: #0d1117; /* Text on light backgrounds */
 
   /* Accent variables */
-  --accent-primary: #58a6ff; /* Primary blue */
-  --accent-secondary: #7c3aed; /* Purple */
-  --accent-success: #3fb950; /* Green */
+  --accent-primary: #4ade9e;
+  --accent-secondary: #3bc98e;
+  --accent-success: #4ade9e;
   --accent-warning: #d29922; /* Orange */
   --accent-error: #f85149; /* Red */
-  --accent-info: #58a6ff; /* Info blue */
+  --accent-info: #4ade9e;
 
   /* Interactive variables */
-  --interactive-primary: #238636; /* Primary button */
-  --interactive-primary-hover: #2ea043; /* Primary button hover */
+  --interactive-primary: #4ade9e;
+  --interactive-primary-hover: #3bc98e;
   --interactive-secondary: #21262d; /* Secondary button */
   --interactive-secondary-hover: #30363d; /* Secondary button hover */
   --interactive-danger: #da3633; /* Danger button */
@@ -31,7 +31,7 @@
   /* Border variables */
   --border-primary: #30363d; /* Main borders */
   --border-secondary: #21262d; /* Subtle borders */
-  --border-focus: #58a6ff; /* Focus borders */
+  --border-focus: #4ade9e;
 
   /* Shadow variables */
   --shadow-small: rgba(0, 0, 0, 0.3);
@@ -39,7 +39,7 @@
   --shadow-large: rgba(0, 0, 0, 0.5);
 
   /* Status variables */
-  --status-online: #3fb950;
+  --status-online: #4ade9e;
   --status-offline: #6e7681;
   --status-away: #d29922;
   --status-busy: #f85149;

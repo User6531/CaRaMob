@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { theme } from "../../styles/theme";
 
 export const styles = StyleSheet.create({
   container: {
@@ -21,7 +22,7 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: theme.colors.interactive.primary,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -96,7 +97,7 @@ export const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 1,
-    backgroundColor: "#007AFF",
+    backgroundColor: theme.colors.interactive.primary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",

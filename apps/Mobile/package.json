@@ -24,7 +24,6 @@
     "@tanstack/react-query": "^5.90.5",
     "@tanstack/react-query-devtools": "^5.90.2",
     "expo": "~54.0.12",
-    "expo-auth-session": "~6.0.0",
     "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.9",
     "expo-font": "~14.0.8",

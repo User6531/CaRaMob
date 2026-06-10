@@ -6,11 +6,10 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  ScrollView,
-  KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { FormScreen } from "../../components/FormScreen";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../../hooks/useTheme";
@@ -224,11 +223,10 @@ export default function CarEditScreen({
   const isSaving = updateVehicle.isPending;
 
   return (
-    <KeyboardAvoidingView
+    <FormScreen
       style={[globalStyles.container, globalStyles.pageBackground]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      contentContainerStyle={styles.scrollContainer}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <Text style={[globalStyles.textLarge, styles.title]}>
             Редагувати автомобіль
@@ -359,7 +357,6 @@ export default function CarEditScreen({
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </FormScreen>
   );
 }

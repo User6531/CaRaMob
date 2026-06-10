@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../hooks/useTheme";
 import { useStatusBar } from "../../hooks/useStatusBar";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./LoginScreen.styles";
@@ -16,8 +15,6 @@ import { styles } from "./LoginScreen.styles";
 export default function LoginScreen() {
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
-  const theme = useTheme();
-
   const handleLogin = async () => {
     try {
       setLoading(true);
@@ -53,7 +50,7 @@ export default function LoginScreen() {
           style={styles.logo}
         />
         <Text style={[globalStyles.textLarge, styles.title]}>
-          Ласкаво просимо!
+          Привіт, готові рухатись?
         </Text>
         <Text style={[globalStyles.textSecondary, styles.subtitle]}>
           Увійдіть у свій акаунт
@@ -64,15 +61,17 @@ export default function LoginScreen() {
           onPress={handleLogin}
           disabled={loading}
         >
-          <Text style={globalStyles.buttonPrimaryText}>
-            {loading ? "Вхід..." : "Увійти через Microsoft"}
+          <Text
+            style={[globalStyles.buttonPrimaryText, styles.loginButtonText]}
+          >
+            {loading ? "Вхід..." : "Увійти через Telegram"}
           </Text>
         </TouchableOpacity>
 
         {loading && (
           <ActivityIndicator
             size="large"
-            color={theme.colors.accent.primary}
+            color="#0088CC"
             style={styles.loadingIndicator}
           />
         )}

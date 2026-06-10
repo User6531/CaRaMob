@@ -23,6 +23,10 @@ export const styles = StyleSheet.create({
   loginButton: {
     width: "100%",
     marginBottom: 16,
+    backgroundColor: "#0088CC",
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
   },
   loadingIndicator: {
     marginTop: 16,

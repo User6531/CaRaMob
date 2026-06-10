@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { theme } from "../../styles/theme";
 
 export const styles = StyleSheet.create({
   container: {
@@ -79,7 +80,7 @@ export const styles = StyleSheet.create({
   },
   continueButton: {
     flex: 1,
-    backgroundColor: "#007AFF",
+    backgroundColor: theme.colors.interactive.primary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",

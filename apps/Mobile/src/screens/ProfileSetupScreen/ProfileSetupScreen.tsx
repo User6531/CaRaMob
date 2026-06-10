@@ -5,11 +5,10 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
 } from "react-native";
+import { FormScreen } from "../../components/FormScreen";
+import { theme } from "../../styles/theme";
 import { useAuth } from "../../context/AuthContext";
 import { useUpdateUserProfile } from "../../queries/userQueries";
 import { styles } from "./ProfileSetupScreen.styles";
@@ -102,18 +101,17 @@ export default function ProfileSetupScreen({
   if (isLoadingProfile) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={theme.colors.accent.primary} />
         <Text style={styles.loadingText}>Завантаження твого профілю...</Text>
       </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView
+    <FormScreen
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      contentContainerStyle={styles.scrollContainer}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <Text style={styles.title}>Давай знайомитись</Text>
           <Text style={styles.subtitle}>Додай інформацію про себе</Text>
@@ -171,7 +169,6 @@ export default function ProfileSetupScreen({
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </FormScreen>
   );
 }

@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions } from "react-native";
+import { theme } from "../../styles/theme";
 
 const { width } = Dimensions.get("window");
 
@@ -64,7 +65,7 @@ export const styles = StyleSheet.create({
     textAlign: "right",
   },
   licensePlate: {
-    color: "#58A6FF", // Using theme color directly
+    color: theme.colors.accent.primary,
     fontWeight: "600",
     fontSize: 18,
   },

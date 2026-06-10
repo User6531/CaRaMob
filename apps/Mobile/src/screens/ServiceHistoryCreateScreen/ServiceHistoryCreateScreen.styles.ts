@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { theme } from "../../styles/theme";
 
 export const styles = StyleSheet.create({
   contentContainer: {
@@ -79,13 +80,13 @@ export const styles = StyleSheet.create({
   },
   addWorkButton: {
     alignSelf: "flex-start",
-    backgroundColor: "#002B24",
+    backgroundColor: theme.colors.accent.dark,
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
   addWorkButtonText: {
-    color: "#4ade9e",
+    color: theme.colors.accent.primary,
     fontSize: 13,
     fontWeight: "600",
   },

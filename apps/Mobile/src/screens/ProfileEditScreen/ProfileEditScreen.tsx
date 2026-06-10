@@ -5,11 +5,10 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
 } from "react-native";
+import { FormScreen } from "../../components/FormScreen";
+import { theme } from "../../styles/theme";
 import { useMe, useUpdateUserProfile } from "../../queries/userQueries";
 import { styles } from "./ProfileEditScreen.styles";
 import { ProfileEditScreenProps } from "../../navigation/types";
@@ -114,7 +113,7 @@ export default function ProfileEditScreen({
   if (isLoading || isLoadingMe) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={theme.colors.accent.primary} />
         <Text style={styles.loadingText}>Завантаження профілю...</Text>
       </View>
     );
@@ -137,11 +136,10 @@ export default function ProfileEditScreen({
   }
 
   return (
-    <KeyboardAvoidingView
+    <FormScreen
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      contentContainerStyle={styles.scrollContainer}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <Text style={styles.title}>Редагування профілю</Text>
           <Text style={styles.subtitle}>Оновіть інформацію про себе</Text>
@@ -199,7 +197,6 @@ export default function ProfileEditScreen({
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </FormScreen>
   );
 }

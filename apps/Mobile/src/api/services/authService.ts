@@ -1,11 +1,6 @@
-import { API_CONFIG } from "../../config/api";
+import { API_CONFIG, getNgrokHeaders } from "../../config/api";
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
-
-export interface CheckAuthResponseDto {
-  internalToken: string;
-  meData: GetMeDto;
-}
 
 export interface GetMeDto {
   name: string;
@@ -13,58 +8,59 @@ export interface GetMeDto {
   updatedAt: string | null;
 }
 
-/**
- * Викликає /api/auth/session з Azure AD токеном
- * @param azureToken - Azure AD access token
- * @returns CheckAuthResponseDto з внутрішнім токеном та даними користувача
- */
-export async function checkAuthSession(
-  azureToken: string
-): Promise<CheckAuthResponseDto> {
-  const response = await fetch(`${API_BASE_URL}/auth/session`, {
+export interface RefreshTokenResponseDto {
+  accessToken: string;
+  refreshToken: string;
+}
+
+function normalizeMeData(data: Record<string, unknown>): GetMeDto {
+  const me = (data.meData ?? data.MeData ?? data) as Record<string, unknown>;
+  return {
+    name: String(me.name ?? me.Name ?? ""),
+    email: (me.email ?? me.Email) as string | undefined,
+    updatedAt: (me.updatedAt ?? me.UpdatedAt ?? null) as string | null,
+  };
+}
+
+export async function fetchMe(accessToken: string): Promise<GetMeDto> {
+  const response = await fetch(`${API_BASE_URL}/user/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${azureToken}`,
+      Authorization: `Bearer ${accessToken}`,
+      ...getNgrokHeaders(),
     },
   });
 
   if (!response.ok) {
-    let errorMessage = `HTTP error! status: ${response.status}`;
-    try {
-      const errorText = await response.text();
-      if (errorText) {
-        errorMessage = errorText;
-      }
-    } catch (e) {
-      // Ігноруємо помилки парсингу тексту
-    }
-    throw new Error(errorMessage);
-  }
-
-  const contentType = response.headers.get("content-type");
-  if (!contentType || !contentType.includes("application/json")) {
-    const responseText = await response.text();
-    throw new Error(
-      `Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`
-    );
+    const errorText = await response.text().catch(() => "");
+    throw new Error(errorText || `HTTP error! status: ${response.status}`);
   }
 
   const data = await response.json();
-
-  // Нормалізуємо відповідь (бекенд може повертати з великої літери)
-  return {
-    internalToken: data.internalToken || data.InternalToken,
-    meData: {
-      name: data.meData?.name || data.MeData?.name || "",
-      email: data.meData?.email || data.MeData?.email,
-      updatedAt: data.meData?.updatedAt || data.MeData?.updatedAt || null,
-    },
-  };
+  return normalizeMeData(data);
 }
 
+export async function refreshAccessToken(
+  refreshToken: string
+): Promise<RefreshTokenResponseDto> {
+  const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getNgrokHeaders(),
+    },
+    body: JSON.stringify({ refreshToken }),
+  });
 
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(errorText || `HTTP error! status: ${response.status}`);
+  }
 
-
-
-
+  const data = await response.json();
+  return {
+    accessToken: data.accessToken || data.AccessToken,
+    refreshToken: data.refreshToken || data.RefreshToken,
+  };
+}

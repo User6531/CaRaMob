@@ -1,6 +1,6 @@
 import React from "react";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FormScreen } from "../../components/FormScreen";
 import { useStatusBar } from "../../hooks/useStatusBar";
 import { useCreateServiceHistory } from "../../queries";
 import { ServiceHistoryCreateScreenProps } from "../../navigation/types";
@@ -24,7 +24,6 @@ export default function ServiceHistoryCreateScreen({
   route,
 }: ServiceHistoryCreateScreenProps) {
   useStatusBar();
-  const insets = useSafeAreaInsets();
   const { vehicleId, vehicleTitle } = route.params;
   const createServiceHistory = useCreateServiceHistory();
 
@@ -90,15 +89,18 @@ export default function ServiceHistoryCreateScreen({
       return;
     }
 
+    const visitDescription = description.trim();
+
     try {
       await createServiceHistory.mutateAsync({
         vehicleId,
         data: {
           title: title.trim(),
-          description: description.trim() || undefined,
-          records: parsedRecords.map((record) => ({
+          records: parsedRecords.map((record, index) => ({
             title: record.title,
             price: record.price,
+            description:
+              index === 0 && visitDescription ? visitDescription : "",
           })),
         },
       });
@@ -117,14 +119,9 @@ export default function ServiceHistoryCreateScreen({
   };
 
   return (
-    <ScrollView
+    <FormScreen
       style={[globalStyles.container, globalStyles.pageBackground]}
-      contentContainerStyle={[
-        styles.contentContainer,
-        { paddingTop: 16 + insets.top, paddingBottom: 24 + insets.bottom },
-      ]}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.contentContainer}
     >
       <Text style={styles.title}>Новий запис обслуговування</Text>
       <Text style={styles.subtitle}>
@@ -226,6 +223,6 @@ export default function ServiceHistoryCreateScreen({
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+    </FormScreen>
   );
 }

@@ -1,31 +1,25 @@
 // API Configuration
+const NGROK_API_BASE = "https://scaling-sediment-automated.ngrok-free.dev/api";
+
 export const API_CONFIG = {
-  // Змініть ці URL на ваші реальні
-  BASE_URL: __DEV__
-    ? "http://localhost:5001/api" // Development - Docker контейнер на порту 5001
-    : "https://kivvo3k-bublick-8082.exp.direct/api", // Production
-
-  // Timeouts
-  TIMEOUT: 10000, // 10 seconds
-
-  // Retry configuration
+  BASE_URL: __DEV__ ? NGROK_API_BASE : NGROK_API_BASE,
+  TIMEOUT: 10000,
   MAX_RETRIES: 3,
-  RETRY_DELAY: 1000, // 1 second
-};
+  RETRY_DELAY: 1000,
+} as const;
+
+/** Headers required for ngrok free tier in development. */
+export const getNgrokHeaders = (): Record<string, string> =>
+  __DEV__ ? { "ngrok-skip-browser-warning": "true" } : {};
 
 // Endpoints
 export const ENDPOINTS = {
-  // User endpoints
   USERS: "/users",
   USER_BY_ID: (id: string) => `/users/${id}`,
   ME: "/users/me",
-
-  // Car endpoints
   CARS: "/cars",
   CAR_BY_ID: (id: string) => `/cars/${id}`,
   USER_CARS: (userId: string) => `/users/${userId}/cars`,
-
-  // Vehicle endpoints (backend /api/vehicles)
   VEHICLES: "/vehicles",
   VEHICLE_BY_ID: (id: string) => `/vehicles/${id}`,
   SERVICE_HISTORY_BY_VEHICLE: (vehicleId: string) =>

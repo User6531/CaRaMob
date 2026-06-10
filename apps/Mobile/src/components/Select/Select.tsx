@@ -7,9 +7,12 @@ import {
   Modal,
   FlatList,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useTheme } from "../../hooks/useTheme";
 import { globalStyles } from "../../styles/globalStyles";
+import { theme as appTheme } from "../../styles/theme";
 
 export interface SelectOption {
   label: string;
@@ -97,7 +100,10 @@ export const Select: React.FC<SelectProps> = ({
         animationType="fade"
         onRequestClose={handleModalClose}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
@@ -172,7 +178,7 @@ export const Select: React.FC<SelectProps> = ({
               )}
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -314,11 +320,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#21262d", // theme.colors.background.tertiary
   },
   optionTextSelected: {
-    color: "#58a6ff", // theme.colors.accent.primary
+    color: appTheme.colors.accent.primary,
     fontWeight: "600",
   },
   checkmark: {
-    color: "#58a6ff", // theme.colors.accent.primary
+    color: appTheme.colors.accent.primary,
     fontSize: 18,
     fontWeight: "bold",
     marginLeft: 12,

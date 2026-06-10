@@ -18,6 +18,7 @@ import { styles } from "./HomeScreen.styles";
 import { HomeScreenProps } from "../../navigation/types";
 import { useVehicles, useVehicle, useServiceHistory } from "../../queries";
 import { useTheme } from "../../hooks/useTheme";
+import { theme as appTheme } from "../../styles/theme";
 import { FuelType, TransmissionType, WheelDriveType } from "../../types/api";
 
 const FUEL_LABELS: Record<FuelType, string> = {
@@ -46,9 +47,9 @@ const WHEEL_DRIVE_LABELS: Record<WheelDriveType, string> = {
 
 const SVG_ICON_COLORS = {
   carPlaceholder: "#FFFFFF",
-  edit: "#002B24",
+  edit: "#121212",
   service: "#FFFFFF",
-  homeNav: "#4ade9e",
+  homeNav: appTheme.colors.accent.primary,
   chatNav: "#FFFFFF",
   servicesNav: "#FFFFFF",
   historyNav: "#FFFFFF",
@@ -308,7 +309,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                       xml={CAR_PLACEHOLDER_SVG}
                       width={44}
                       height={44}
-                      color="#4ade9e"
+                      color={theme.colors.accent.primary}
                       style={styles.heroPlaceholderIcon}
                     />
                     <Text style={styles.heroPlaceholderLabel}>
@@ -408,7 +409,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                     xml={EDIT_ICON_SVG}
                     width={18}
                     height={18}
-                    color="#4ade9e"
+                    color={theme.colors.accent.primary}
                   />
                 </TouchableOpacity>
               </View>
@@ -460,7 +461,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                         style={styles.copyBtn}
                         onPress={handleCopyVin}
                       >
-                        <Feather name="copy" size={16} color="#4ade9e" />
+                        <Feather
+                          name="copy"
+                          size={16}
+                          color={theme.colors.accent.primary}
+                        />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -505,9 +510,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             {/* Service history block (mock data) */}
             <View style={styles.serviceBlock}>
               <View style={styles.serviceBlockHeader}>
-                <Text style={styles.serviceBlockTitle}>
-                  Історія обслуговування
-                </Text>
+                <Text style={styles.serviceBlockTitle}>Історія</Text>
                 <TouchableOpacity
                   style={styles.serviceMoreBtn}
                   onPress={openServiceHistory}
@@ -524,7 +527,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                         xml={SERVICE_ICON_SVG}
                         width={18}
                         height={18}
-                        color="#4ade9e"
+                        color={theme.colors.accent.primary}
                       />
                     </View>
                     <View style={styles.serviceContent}>
@@ -536,8 +539,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                       </View>
                       <Text style={styles.serviceDesc}>
                         {item.records?.length
-                          ? item.records.map((record) => record.title).join(", ")
-                          : item.description || "Список робіт поки не заповнений"}
+                          ? item.records
+                              .map((record) => record.title)
+                              .join(", ")
+                          : item.description ||
+                            "Список робіт поки не заповнений"}
                       </Text>
                     </View>
                   </View>

@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useMe } from "../../queries/userQueries";
 import { useAuth } from "../../context/AuthContext";
+import { theme } from "../../styles/theme";
 import { styles } from "./UserCheckScreen.styles";
 import { UserCheckScreenProps } from "../../navigation/types";
 
@@ -135,7 +136,7 @@ export default function UserCheckScreen({ navigation }: UserCheckScreenProps) {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#007AFF" />
+      <ActivityIndicator size="large" color={theme.colors.accent.primary} />
       <Text style={styles.loadingText}>Перевіряємо ваш профіль...</Text>
 
       {showSkipButton && (

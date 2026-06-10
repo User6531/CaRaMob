@@ -83,13 +83,13 @@ public static class AuthEndpoints
     if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
     {
       logger.LogError("Telegram callback failed: Missing code or state");
-      return Results.BadRequest("Missing code or state.");
+      return RedirectToMobile(settings, error: "missing_code_or_state");
     }
 
     if (!pkceStateStore.TryRemove(state, out var verifier))
     {
         logger.LogError("Telegram callback failed: Invalid state parameter");
-        return Results.Unauthorized();
+        return RedirectToMobile(settings, error: "invalid_state");
     }
     logger.LogInformation("CALLBACK — state: {state}, verifier: {verifier}", state, verifier);
 
@@ -114,7 +114,7 @@ public static class AuthEndpoints
     if (!tokenRes.IsSuccessStatusCode)
     {
       logger.LogError("Telegram token exchange failed: {StatusCode} - {ReasonPhrase}", tokenRes.StatusCode, tokenRes.ReasonPhrase);
-      return Results.BadRequest("Failed to exchange code for token.");
+      return RedirectToMobile(settings, error: "token_exchange_failed");
     }
 
     var raw = await tokenRes.Content.ReadAsStringAsync();
@@ -126,14 +126,14 @@ public static class AuthEndpoints
     if (tokenData == null || string.IsNullOrEmpty(tokenData.IdToken))
     {
       logger.LogError("Telegram token response was invalid or missing id_token");
-      return Results.BadRequest("Invalid token response.");
+      return RedirectToMobile(settings, error: "invalid_token_response");
     }
 
     var telegramUser = await ValidateIdToken(tokenData.IdToken, settings.ClientId);
     if (telegramUser == null)
     {
       logger.LogError("Telegram token response missing NameIdentifier claim");
-      return Results.BadRequest("Invalid token response.");
+      return RedirectToMobile(settings, error: "invalid_id_token");
     }
 
     var providerId = $"telegram:{telegramUser.Id}";
@@ -153,7 +153,7 @@ public static class AuthEndpoints
     if (userEntity == null)
     {
         logger.LogWarning("User is null after user retrieval/creation for ProviderId: {ProviderId}", providerId);
-        return Results.BadRequest("Unable to retrieve or create user.");
+        return RedirectToMobile(settings, error: "user_creation_failed");
     }
 
     var internalToken = tokenService.GenerateToken(
@@ -162,20 +162,43 @@ public static class AuthEndpoints
     );
 
     var refreshTokenEntity = await refreshTokenService.CreateAsync(userEntity.Id, providerId);
-    var meData = (GetMeDto)userEntity;
-
-    var response = new CheckAuthResponseDto
-    {
-        InternalToken = internalToken,
-        RefreshToken = refreshTokenEntity.Token,
-        MeData = meData
-    };
 
     logger.LogInformation(
         "Generated internal JWT token for user: {UserId}",
         userEntity.Id
     );
-    return Results.Ok(response);
+
+    return RedirectToMobile(
+        settings,
+        internalToken: internalToken,
+        refreshToken: refreshTokenEntity.Token
+    );
+  }
+
+  private static IResult RedirectToMobile(
+    TelegramSettings settings,
+    string? internalToken = null,
+    string? refreshToken = null,
+    string? error = null
+  )
+  {
+    var qs = HttpUtility.ParseQueryString(string.Empty);
+
+    if (!string.IsNullOrEmpty(error))
+    {
+      qs["error"] = error;
+    }
+    else
+    {
+      qs["internalToken"] = internalToken;
+      qs["refreshToken"] = refreshToken;
+    }
+
+    var redirectUri = string.IsNullOrWhiteSpace(settings.MobileRedirectUri)
+      ? "cara://auth"
+      : settings.MobileRedirectUri;
+
+    return Results.Redirect($"{redirectUri}?{qs}");
   }
 
   internal static async Task<IResult> TelegramLoginAsync(

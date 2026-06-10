@@ -1,4 +1,4 @@
-import { API_CONFIG } from "../config/api";
+import { API_CONFIG, getNgrokHeaders } from "../config/api";
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
@@ -19,6 +19,7 @@ export class ApiClient {
 
     return {
       "Content-Type": "application/json",
+      ...getNgrokHeaders(),
       ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
