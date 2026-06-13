@@ -1,5 +1,11 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { LayoutChangeEvent, Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { SvgXml } from "react-native-svg";
 import { theme } from "../../styles/theme";
 import { styles } from "./BottomNavBar.styles";
@@ -11,8 +17,6 @@ import {
 } from "./navIcons";
 
 export type BottomNavTab = "garage" | "chats" | "services" | "history";
-
-const INACTIVE_ICON_COLOR = "#FFFFFF";
 
 interface NavItemConfig {
   id: BottomNavTab;
@@ -26,6 +30,8 @@ const NAV_ITEMS: NavItemConfig[] = [
   { id: "services", label: "Мої сервіси", icon: SERVICES_NAV_ICON_SVG },
   { id: "history", label: "Історія", icon: HISTORY_NAV_ICON_SVG },
 ];
+
+const TAB_ANIMATION_DURATION_MS = 220;
 
 export interface BottomNavBarProps {
   activeTab?: BottomNavTab;
@@ -49,16 +55,65 @@ export function BottomNavBar({
     history: onHistoryPress,
   };
 
+  const translateX = useSharedValue(0);
+  const tabWidth = useSharedValue(0);
+  const hasLaidOut = React.useRef(false);
+
+  const activeIndex = NAV_ITEMS.findIndex((item) => item.id === activeTab);
+
+  const animateToActiveTab = React.useCallback(
+    (animated: boolean) => {
+      if (tabWidth.value <= 0 || activeIndex < 0) return;
+
+      const nextOffset = activeIndex * tabWidth.value;
+
+      translateX.value = animated
+        ? withTiming(nextOffset, {
+            duration: TAB_ANIMATION_DURATION_MS,
+            easing: Easing.out(Easing.cubic),
+          })
+        : nextOffset;
+    },
+    [activeIndex, tabWidth, translateX]
+  );
+
+  React.useEffect(() => {
+    if (!hasLaidOut.current) return;
+    animateToActiveTab(true);
+  }, [activeTab, animateToActiveTab]);
+
+  const handleItemsLayout = (event: LayoutChangeEvent) => {
+    const width = event.nativeEvent.layout.width;
+    const nextTabWidth = width / NAV_ITEMS.length;
+
+    tabWidth.value = nextTabWidth;
+
+    if (!hasLaidOut.current) {
+      animateToActiveTab(false);
+      hasLaidOut.current = true;
+      return;
+    }
+
+    animateToActiveTab(true);
+  };
+
+  const activeIndicatorStyle = useAnimatedStyle(() => ({
+    width: tabWidth.value,
+    transform: [{ translateX: translateX.value }],
+  }));
+
   return (
     <View style={styles.container}>
-      <View style={styles.items}>
+      <View style={styles.items} onLayout={handleItemsLayout}>
+        <Animated.View style={[styles.activeIndicator, activeIndicatorStyle]} />
+
         {NAV_ITEMS.map((item) => {
           const isActive = item.id === activeTab;
 
           return (
             <TouchableOpacity
               key={item.id}
-              style={[styles.item, isActive && styles.itemActive]}
+              style={styles.item}
               onPress={handlers[item.id]}
               activeOpacity={0.8}
             >
@@ -67,7 +122,9 @@ export function BottomNavBar({
                 width={20}
                 height={20}
                 color={
-                  isActive ? theme.colors.accent.primary : INACTIVE_ICON_COLOR
+                  isActive
+                    ? theme.colors.accent.primary
+                    : theme.colors.text.secondary
                 }
               />
               <Text style={isActive ? styles.labelActive : styles.label}>

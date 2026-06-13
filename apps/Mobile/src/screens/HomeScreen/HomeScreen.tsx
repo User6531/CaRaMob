@@ -13,13 +13,13 @@ import { Feather } from "@expo/vector-icons";
 import { SvgXml } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useStatusBar } from "../../hooks/useStatusBar";
+import { usePullToRefresh } from "../../hooks/usePullToRefresh";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./HomeScreen.styles";
 import { HomeScreenProps } from "../../navigation/types";
-import { useQueryClient } from "@tanstack/react-query";
 import { useVehicles, useVehicle, useServiceHistory } from "../../queries";
-import { queryKeys } from "../../queries/queryKeys";
 import { BottomNavBar, BottomNavTab } from "../../components/BottomNavBar";
+import { RefreshStatusBar } from "../../components/RefreshStatusBar";
 import { ServiceHistoryContent } from "../ServiceHistoryScreen/ServiceHistoryContent";
 import { useTheme } from "../../hooks/useTheme";
 import { FuelType, TransmissionType, WheelDriveType } from "../../types/api";
@@ -101,7 +101,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   useStatusBar();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const queryClient = useQueryClient();
   const [selectedVehicleId, setSelectedVehicleId] = React.useState<
     string | undefined
   >(undefined);
@@ -112,8 +111,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     isLoading: isLoadingList,
     isError,
     error,
-    refetch,
-    isRefetching,
+    refetch: refetchVehicles,
   } = useVehicles();
 
   React.useEffect(() => {
@@ -136,7 +134,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const selectedVehicle =
     vehicles.find((vehicle) => vehicle.id === activeVehicleId) ?? vehicles[0];
 
-  const { data: car, isLoading: isLoadingCar } = useVehicle(activeVehicleId);
+  const {
+    data: car,
+    isLoading: isLoadingCar,
+    refetch: refetchCar,
+  } = useVehicle(activeVehicleId);
   const { data: serviceHistory = [] } = useServiceHistory(activeVehicleId);
   const recentServiceHistory = serviceHistory.slice(0, 3);
 
@@ -146,6 +148,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     }
   };
 
+  const refreshGarageData = React.useCallback(async () => {
+    await Promise.all([
+      refetchVehicles(),
+      activeVehicleId ? refetchCar() : Promise.resolve(),
+    ]);
+  }, [refetchVehicles, refetchCar, activeVehicleId]);
+
+  const { isRefreshing: isGarageRefreshing, onRefresh: handleGarageRefresh } =
+    usePullToRefresh(refreshGarageData);
+
   const openServiceHistory = () => {
     if (!activeVehicleId) {
       Alert.alert(
@@ -153,12 +165,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         "Додайте авто, щоб переглядати історію обслуговування."
       );
       return;
-    }
-
-    if (activeVehicleId) {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.serviceHistory(activeVehicleId),
-      });
     }
 
     setActiveTab("history");
@@ -219,7 +225,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </Text>
           <TouchableOpacity
             style={[globalStyles.buttonPrimary, styles.retryButtonMargin]}
-            onPress={() => refetch()}
+            onPress={() => refetchVehicles()}
           >
             <Text style={globalStyles.buttonPrimaryText}>Повторити</Text>
           </TouchableOpacity>
@@ -234,13 +240,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const heroBrand = car?.brand ?? selectedVehicle?.brand ?? "";
   const heroModel = car?.model ?? selectedVehicle?.model ?? "";
   const vehicleTitle = `${heroBrand} ${heroModel}`.trim();
-  const tabContentPadding = {
-    paddingTop: 16 + insets.top,
-    paddingBottom: 120 + insets.bottom,
-  };
+  const scrollTopInset = 16 + insets.top;
+  const scrollBottomPadding = 120 + insets.bottom;
 
   const renderTabPlaceholder = (title: string) => (
-    <View style={[styles.tabPlaceholder, tabContentPadding]}>
+    <View
+      style={[
+        styles.tabPlaceholder,
+        { paddingTop: scrollTopInset, paddingBottom: scrollBottomPadding },
+      ]}
+    >
       <Text style={styles.tabPlaceholderTitle}>{title}</Text>
       <Text style={styles.tabPlaceholderText}>Розділ у розробці</Text>
     </View>
@@ -250,21 +259,26 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     <View style={[globalStyles.container, globalStyles.pageBackground]}>
       <View style={styles.tabContent}>
         {activeTab === "garage" ? (
+      <View style={styles.tabPanel}>
+        <RefreshStatusBar visible={isGarageRefreshing} />
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.contentContainer,
-          tabContentPadding,
+          { paddingBottom: scrollBottomPadding },
         ]}
         refreshControl={
           <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
+            refreshing={isGarageRefreshing}
+            onRefresh={handleGarageRefresh}
+            tintColor={theme.colors.accent.primary}
             colors={[theme.colors.accent.primary]}
+            progressViewOffset={insets.top}
           />
         }
       >
+        <View style={[styles.scrollContent, { paddingTop: scrollTopInset }]}>
         {isVehicleSelectOpen && (
           <TouchableOpacity
             style={styles.heroSelectBackdrop}
@@ -547,7 +561,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             </View>
           </>
         )}
+        </View>
       </ScrollView>
+      </View>
         ) : null}
 
         {activeTab === "history" && activeVehicleId ? (
@@ -574,7 +590,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 visit,
               })
             }
-            contentContainerStyle={tabContentPadding}
+            contentContainerStyle={{ paddingBottom: scrollBottomPadding }}
           />
         ) : null}
 

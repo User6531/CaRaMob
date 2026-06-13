@@ -11,11 +11,18 @@ export const styles = StyleSheet.create({
   tabContent: {
     flex: 1,
   },
+  tabPanel: {
+    flex: 1,
+    position: "relative",
+  },
   tabPlaceholder: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 24,
+  },
+  scrollContent: {
+    paddingTop: 16,
   },
   tabPlaceholderTitle: {
     fontSize: 22,
@@ -434,7 +441,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: theme.colors.accent.primary,
-    },
+  },
   serviceList: {
     gap: 16,
   },
@@ -485,14 +492,16 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 24,
-    paddingTop: 16,
-    backgroundColor: "transparent",
+    paddingTop: 12,
+    elevation: 16,
   },
   bottomAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#1A1C1E",
+    backgroundColor: "#232527",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,

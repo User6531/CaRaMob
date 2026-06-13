@@ -4,6 +4,7 @@ import { queryKeys } from "./queryKeys";
 import { VehicleListItem, VehicleDto, UpdateVehicleDto } from "../types/api";
 import { useAuth } from "../context/AuthContext";
 import { ENDPOINTS } from "../config/api";
+import { CACHE_STALE_TIME_MS } from "./cacheConfig";
 
 export const useVehicles = () => {
   const { getAccessToken } = useAuth();
@@ -14,6 +15,7 @@ export const useVehicles = () => {
       const apiClient = createApiClient(getAccessToken);
       return apiClient.get<VehicleListItem[]>(ENDPOINTS.VEHICLES);
     },
+    staleTime: CACHE_STALE_TIME_MS,
   });
 };
 
@@ -27,6 +29,7 @@ export const useVehicle = (vehicleId: string | undefined) => {
       return apiClient.get<VehicleDto>(ENDPOINTS.VEHICLE_BY_ID(vehicleId!));
     },
     enabled: !!vehicleId,
+    staleTime: CACHE_STALE_TIME_MS,
   });
 };
 

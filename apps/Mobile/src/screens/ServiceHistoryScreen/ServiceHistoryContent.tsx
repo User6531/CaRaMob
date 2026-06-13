@@ -9,8 +9,11 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Swipeable from "react-native-gesture-handler/Swipeable";
+import { usePullToRefresh } from "../../hooks/usePullToRefresh";
 import { useTheme } from "../../hooks/useTheme";
+import { RefreshStatusBar } from "../../components/RefreshStatusBar";
 import { useDeleteServiceHistory, useServiceHistory } from "../../queries";
 import { ServiceHistoryVisitDto } from "../../types/api";
 import { globalStyles } from "../../styles/globalStyles";
@@ -35,6 +38,7 @@ export function ServiceHistoryContent({
   contentContainerStyle,
 }: ServiceHistoryContentProps) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const deleteServiceHistory = useDeleteServiceHistory();
   const swipeableRefs = React.useRef<Map<string, Swipeable | null>>(new Map());
   const {
@@ -43,8 +47,14 @@ export function ServiceHistoryContent({
     isError,
     error,
     refetch,
-    isRefetching,
   } = useServiceHistory(vehicleId);
+
+  const refreshHistory = React.useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
+  const { isRefreshing, onRefresh } = usePullToRefresh(refreshHistory);
+  const scrollTopInset = 16 + insets.top;
 
   const closeOtherSwipeables = (openedVisitId: string) => {
     swipeableRefs.current.forEach((ref, visitId) => {
@@ -120,61 +130,72 @@ export function ServiceHistoryContent({
   }
 
   return (
+    <View style={styles.panel}>
+      <RefreshStatusBar visible={isRefreshing} />
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={[styles.contentContainer, contentContainerStyle]}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingTop: 0 },
+        contentContainerStyle,
+      ]}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
-          refreshing={isRefetching}
-          onRefresh={refetch}
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.colors.accent.primary}
           colors={[theme.colors.accent.primary]}
+          progressViewOffset={insets.top}
         />
       }
     >
-      <Text style={styles.pageTitle}>Історія обслуговування</Text>
-      <Text style={styles.pageSubtitle}>
-        {vehicleTitle
-          ? `${vehicleTitle} - ${visits.length} візитів`
-          : `${visits.length} візитів`}
-      </Text>
-      <View style={styles.topActions}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={onAddPress}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.addButtonText}>+ Додати запис</Text>
-        </TouchableOpacity>
-      </View>
-
-      {visits.map((visit) => (
-        <ServiceHistorySwipeableVisit
-          key={visit.id}
-          visit={visit}
-          onPress={onVisitPress}
-          onEditPress={handleEditPress}
-          onDeletePress={handleDeletePress}
-          onSwipeOpen={closeOtherSwipeables}
-          swipeableRef={(ref) => {
-            if (ref) {
-              swipeableRefs.current.set(visit.id, ref);
-            } else {
-              swipeableRefs.current.delete(visit.id);
-            }
-          }}
-        />
-      ))}
-
-      {!visits.length ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>Історія поки порожня</Text>
-          <Text style={styles.emptyText}>
-            Коли в автосервісі з&apos;являться записи, вони будуть відображені
-            тут.
-          </Text>
+      <View style={[styles.scrollContent, { paddingTop: scrollTopInset }]}>
+        <Text style={styles.pageTitle}>Історія обслуговування</Text>
+        <Text style={styles.pageSubtitle}>
+          {vehicleTitle
+            ? `${vehicleTitle} - ${visits.length} візитів`
+            : `${visits.length} візитів`}
+        </Text>
+        <View style={styles.topActions}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={onAddPress}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.addButtonText}>+ Додати запис</Text>
+          </TouchableOpacity>
         </View>
-      ) : null}
+
+        {visits.map((visit) => (
+          <ServiceHistorySwipeableVisit
+            key={visit.id}
+            visit={visit}
+            onPress={onVisitPress}
+            onEditPress={handleEditPress}
+            onDeletePress={handleDeletePress}
+            onSwipeOpen={closeOtherSwipeables}
+            swipeableRef={(ref) => {
+              if (ref) {
+                swipeableRefs.current.set(visit.id, ref);
+              } else {
+                swipeableRefs.current.delete(visit.id);
+              }
+            }}
+          />
+        ))}
+
+        {!visits.length ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>Історія поки порожня</Text>
+            <Text style={styles.emptyText}>
+              Коли в автосервісі з&apos;являться записи, вони будуть відображені
+              тут.
+            </Text>
+          </View>
+        ) : null}
+      </View>
     </ScrollView>
+    </View>
   );
 }

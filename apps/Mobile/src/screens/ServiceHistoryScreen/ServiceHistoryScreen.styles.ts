@@ -5,10 +5,16 @@ export const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
+  panel: {
+    flex: 1,
+    position: "relative",
+  },
   contentContainer: {
     paddingHorizontal: 20,
-    paddingTop: 16,
     paddingBottom: 28,
+  },
+  scrollContent: {
+    paddingTop: 16,
   },
   pageTitle: {
     color: "#FFFFFF",

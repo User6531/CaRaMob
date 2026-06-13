@@ -1,3 +1,7 @@
+if (__DEV__) {
+  require("./src/config/ReactotronConfig");
+}
+
 import { QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';

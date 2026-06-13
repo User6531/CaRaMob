@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createApiClient } from "../api/client";
 import { ENDPOINTS } from "../config/api";
 import { useAuth } from "../context/AuthContext";
+import { CACHE_STALE_TIME_MS } from "./cacheConfig";
 import { queryKeys } from "./queryKeys";
 import {
   CreateServiceHistoryDto,
@@ -141,7 +142,7 @@ export const useServiceHistory = (vehicleId: string | undefined) => {
       return normalizeServiceHistory(response);
     },
     enabled: !!vehicleId,
-    refetchOnMount: "always",
+    staleTime: CACHE_STALE_TIME_MS,
   });
 };
 

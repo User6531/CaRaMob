@@ -40,7 +40,6 @@ export default function ServiceHistoryScreen({
           })
         }
         contentContainerStyle={{
-          paddingTop: 16 + insets.top,
           paddingBottom: 28 + insets.bottom,
         }}
       />
