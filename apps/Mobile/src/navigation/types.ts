@@ -1,4 +1,5 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { ServiceHistoryVisitDto } from "../types/api";
 
 // Визначаємо список всіх скрінів у додатку
 export type RootStackParamList = {
@@ -13,6 +14,16 @@ export type RootStackParamList = {
   CarDetails: { carId: string };
   ServiceHistory: { vehicleId: string; vehicleTitle?: string };
   ServiceHistoryCreate: { vehicleId: string; vehicleTitle?: string };
+  ServiceHistoryEdit: {
+    vehicleId: string;
+    vehicleTitle?: string;
+    visit: ServiceHistoryVisitDto;
+  };
+  ServiceHistoryDetail: {
+    vehicleId: string;
+    vehicleTitle?: string;
+    visit: ServiceHistoryVisitDto;
+  };
 };
 
 // Типи для кожного скріна
@@ -69,4 +80,14 @@ export type ServiceHistoryScreenProps = NativeStackScreenProps<
 export type ServiceHistoryCreateScreenProps = NativeStackScreenProps<
   RootStackParamList,
   "ServiceHistoryCreate"
+>;
+
+export type ServiceHistoryEditScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "ServiceHistoryEdit"
+>;
+
+export type ServiceHistoryDetailScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "ServiceHistoryDetail"
 >;

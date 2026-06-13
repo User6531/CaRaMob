@@ -24,4 +24,6 @@ export const ENDPOINTS = {
   VEHICLE_BY_ID: (id: string) => `/vehicles/${id}`,
   SERVICE_HISTORY_BY_VEHICLE: (vehicleId: string) =>
     `/service-history/${vehicleId}`,
+  SERVICE_HISTORY_BY_ID: (vehicleId: string, serviceHistoryId: string) =>
+    `/service-history/${vehicleId}/${serviceHistoryId}`,
 } as const;

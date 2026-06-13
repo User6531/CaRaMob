@@ -1,3 +1,5 @@
+export { BottomNavBar } from "./BottomNavBar";
+export type { BottomNavTab } from "./BottomNavBar";
 export { FormScreen } from "./FormScreen";
 export { Input } from "./Input";
 export { Select } from "./Select";

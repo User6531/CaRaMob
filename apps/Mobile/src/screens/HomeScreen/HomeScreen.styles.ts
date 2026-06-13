@@ -8,6 +8,26 @@ export const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
+  tabContent: {
+    flex: 1,
+  },
+  tabPlaceholder: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  tabPlaceholderTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginBottom: 8,
+  },
+  tabPlaceholderText: {
+    fontSize: 15,
+    color: "#8E8E93",
+    textAlign: "center",
+  },
   header: {
     alignItems: "center",
     paddingHorizontal: 24,
@@ -480,43 +500,6 @@ export const styles = StyleSheet.create({
   bottomAvatarText: {
     color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: "600",
-  },
-  bottomNavBlock: {
-    flex: 1,
-    flexDirection: "row",
-    backgroundColor: "#212121",
-    borderRadius: 50,
-    paddingVertical: 4,
-    paddingHorizontal: 4,
-  },
-  bottomNavItems: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  navItem: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 8,
-    borderRadius: 24,
-  },
-  navItemActive: {
-    // backgroundColor: "#0A3D33",
-  },
-  navItemIcon: {
-    fontSize: 20,
-    color: "#FFFFFF",
-    marginBottom: 4,
-  },
-  navItemLabel: {
-    fontSize: 8,
-    color: "#FFFFFF",
-  },
-  navItemLabelActive: {
-    fontSize: 8,
-    color: theme.colors.accent.primary,
     fontWeight: "600",
   },
   errorStateContainer: {

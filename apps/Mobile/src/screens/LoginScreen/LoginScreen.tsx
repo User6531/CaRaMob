@@ -53,7 +53,7 @@ export default function LoginScreen() {
           Привіт, готові рухатись?
         </Text>
         <Text style={[globalStyles.textSecondary, styles.subtitle]}>
-          Увійдіть у свій акаунт
+          Мершій за кермо
         </Text>
 
         <TouchableOpacity

@@ -19,4 +19,9 @@ public class ServiceHistoryListItemDto
   /// The date and time when the service history entity was created.
   /// </summary>
   public required DateTime CreatedAt { get; set; }
+
+  /// <summary>
+  /// The service history records associated with the service history entity.
+  /// </summary>
+  public required List<ServiceHistoryRecordDto> Records { get; set; } = [];
 }

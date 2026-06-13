@@ -17,33 +17,77 @@ type ServiceHistoryApiResponse =
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
+const readString = (
+  raw: Record<string, unknown>,
+  ...keys: string[]
+): string | null => {
+  for (const key of keys) {
+    const value = raw[key];
+    if (typeof value === "string" && value.length > 0) {
+      return value;
+    }
+  }
+  return null;
+};
+
+const readNumber = (
+  raw: Record<string, unknown>,
+  ...keys: string[]
+): number | null => {
+  for (const key of keys) {
+    const value = raw[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+  }
+  return null;
+};
+
+const readDateString = (value: unknown): string | null => {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (isObject(value) && typeof value.$date === "string") {
+    return value.$date;
+  }
+
+  return null;
+};
+
 const normalizeRecord = (raw: unknown): ServiceWorkItemDto | null => {
   if (!isObject(raw)) return null;
-  const id = typeof raw.id === "string" ? raw.id : null;
-  const title = typeof raw.title === "string" ? raw.title : null;
+
+  const id = readString(raw, "id", "_id", "Id");
+  const title = readString(raw, "title", "Title");
   if (!id || !title) return null;
 
   return {
     id,
     title,
-    price: typeof raw.price === "number" ? raw.price : null,
-    description:
-      typeof raw.description === "string" ? raw.description : null,
+    price: readNumber(raw, "price", "Price"),
+    description: readString(raw, "description", "Description"),
   };
 };
 
 const normalizeVisit = (raw: unknown): ServiceHistoryVisitDto | null => {
   if (!isObject(raw)) return null;
 
-  const id = typeof raw.id === "string" ? raw.id : null;
-  const title = typeof raw.title === "string" ? raw.title : null;
-  const createdAt = typeof raw.createdAt === "string" ? raw.createdAt : null;
+  const id = readString(raw, "id", "_id", "Id");
+  const title = readString(raw, "title", "Title");
+  const createdAt = readDateString(raw.createdAt ?? raw.CreatedAt);
 
   if (!id || !title || !createdAt) return null;
 
   const records = Array.isArray(raw.records)
-    ? raw.records.map(normalizeRecord).filter((item): item is ServiceWorkItemDto => !!item)
-    : [];
+    ? raw.records
+        .map(normalizeRecord)
+        .filter((item): item is ServiceWorkItemDto => !!item)
+    : Array.isArray(raw.Records)
+      ? raw.Records.map(normalizeRecord).filter(
+          (item): item is ServiceWorkItemDto => !!item
+        )
+      : [];
 
   const firstRecordDescription = records[0]?.description ?? null;
 
@@ -52,9 +96,7 @@ const normalizeVisit = (raw: unknown): ServiceHistoryVisitDto | null => {
     title,
     createdAt,
     description:
-      typeof raw.description === "string"
-        ? raw.description
-        : firstRecordDescription,
+      readString(raw, "description", "Description") ?? firstRecordDescription,
     records,
   };
 };
@@ -66,7 +108,9 @@ const normalizeServiceHistory = (
     ? raw
     : isObject(raw) && Array.isArray(raw.items)
       ? raw.items
-      : [];
+      : isObject(raw) && Array.isArray(raw.Items)
+        ? raw.Items
+        : [];
 
   return source
     .flatMap((entry) => {
@@ -97,6 +141,7 @@ export const useServiceHistory = (vehicleId: string | undefined) => {
       return normalizeServiceHistory(response);
     },
     enabled: !!vehicleId,
+    refetchOnMount: "always",
   });
 };
 
@@ -116,6 +161,59 @@ export const useCreateServiceHistory = () => {
       return apiClient.post<unknown>(
         ENDPOINTS.SERVICE_HISTORY_BY_VEHICLE(vehicleId),
         data
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.serviceHistory(variables.vehicleId),
+      });
+    },
+  });
+};
+
+export const useUpdateServiceHistory = () => {
+  const { getAccessToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      vehicleId,
+      serviceHistoryId,
+      data,
+    }: {
+      vehicleId: string;
+      serviceHistoryId: string;
+      data: CreateServiceHistoryDto;
+    }) => {
+      const apiClient = createApiClient(getAccessToken);
+      return apiClient.put<unknown>(
+        ENDPOINTS.SERVICE_HISTORY_BY_ID(vehicleId, serviceHistoryId),
+        data
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.serviceHistory(variables.vehicleId),
+      });
+    },
+  });
+};
+
+export const useDeleteServiceHistory = () => {
+  const { getAccessToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      vehicleId,
+      serviceHistoryId,
+    }: {
+      vehicleId: string;
+      serviceHistoryId: string;
+    }) => {
+      const apiClient = createApiClient(getAccessToken);
+      return apiClient.delete<void>(
+        ENDPOINTS.SERVICE_HISTORY_BY_ID(vehicleId, serviceHistoryId)
       );
     },
     onSuccess: (_, variables) => {

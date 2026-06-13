@@ -18,6 +18,17 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 16,
   },
+  draftHint: {
+    color: theme.colors.accent.primary,
+    fontSize: 13,
+    marginBottom: 12,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
   formCard: {
     backgroundColor: "#1A1C1E",
     borderRadius: 16,

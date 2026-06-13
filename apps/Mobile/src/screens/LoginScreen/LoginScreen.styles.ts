@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
   },
   logo: {
     width: 120,
-    height: 120,
+    height: 160,
     marginBottom: 24,
   },
   loginButton: {

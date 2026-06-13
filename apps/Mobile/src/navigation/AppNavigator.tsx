@@ -14,6 +14,8 @@ import CarEditScreen from "../screens/CarEditScreen/CarEditScreen";
 import CarDetailsScreen from "../screens/CarDetailsScreen/CarDetailsScreen";
 import ServiceHistoryScreen from "../screens/ServiceHistoryScreen/ServiceHistoryScreen";
 import ServiceHistoryCreateScreen from "../screens/ServiceHistoryCreateScreen/ServiceHistoryCreateScreen";
+import ServiceHistoryEditScreen from "../screens/ServiceHistoryEditScreen/ServiceHistoryEditScreen";
+import ServiceHistoryDetailScreen from "../screens/ServiceHistoryDetailScreen/ServiceHistoryDetailScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -118,6 +120,22 @@ export default function AppNavigator() {
               options={{
                 ...darkHeaderOptions,
                 title: "Додати обслуговування",
+              }}
+            />
+            <Stack.Screen
+              name="ServiceHistoryEdit"
+              component={ServiceHistoryEditScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Редагування запису",
+              }}
+            />
+            <Stack.Screen
+              name="ServiceHistoryDetail"
+              component={ServiceHistoryDetailScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Деталі запису",
               }}
             />
           </>

@@ -1,34 +1,76 @@
 import React from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { FormScreen } from "../../components/FormScreen";
-import { useServiceHistoryCreateDraft } from "../../hooks/useServiceHistoryCreateDraft";
 import { useStatusBar } from "../../hooks/useStatusBar";
-import { useCreateServiceHistory } from "../../queries";
-import { ServiceHistoryCreateScreenProps } from "../../navigation/types";
+import { useUpdateServiceHistory } from "../../queries";
+import { ServiceHistoryEditScreenProps } from "../../navigation/types";
 import { globalStyles } from "../../styles/globalStyles";
-import { styles } from "./ServiceHistoryCreateScreen.styles";
+import { styles } from "../ServiceHistoryCreateScreen/ServiceHistoryCreateScreen.styles";
 
-export default function ServiceHistoryCreateScreen({
+type WorkInput = {
+  id: string;
+  title: string;
+  price: string;
+};
+
+const createEmptyWork = (): WorkInput => ({
+  id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  title: "",
+  price: "",
+});
+
+const mapVisitToWorks = (
+  records: { title: string; price?: number | null }[] | undefined
+): WorkInput[] => {
+  if (!records?.length) {
+    return [createEmptyWork()];
+  }
+
+  return records.map((record) => ({
+    id: `${record.title}-${Math.random().toString(16).slice(2)}`,
+    title: record.title,
+    price:
+      typeof record.price === "number" ? String(record.price) : "",
+  }));
+};
+
+export default function ServiceHistoryEditScreen({
   navigation,
   route,
-}: ServiceHistoryCreateScreenProps) {
+}: ServiceHistoryEditScreenProps) {
   useStatusBar();
-  const { vehicleId, vehicleTitle } = route.params;
-  const createServiceHistory = useCreateServiceHistory();
-  const {
-    title,
-    setTitle,
-    description,
-    setDescription,
-    works,
-    isDraftLoaded,
-    hasRestoredDraft,
-    clearDraft,
-    addWork,
-    removeWork,
-    updateWorkTitle,
-    updateWorkPrice,
-  } = useServiceHistoryCreateDraft({ vehicleId });
+  const { vehicleId, vehicleTitle, visit } = route.params;
+  const updateServiceHistory = useUpdateServiceHistory();
+
+  const [title, setTitle] = React.useState(visit.title);
+  const [description, setDescription] = React.useState(
+    visit.description ?? visit.records?.[0]?.description ?? ""
+  );
+  const [works, setWorks] = React.useState<WorkInput[]>(
+    mapVisitToWorks(visit.records)
+  );
+
+  const handleAddWork = () => {
+    setWorks((prev) => [...prev, createEmptyWork()]);
+  };
+
+  const handleRemoveWork = (id: string) => {
+    setWorks((prev) =>
+      prev.length > 1 ? prev.filter((item) => item.id !== id) : prev
+    );
+  };
+
+  const handleWorkTitleChange = (id: string, value: string) => {
+    setWorks((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, title: value } : item))
+    );
+  };
+
+  const handleWorkPriceChange = (id: string, value: string) => {
+    setWorks((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, price: value } : item))
+    );
+  };
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -69,8 +111,9 @@ export default function ServiceHistoryCreateScreen({
     const visitDescription = description.trim();
 
     try {
-      await createServiceHistory.mutateAsync({
+      await updateServiceHistory.mutateAsync({
         vehicleId,
+        serviceHistoryId: visit.id,
         data: {
           title: title.trim(),
           records: parsedRecords.map((record, index) => ({
@@ -82,9 +125,7 @@ export default function ServiceHistoryCreateScreen({
         },
       });
 
-      await clearDraft();
-
-      Alert.alert("Успіх", "Запис обслуговування збережено у базі.", [
+      Alert.alert("Успіх", "Запис обслуговування оновлено.", [
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
@@ -92,41 +133,20 @@ export default function ServiceHistoryCreateScreen({
         "Помилка",
         error instanceof Error
           ? error.message
-          : "Не вдалося зберегти запис обслуговування"
+          : "Не вдалося оновити запис обслуговування"
       );
     }
   };
-
-  if (!isDraftLoaded) {
-    return (
-      <View
-        style={[
-          globalStyles.container,
-          globalStyles.pageBackground,
-          styles.loadingContainer,
-        ]}
-      >
-        <Text style={globalStyles.loadingText}>Завантаження форми...</Text>
-      </View>
-    );
-  }
 
   return (
     <FormScreen
       style={[globalStyles.container, globalStyles.pageBackground]}
       contentContainerStyle={styles.contentContainer}
     >
-      <Text style={styles.title}>Новий запис обслуговування</Text>
+      <Text style={styles.title}>Редагування запису</Text>
       <Text style={styles.subtitle}>
-        {vehicleTitle
-          ? `Авто: ${vehicleTitle}`
-          : "Створення запису для вибраного авто"}
+        {vehicleTitle ? `Авто: ${vehicleTitle}` : "Оновлення запису для вибраного авто"}
       </Text>
-      {hasRestoredDraft ? (
-        <Text style={styles.draftHint}>
-          Відновлено збережений чернетковий запис
-        </Text>
-      ) : null}
 
       <View style={styles.formCard}>
         <View>
@@ -159,7 +179,7 @@ export default function ServiceHistoryCreateScreen({
               <View style={styles.workItemHeader}>
                 <Text style={styles.workItemTitle}>Робота #{index + 1}</Text>
                 <TouchableOpacity
-                  onPress={() => removeWork(work.id)}
+                  onPress={() => handleRemoveWork(work.id)}
                   disabled={works.length === 1}
                   activeOpacity={0.8}
                 >
@@ -175,14 +195,14 @@ export default function ServiceHistoryCreateScreen({
               </View>
               <TextInput
                 value={work.title}
-                onChangeText={(value) => updateWorkTitle(work.id, value)}
+                onChangeText={(value) => handleWorkTitleChange(work.id, value)}
                 placeholder="Назва або короткий опис роботи"
                 placeholderTextColor="#8E8E93"
                 style={[styles.input, styles.workField]}
               />
               <TextInput
                 value={work.price}
-                onChangeText={(value) => updateWorkPrice(work.id, value)}
+                onChangeText={(value) => handleWorkPriceChange(work.id, value)}
                 placeholder="Ціна, грн"
                 placeholderTextColor="#8E8E93"
                 style={[styles.input, styles.workField]}
@@ -192,7 +212,7 @@ export default function ServiceHistoryCreateScreen({
           ))}
           <TouchableOpacity
             style={styles.addWorkButton}
-            onPress={addWork}
+            onPress={handleAddWork}
             activeOpacity={0.8}
           >
             <Text style={styles.addWorkButtonText}>+ Додати роботу</Text>
@@ -215,10 +235,10 @@ export default function ServiceHistoryCreateScreen({
             style={[globalStyles.buttonPrimary, styles.actionButton]}
             onPress={handleSave}
             activeOpacity={0.8}
-            disabled={createServiceHistory.isPending}
+            disabled={updateServiceHistory.isPending}
           >
             <Text style={globalStyles.buttonPrimaryText}>
-              {createServiceHistory.isPending ? "Збереження..." : "Зберегти"}
+              {updateServiceHistory.isPending ? "Збереження..." : "Зберегти"}
             </Text>
           </TouchableOpacity>
         </View>

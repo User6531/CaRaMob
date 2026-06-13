@@ -2,6 +2,9 @@ import { StyleSheet } from "react-native";
 import { theme } from "../../styles/theme";
 
 export const styles = StyleSheet.create({
+  scroll: {
+    flex: 1,
+  },
   contentContainer: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -38,6 +41,39 @@ export const styles = StyleSheet.create({
     backgroundColor: "#1A1C1E",
     borderRadius: 16,
     padding: 16,
+  },
+  swipeActions: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    marginBottom: 14,
+    marginLeft: 8,
+  },
+  swipeEditAction: {
+    width: 88,
+    backgroundColor: "#2563EB",
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 8,
+  },
+  swipeDeleteAction: {
+    width: 88,
+    backgroundColor: "#DC2626",
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 8,
+    marginLeft: 8,
+  },
+  swipeActionText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  swipeableWrapper: {
     marginBottom: 14,
   },
   visitHeader: {
@@ -86,6 +122,26 @@ export const styles = StyleSheet.create({
     color: "#8E8E93",
     fontSize: 13,
   },
+  workTotalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 10,
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.12)",
+    gap: 12,
+  },
+  workTotalLabel: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  workTotalPrice: {
+    color: theme.colors.accent.primary,
+    fontSize: 15,
+    fontWeight: "700",
+  },
   emptyCard: {
     backgroundColor: "#1A1C1E",
     borderRadius: 16,
@@ -112,5 +168,40 @@ export const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 16,
+  },
+  moreRecordsHint: {
+    color: theme.colors.accent.primary,
+    fontSize: 13,
+    marginTop: 4,
+    marginBottom: 2,
+  },
+  detailContentContainer: {
+    paddingTop: 0,
+  },
+  detailActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 8,
+  },
+  detailActionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+  },
+  detailEditButton: {
+    backgroundColor: "#2563EB",
+  },
+  detailDeleteButton: {
+    backgroundColor: "#DC2626",
+  },
+  detailActionText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
