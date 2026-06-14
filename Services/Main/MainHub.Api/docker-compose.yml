@@ -1,0 +1,29 @@
+name: caramob
+
+services:
+  mainhub-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5001
+      - MongoDbSettings__ConnectionString=mongodb://admin:admin123@localhost:27017
+      - MongoDbSettings__DatabaseName=Main
+      - MongoDbSettings__UserCollectionName=Users
+      - MongoDbSettings__VehicleCollectionName=Vehicles
+      - MongoDbSettings__ServiceHistoryCollectionName=ServiceHistories
+    ports:
+      - "5001:5001"
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command: http mainhub-api:5001 --url=https://scaling-sediment-automated.ngrok-free.dev
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+    depends_on:
+      - mainhub-api
