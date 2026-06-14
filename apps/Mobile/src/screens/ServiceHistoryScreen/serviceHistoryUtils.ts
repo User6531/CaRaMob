@@ -1,5 +1,3 @@
-export const SERVICE_HISTORY_PREVIEW_RECORDS_LIMIT = 3;
-
 export const formatVisitDate = (isoDate: string) => {
   const parsedDate = new Date(isoDate);
   if (Number.isNaN(parsedDate.getTime())) {

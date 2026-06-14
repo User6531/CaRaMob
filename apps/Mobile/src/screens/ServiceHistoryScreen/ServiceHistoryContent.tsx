@@ -24,7 +24,6 @@ export interface ServiceHistoryContentProps {
   vehicleId: string;
   vehicleTitle?: string;
   onAddPress: () => void;
-  onVisitPress: (visit: ServiceHistoryVisitDto) => void;
   onEditPress: (visit: ServiceHistoryVisitDto) => void;
   contentContainerStyle?: ViewStyle;
 }
@@ -33,7 +32,6 @@ export function ServiceHistoryContent({
   vehicleId,
   vehicleTitle,
   onAddPress,
-  onVisitPress,
   onEditPress,
   contentContainerStyle,
 }: ServiceHistoryContentProps) {
@@ -171,7 +169,7 @@ export function ServiceHistoryContent({
           <ServiceHistorySwipeableVisit
             key={visit.id}
             visit={visit}
-            onPress={onVisitPress}
+            vehicleId={vehicleId}
             onEditPress={handleEditPress}
             onDeletePress={handleDeletePress}
             onSwipeOpen={closeOtherSwipeables}

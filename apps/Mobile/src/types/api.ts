@@ -30,8 +30,10 @@ export interface User {
 // Додати новий тип для відповіді /api/user/me
 export interface MeResponse {
   name: string;
-  email?: string;
+  email?: string | null;
   updatedAt: string | null;
+  phone?: string | null;
+  pictureUrl?: string | null;
 }
 
 export interface CreateUserDto {

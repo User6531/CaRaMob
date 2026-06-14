@@ -259,311 +259,331 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     <View style={[globalStyles.container, globalStyles.pageBackground]}>
       <View style={styles.tabContent}>
         {activeTab === "garage" ? (
-      <View style={styles.tabPanel}>
-        <RefreshStatusBar visible={isGarageRefreshing} />
-      <ScrollView
-        style={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.contentContainer,
-          { paddingBottom: scrollBottomPadding },
-        ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={isGarageRefreshing}
-            onRefresh={handleGarageRefresh}
-            tintColor={theme.colors.accent.primary}
-            colors={[theme.colors.accent.primary]}
-            progressViewOffset={insets.top}
-          />
-        }
-      >
-        <View style={[styles.scrollContent, { paddingTop: scrollTopInset }]}>
-        {isVehicleSelectOpen && (
-          <TouchableOpacity
-            style={styles.heroSelectBackdrop}
-            activeOpacity={1}
-            onPress={() => setIsVehicleSelectOpen(false)}
-          />
-        )}
-
-        {/* Hero: car photo + name */}
-        <View style={styles.heroCard}>
-          {hasVehicle ? (
-            <>
-              <View style={styles.heroMedia}>
-                {heroPhotoUrl ? (
-                  <TouchableOpacity
-                    onPress={() =>
-                      activeVehicleId &&
-                      navigation.navigate("CarDetails", {
-                        carId: activeVehicleId,
-                      })
-                    }
-                    activeOpacity={0.9}
-                  >
-                    <Image
-                      source={{ uri: heroPhotoUrl }}
-                      style={styles.heroImage}
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.heroPlaceholder}>
-                    <SvgXml
-                      xml={CAR_PLACEHOLDER_SVG}
-                      width={44}
-                      height={44}
-                      color={theme.colors.accent.primary}
-                      style={styles.heroPlaceholderIcon}
-                    />
-                    <Text style={styles.heroPlaceholderLabel}>
-                      Фото автомобіля
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.heroSelectContainer}>
-                <TouchableOpacity
-                  style={styles.heroOverlay}
-                  onPress={() => setIsVehicleSelectOpen((prev) => !prev)}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.heroTitleRow}>
-                    <Text style={styles.heroBrand}>{heroBrand}</Text>
-                    <Text style={styles.heroModel}>{heroModel}</Text>
-                  </View>
-                  <Text style={styles.heroChevron}>
-                    {isVehicleSelectOpen ? "▲" : "▼"}
-                  </Text>
-                </TouchableOpacity>
-
+          <View style={styles.tabPanel}>
+            <RefreshStatusBar visible={isGarageRefreshing} />
+            <ScrollView
+              style={styles.scroll}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={[
+                styles.contentContainer,
+                { paddingBottom: scrollBottomPadding },
+              ]}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isGarageRefreshing}
+                  onRefresh={handleGarageRefresh}
+                  tintColor={theme.colors.accent.primary}
+                  colors={[theme.colors.accent.primary]}
+                  progressViewOffset={insets.top}
+                />
+              }
+            >
+              <View
+                style={[styles.scrollContent, { paddingTop: scrollTopInset }]}
+              >
                 {isVehicleSelectOpen && (
-                  <View style={styles.heroSelectMenu}>
-                    {vehicles.map((vehicle) => {
-                      const isSelected = vehicle.id === activeVehicleId;
+                  <TouchableOpacity
+                    style={styles.heroSelectBackdrop}
+                    activeOpacity={1}
+                    onPress={() => setIsVehicleSelectOpen(false)}
+                  />
+                )}
 
-                      return (
-                        <TouchableOpacity
-                          key={vehicle.id}
-                          style={styles.heroSelectItem}
-                          onPress={() => {
-                            setSelectedVehicleId(vehicle.id);
-                            setIsVehicleSelectOpen(false);
-                          }}
-                          activeOpacity={0.8}
-                        >
-                          <Text
-                            style={[
-                              styles.heroSelectItemText,
-                              isSelected && styles.heroSelectItemTextActive,
-                            ]}
+                {/* Hero: car photo + name */}
+                <View style={styles.heroCard}>
+                  {hasVehicle ? (
+                    <>
+                      <View style={styles.heroMedia}>
+                        {heroPhotoUrl ? (
+                          <TouchableOpacity
+                            onPress={() =>
+                              activeVehicleId &&
+                              navigation.navigate("CarDetails", {
+                                carId: activeVehicleId,
+                              })
+                            }
+                            activeOpacity={0.9}
                           >
-                            {vehicle.brand} {vehicle.model}
-                          </Text>
-                          <Text style={styles.heroSelectItemPlate}>
-                            {vehicle.licensePlate}
+                            <Image
+                              source={{ uri: heroPhotoUrl }}
+                              style={styles.heroImage}
+                            />
+                          </TouchableOpacity>
+                        ) : (
+                          <View style={styles.heroPlaceholder}>
+                            <SvgXml
+                              xml={CAR_PLACEHOLDER_SVG}
+                              width={44}
+                              height={44}
+                              color={theme.colors.accent.primary}
+                              style={styles.heroPlaceholderIcon}
+                            />
+                            <Text style={styles.heroPlaceholderLabel}>
+                              Фото автомобіля
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+
+                      <View style={styles.heroSelectContainer}>
+                        <TouchableOpacity
+                          style={styles.heroOverlay}
+                          onPress={() =>
+                            setIsVehicleSelectOpen((prev) => !prev)
+                          }
+                          activeOpacity={0.85}
+                        >
+                          <View style={styles.heroTitleRow}>
+                            <Text style={styles.heroBrand}>{heroBrand}</Text>
+                            <Text style={styles.heroModel}>{heroModel}</Text>
+                          </View>
+                          <Text style={styles.heroChevron}>
+                            {isVehicleSelectOpen ? "▲" : "▼"}
                           </Text>
                         </TouchableOpacity>
-                      );
-                    })}
 
+                        {isVehicleSelectOpen && (
+                          <View style={styles.heroSelectMenu}>
+                            {vehicles.map((vehicle) => {
+                              const isSelected = vehicle.id === activeVehicleId;
+
+                              return (
+                                <TouchableOpacity
+                                  key={vehicle.id}
+                                  style={styles.heroSelectItem}
+                                  onPress={() => {
+                                    setSelectedVehicleId(vehicle.id);
+                                    setIsVehicleSelectOpen(false);
+                                  }}
+                                  activeOpacity={0.8}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.heroSelectItemText,
+                                      isSelected &&
+                                        styles.heroSelectItemTextActive,
+                                    ]}
+                                  >
+                                    {vehicle.brand} {vehicle.model}
+                                  </Text>
+                                  <Text style={styles.heroSelectItemPlate}>
+                                    {vehicle.licensePlate}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+
+                            <TouchableOpacity
+                              style={styles.heroAddVehicleItem}
+                              onPress={() => {
+                                setIsVehicleSelectOpen(false);
+                                navigation.navigate("CarCard");
+                              }}
+                              activeOpacity={0.8}
+                            >
+                              <Text style={styles.heroAddVehicleText}>
+                                + Додати авто
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                      </View>
+                    </>
+                  ) : (
                     <TouchableOpacity
-                      style={styles.heroAddVehicleItem}
-                      onPress={() => {
-                        setIsVehicleSelectOpen(false);
-                        navigation.navigate("CarCard");
-                      }}
+                      style={styles.heroPlaceholder}
+                      onPress={() => navigation.navigate("CarCard")}
                       activeOpacity={0.8}
                     >
-                      <Text style={styles.heroAddVehicleText}>
-                        + Додати авто
+                      <Text style={styles.heroPlaceholderText}>+</Text>
+                      <Text style={styles.heroPlaceholderLabel}>
+                        Додати автомобіль
                       </Text>
                     </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            </>
-          ) : (
-            <TouchableOpacity
-              style={styles.heroPlaceholder}
-              onPress={() => navigation.navigate("CarCard")}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.heroPlaceholderText}>+</Text>
-              <Text style={styles.heroPlaceholderLabel}>Додати автомобіль</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {showCarContent && (
-          <>
-            {/* Information block */}
-            <View style={styles.infoBlock}>
-              <View style={styles.infoBlockHeader}>
-                <Text style={styles.infoBlockTitle}>Інформація</Text>
-                <TouchableOpacity
-                  style={styles.infoEditBtn}
-                  onPress={() =>
-                    activeVehicleId &&
-                    navigation.navigate("CarEdit", { carId: activeVehicleId })
-                  }
-                >
-                  <SvgXml
-                    xml={EDIT_ICON_SVG}
-                    width={18}
-                    height={18}
-                    color={theme.colors.accent.primary}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.infoGrid}>
-                <View style={styles.infoCol}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Рік</Text>
-                    <Text style={styles.infoValue}>{car.year}</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Пробіг</Text>
-                    <Text style={styles.infoValue}>
-                      {car.mileage.toLocaleString("uk-UA")} км
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Кузов</Text>
-                    <Text style={styles.infoValue}>—</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Колір</Text>
-                    <View style={styles.colorRow}>
-                      <View
-                        style={[
-                          styles.colorSwatch,
-                          {
-                            backgroundColor: car.color
-                              ? car.color.startsWith("#")
-                                ? car.color
-                                : `#${car.color}`
-                              : "#808080",
-                          },
-                        ]}
-                      />
-                      <Text style={styles.infoValue}>
-                        {car.color
-                          ? car.color.replace("#", "").toUpperCase()
-                          : "—"}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>VIN-код</Text>
-                    <View style={styles.vinRow}>
-                      <Text style={styles.infoValue}>
-                        {formatVinShort(car.vin)}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.copyBtn}
-                        onPress={handleCopyVin}
-                      >
-                        <Feather
-                          name="copy"
-                          size={16}
-                          color={theme.colors.accent.primary}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                  )}
                 </View>
-                <View style={styles.infoCol}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Двигун</Text>
-                    <Text style={styles.infoValue}>
-                      {(car.engineCapacity / 1000).toFixed(1)} л,{" "}
-                      {car.enginePower} к.с.
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Тип палива</Text>
-                    <Text style={styles.infoValue}>
-                      {FUEL_LABELS[car.fuelType as FuelType] ?? car.fuelType}
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>КПП</Text>
-                    <Text style={styles.infoValue}>
-                      {TRANSMISSION_LABELS[
-                        car.transmissionType as TransmissionType
-                      ] ?? car.transmissionType}
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Тип приводу</Text>
-                    <Text style={styles.infoValue}>
-                      {WHEEL_DRIVE_LABELS[
-                        car.wheelDriveType as WheelDriveType
-                      ] ?? car.wheelDriveType}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              <View style={styles.licensePlateBox}>
-                <Text style={styles.licensePlateText}>{car.licensePlate}</Text>
-              </View>
-            </View>
 
-            {/* Service history block (mock data) */}
-            <View style={styles.serviceBlock}>
-              <View style={styles.serviceBlockHeader}>
-                <Text style={styles.serviceBlockTitle}>Історія</Text>
-                <TouchableOpacity
-                  style={styles.serviceMoreBtn}
-                  onPress={openServiceHistory}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.serviceMoreBtnText}>Більше &gt;</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.serviceList}>
-                {recentServiceHistory.map((item) => (
-                  <View key={item.id} style={styles.serviceItem}>
-                    <View style={styles.serviceAvatar}>
-                      <SvgXml
-                        xml={SERVICE_ICON_SVG}
-                        width={18}
-                        height={18}
-                        color={theme.colors.accent.primary}
-                      />
-                    </View>
-                    <View style={styles.serviceContent}>
-                      <View style={styles.serviceTitleRow}>
-                        <Text style={styles.serviceTitle}>{item.title}</Text>
-                        <Text style={styles.serviceDate}>
-                          {formatServiceDate(item.createdAt)}
+                {showCarContent && (
+                  <>
+                    {/* Information block */}
+                    <View style={styles.infoBlock}>
+                      <View style={styles.infoBlockHeader}>
+                        <Text style={styles.infoBlockTitle}>Інформація</Text>
+                        <TouchableOpacity
+                          style={styles.infoEditBtn}
+                          onPress={() =>
+                            activeVehicleId &&
+                            navigation.navigate("CarEdit", {
+                              carId: activeVehicleId,
+                            })
+                          }
+                        >
+                          <SvgXml
+                            xml={EDIT_ICON_SVG}
+                            width={18}
+                            height={18}
+                            color={theme.colors.accent.primary}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.infoGrid}>
+                        <View style={styles.infoCol}>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Рік</Text>
+                            <Text style={styles.infoValue}>{car.year}</Text>
+                          </View>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Пробіг</Text>
+                            <Text style={styles.infoValue}>
+                              {car.mileage.toLocaleString("uk-UA")} км
+                            </Text>
+                          </View>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Кузов</Text>
+                            <Text style={styles.infoValue}>—</Text>
+                          </View>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Колір</Text>
+                            <View style={styles.colorRow}>
+                              <View
+                                style={[
+                                  styles.colorSwatch,
+                                  {
+                                    backgroundColor: car.color
+                                      ? car.color.startsWith("#")
+                                        ? car.color
+                                        : `#${car.color}`
+                                      : "#808080",
+                                  },
+                                ]}
+                              />
+                              <Text style={styles.infoValue}>
+                                {car.color
+                                  ? car.color.replace("#", "").toUpperCase()
+                                  : "—"}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>VIN-код</Text>
+                            <View style={styles.vinRow}>
+                              <Text style={styles.infoValue}>
+                                {formatVinShort(car.vin)}
+                              </Text>
+                              <TouchableOpacity
+                                style={styles.copyBtn}
+                                onPress={handleCopyVin}
+                              >
+                                <Feather
+                                  name="copy"
+                                  size={16}
+                                  color={theme.colors.accent.primary}
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        </View>
+                        <View style={styles.infoCol}>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Двигун</Text>
+                            <Text style={styles.infoValue}>
+                              {(car.engineCapacity / 1000).toFixed(1)} л,{" "}
+                              {car.enginePower} к.с.
+                            </Text>
+                          </View>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Тип палива</Text>
+                            <Text style={styles.infoValue}>
+                              {FUEL_LABELS[car.fuelType as FuelType] ??
+                                car.fuelType}
+                            </Text>
+                          </View>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>КПП</Text>
+                            <Text style={styles.infoValue}>
+                              {TRANSMISSION_LABELS[
+                                car.transmissionType as TransmissionType
+                              ] ?? car.transmissionType}
+                            </Text>
+                          </View>
+                          <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Тип приводу</Text>
+                            <Text style={styles.infoValue}>
+                              {WHEEL_DRIVE_LABELS[
+                                car.wheelDriveType as WheelDriveType
+                              ] ?? car.wheelDriveType}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <View style={styles.licensePlateBox}>
+                        <Text style={styles.licensePlateText}>
+                          {car.licensePlate}
                         </Text>
                       </View>
-                      <Text style={styles.serviceDesc}>
-                        {item.records?.length
-                          ? item.records
-                              .map((record) => record.title)
-                              .join(", ")
-                          : item.description ||
-                            "Список робіт поки не заповнений"}
-                      </Text>
                     </View>
-                  </View>
-                ))}
-                {!recentServiceHistory.length ? (
-                  <Text style={styles.serviceDesc}>
-                    Ще немає записів обслуговування для цього авто.
-                  </Text>
-                ) : null}
+
+                    {/* Service history block (mock data) */}
+                    <View style={styles.serviceBlock}>
+                      <View style={styles.serviceBlockHeader}>
+                        <Text style={styles.serviceBlockTitle}>Історія</Text>
+                        <TouchableOpacity
+                          style={styles.serviceMoreBtn}
+                          onPress={openServiceHistory}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={styles.serviceMoreBtnText}>
+                            Більше &gt;
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.serviceList}>
+                        {recentServiceHistory.map((item) => (
+                          <View key={item.id} style={styles.serviceItem}>
+                            <View style={styles.serviceAvatar}>
+                              <SvgXml
+                                xml={SERVICE_ICON_SVG}
+                                width={18}
+                                height={18}
+                                color={theme.colors.accent.primary}
+                              />
+                            </View>
+                            <View style={styles.serviceContent}>
+                              <View style={styles.serviceTitleRow}>
+                                <Text style={styles.serviceTitle}>
+                                  {item.title}
+                                </Text>
+                                <Text style={styles.serviceDate}>
+                                  {formatServiceDate(item.createdAt)}
+                                </Text>
+                              </View>
+                              <Text
+                                style={styles.serviceDesc}
+                                numberOfLines={2}
+                                ellipsizeMode="tail"
+                              >
+                                {item.records?.length
+                                  ? item.records
+                                      .map((record) => record.title)
+                                      .join(", ")
+                                  : item.description ||
+                                    "Список робіт поки не заповнений"}
+                              </Text>
+                            </View>
+                          </View>
+                        ))}
+                        {!recentServiceHistory.length ? (
+                          <Text style={styles.serviceDesc}>
+                            Ще немає записів обслуговування для цього авто.
+                          </Text>
+                        ) : null}
+                      </View>
+                    </View>
+                  </>
+                )}
               </View>
-            </View>
-          </>
-        )}
-        </View>
-      </ScrollView>
-      </View>
+            </ScrollView>
+          </View>
         ) : null}
 
         {activeTab === "history" && activeVehicleId ? (
@@ -574,13 +594,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               navigation.navigate("ServiceHistoryCreate", {
                 vehicleId: activeVehicleId,
                 vehicleTitle,
-              })
-            }
-            onVisitPress={(visit) =>
-              navigation.navigate("ServiceHistoryDetail", {
-                vehicleId: activeVehicleId,
-                vehicleTitle,
-                visit,
               })
             }
             onEditPress={(visit) =>

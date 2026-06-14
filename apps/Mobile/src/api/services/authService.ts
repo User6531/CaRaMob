@@ -6,6 +6,8 @@ export interface GetMeDto {
   name: string;
   email?: string;
   updatedAt: string | null;
+  phone?: string | null;
+  pictureUrl?: string | null;
 }
 
 export interface RefreshTokenResponseDto {
@@ -19,6 +21,8 @@ function normalizeMeData(data: Record<string, unknown>): GetMeDto {
     name: String(me.name ?? me.Name ?? ""),
     email: (me.email ?? me.Email) as string | undefined,
     updatedAt: (me.updatedAt ?? me.UpdatedAt ?? null) as string | null,
+    phone: (me.phone ?? me.Phone ?? null) as string | null,
+    pictureUrl: (me.pictureUrl ?? me.PictureUrl ?? null) as string | null,
   };
 }
 

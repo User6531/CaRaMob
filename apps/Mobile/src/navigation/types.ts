@@ -19,11 +19,6 @@ export type RootStackParamList = {
     vehicleTitle?: string;
     visit: ServiceHistoryVisitDto;
   };
-  ServiceHistoryDetail: {
-    vehicleId: string;
-    vehicleTitle?: string;
-    visit: ServiceHistoryVisitDto;
-  };
 };
 
 // Типи для кожного скріна
@@ -85,9 +80,4 @@ export type ServiceHistoryCreateScreenProps = NativeStackScreenProps<
 export type ServiceHistoryEditScreenProps = NativeStackScreenProps<
   RootStackParamList,
   "ServiceHistoryEdit"
->;
-
-export type ServiceHistoryDetailScreenProps = NativeStackScreenProps<
-  RootStackParamList,
-  "ServiceHistoryDetail"
 >;

@@ -2,7 +2,8 @@ import { StyleSheet, Dimensions } from "react-native";
 import { theme } from "../../styles/theme";
 
 const { width } = Dimensions.get("window");
-const cardWidth = width - 48; // Full width minus padding
+const HORIZONTAL_CONTENT_PADDING = 16;
+const cardWidth = width - HORIZONTAL_CONTENT_PADDING * 2;
 
 export const styles = StyleSheet.create({
   scroll: {
@@ -197,7 +198,7 @@ export const styles = StyleSheet.create({
   },
   // Загальний контейнер контенту (відступи з боків як на макеті)
   contentContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: HORIZONTAL_CONTENT_PADDING,
     paddingTop: 16,
     paddingBottom: 24,
   },
@@ -464,25 +465,27 @@ export const styles = StyleSheet.create({
   },
   serviceContent: {
     flex: 1,
+    minWidth: 0,
   },
   serviceTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
     marginBottom: 4,
   },
   serviceTitle: {
     fontSize: 15,
     fontWeight: "600",
     color: "#FFFFFF",
+    flexShrink: 1,
+    marginBottom: 2,
   },
   serviceDate: {
     fontSize: 13,
     color: "#8E8E93",
+    alignSelf: "flex-start",
   },
   serviceDesc: {
     fontSize: 13,
     color: "#B0B0B0",
+    flexShrink: 1,
   },
   bottomNav: {
     position: "absolute",

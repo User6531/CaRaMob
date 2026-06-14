@@ -6,6 +6,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { useMe } from "../../queries/userQueries";
@@ -15,9 +16,20 @@ import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./ProfileScreen.styles";
 import { ProfileScreenProps } from "../../navigation/types";
 
+const formatPhone = (phone: string | null | undefined): string => {
+  if (!phone) return "Не вказано";
+
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("380") && digits.length === 12) {
+    return `+${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
+  }
+
+  return phone.startsWith("+") ? phone : `+${digits}`;
+};
+
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const { logout } = useAuth();
-  const { data: meData, isLoading, error } = useMe();
+  const { data: meData, isLoading, error, refetch } = useMe();
   const theme = useTheme();
 
   const handleEditProfile = () => {
@@ -53,7 +65,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         <Text style={globalStyles.errorText}>Помилка завантаження профілю</Text>
         <TouchableOpacity
           style={globalStyles.buttonPrimary}
-          onPress={() => window.location?.reload?.()}
+          onPress={() => refetch()}
         >
           <Text style={globalStyles.buttonPrimaryText}>Спробувати знову</Text>
         </TouchableOpacity>
@@ -63,6 +75,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
   const userName = meData?.name || "Користувач";
   const userEmail = meData?.email || "Не вказано";
+  const userPhone = formatPhone(meData?.phone);
   const isRegistered = meData?.updatedAt !== null;
 
   return (
@@ -70,20 +83,28 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       {useStatusBar()}
       <ScrollView style={[globalStyles.container, globalStyles.pageBackground]}>
         <View style={styles.content}>
-          {/* Profile Header */}
           <View style={[globalStyles.card, styles.header]}>
-            <View style={styles.placeholderImage}>
-              <Text style={styles.placeholderText}>👤</Text>
-            </View>
+            {meData?.pictureUrl ? (
+              <Image
+                source={{ uri: meData.pictureUrl }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <View style={styles.placeholderImage}>
+                <Text style={styles.placeholderText}>👤</Text>
+              </View>
+            )}
             <Text style={[globalStyles.textLarge, styles.name]}>
               {userName}
             </Text>
             <Text style={[globalStyles.textSecondary, styles.email]}>
               {userEmail}
             </Text>
+            <Text style={[globalStyles.textSecondary, styles.phone]}>
+              {userPhone}
+            </Text>
           </View>
 
-          {/* Profile Info */}
           <View style={[globalStyles.card, styles.infoSection]}>
             <Text style={[globalStyles.textPrimary, styles.sectionTitle]}>
               Інформація про профіль
@@ -110,6 +131,15 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
             <View style={styles.infoRow}>
               <Text style={[globalStyles.textSecondary, styles.infoLabel]}>
+                Телефон:
+              </Text>
+              <Text style={[globalStyles.textPrimary, styles.infoValue]}>
+                {userPhone}
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={[globalStyles.textSecondary, styles.infoLabel]}>
                 Email:
               </Text>
               <Text style={[globalStyles.textPrimary, styles.infoValue]}>
@@ -118,7 +148,6 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             </View>
           </View>
 
-          {/* Action Buttons */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={globalStyles.buttonPrimary}

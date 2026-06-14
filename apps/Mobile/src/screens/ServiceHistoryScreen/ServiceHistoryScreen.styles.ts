@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     position: "relative",
   },
   contentContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 28,
   },
   scrollContent: {
@@ -48,14 +48,22 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
   },
+  expandableContent: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+  },
   swipeActions: {
     flexDirection: "row",
-    alignItems: "stretch",
+    alignItems: "flex-start",
+    alignSelf: "flex-start",
     marginBottom: 14,
     marginLeft: 8,
   },
   swipeEditAction: {
     width: 88,
+    height: 108,
     backgroundColor: "#2563EB",
     borderRadius: 16,
     justifyContent: "center",
@@ -65,6 +73,7 @@ export const styles = StyleSheet.create({
   },
   swipeDeleteAction: {
     width: 88,
+    height: 108,
     backgroundColor: "#DC2626",
     borderRadius: 16,
     justifyContent: "center",
@@ -166,6 +175,28 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
   },
+  emptyWorksText: {
+    color: "#8E8E93",
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  detailsButton: {
+    alignSelf: "flex-start",
+    marginTop: 12,
+    backgroundColor: "rgba(74, 222, 158, 0.12)",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    minWidth: 118,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 34,
+  },
+  detailsButtonText: {
+    color: theme.colors.accent.primary,
+    fontSize: 13,
+    fontWeight: "600",
+  },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
@@ -174,40 +205,5 @@ export const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 16,
-  },
-  moreRecordsHint: {
-    color: theme.colors.accent.primary,
-    fontSize: 13,
-    marginTop: 4,
-    marginBottom: 2,
-  },
-  detailContentContainer: {
-    paddingTop: 0,
-  },
-  detailActions: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 8,
-  },
-  detailActionButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-  },
-  detailEditButton: {
-    backgroundColor: "#2563EB",
-  },
-  detailDeleteButton: {
-    backgroundColor: "#DC2626",
-  },
-  detailActionText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "600",
   },
 });

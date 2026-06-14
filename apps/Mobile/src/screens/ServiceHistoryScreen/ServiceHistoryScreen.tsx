@@ -25,13 +25,6 @@ export default function ServiceHistoryScreen({
             vehicleTitle,
           })
         }
-        onVisitPress={(visit) =>
-          navigation.navigate("ServiceHistoryDetail", {
-            vehicleId,
-            vehicleTitle,
-            visit,
-          })
-        }
         onEditPress={(visit) =>
           navigation.navigate("ServiceHistoryEdit", {
             vehicleId,
