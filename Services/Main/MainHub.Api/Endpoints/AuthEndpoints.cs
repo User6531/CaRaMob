@@ -37,7 +37,7 @@ public static class AuthEndpoints
       .MapPost("/refresh-token", RefreshTokenAsync)
       .WithSummary("Issue a new access token and refresh token using a valid refresh token")
       .Produces<RefreshTokenResponseDto>(StatusCodes.Status200OK);
-    }
+  }
 
   internal static async Task<IResult> RefreshTokenAsync(
     RefreshTokenRequestDto request,
@@ -83,13 +83,13 @@ public static class AuthEndpoints
     if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
     {
       logger.LogError("Telegram callback failed: Missing code or state");
-      return RedirectToMobile(settings, error: "missing_code_or_state");
+      return FailedRedirectToMobile(settings, "missing_code_or_state");
     }
 
     if (!pkceStateStore.TryRemove(state, out var verifier))
     {
-        logger.LogError("Telegram callback failed: Invalid state parameter");
-        return RedirectToMobile(settings, error: "invalid_state");
+      logger.LogError("Telegram callback failed: Invalid state parameter");
+      return FailedRedirectToMobile(settings, "invalid_state");
     }
     logger.LogInformation("CALLBACK — state: {state}, verifier: {verifier}", state, verifier);
 
@@ -100,21 +100,21 @@ public static class AuthEndpoints
 
     httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {credentials}");
 
-        var tokenRes = await httpClient.PostAsync("https://oauth.telegram.org/token",
-            new FormUrlEncodedContent(new Dictionary<string, string>
-            {
+    var tokenRes = await httpClient.PostAsync("https://oauth.telegram.org/token",
+        new FormUrlEncodedContent(new Dictionary<string, string>
+        {
                 { "grant_type", "authorization_code" },
                 { "code", code },
                 { "redirect_uri", settings.RedirectUri },
                 { "code_verifier", verifier }
-            })
-        );
+        })
+    );
 
     logger.LogInformation("Telegram token exchange response: {tokenResponseMessage}", tokenRes);
     if (!tokenRes.IsSuccessStatusCode)
     {
       logger.LogError("Telegram token exchange failed: {StatusCode} - {ReasonPhrase}", tokenRes.StatusCode, tokenRes.ReasonPhrase);
-      return RedirectToMobile(settings, error: "token_exchange_failed");
+      return FailedRedirectToMobile(settings, "token_exchange_failed");
     }
 
     var raw = await tokenRes.Content.ReadAsStringAsync();
@@ -126,14 +126,14 @@ public static class AuthEndpoints
     if (tokenData == null || string.IsNullOrEmpty(tokenData.IdToken))
     {
       logger.LogError("Telegram token response was invalid or missing id_token");
-      return RedirectToMobile(settings, error: "invalid_token_response");
+      return FailedRedirectToMobile(settings, "invalid_token_response");
     }
 
     var telegramUser = await ValidateIdToken(tokenData.IdToken, settings.ClientId);
     if (telegramUser == null)
     {
       logger.LogError("Telegram token response missing NameIdentifier claim");
-      return RedirectToMobile(settings, error: "invalid_id_token");
+      return FailedRedirectToMobile(settings, "invalid_id_token");
     }
 
     var providerId = $"telegram:{telegramUser.Id}";
@@ -141,19 +141,19 @@ public static class AuthEndpoints
 
     if (userEntity == null)
     {
-        logger.LogWarning(
-            "User not found for ProviderId: {ProviderId}. Creating new user...",
-            providerId
-        );
+      logger.LogWarning(
+          "User not found for ProviderId: {ProviderId}. Creating new user...",
+          providerId
+      );
 
-        var name = telegramUser.Name ?? telegramUser.Username ?? $"User {telegramUser.Id}";
-        userEntity = await userService.CreateAsync(name, null, providerId);
+      var name = telegramUser.Name ?? telegramUser.Username ?? $"User {telegramUser.Id}";
+      userEntity = await userService.CreateAsync(name, null, providerId);
     }
 
     if (userEntity == null)
     {
-        logger.LogWarning("User is null after user retrieval/creation for ProviderId: {ProviderId}", providerId);
-        return RedirectToMobile(settings, error: "user_creation_failed");
+      logger.LogWarning("User is null after user retrieval/creation for ProviderId: {ProviderId}", providerId);
+      return FailedRedirectToMobile(settings, "user_creation_failed");
     }
 
     var internalToken = tokenService.GenerateToken(
@@ -168,32 +168,27 @@ public static class AuthEndpoints
         userEntity.Id
     );
 
-    return RedirectToMobile(
-        settings,
-        internalToken: internalToken,
-        refreshToken: refreshTokenEntity.Token
-    );
+    return SuccessRedirectToMobile(settings, internalToken, refreshTokenEntity.Token);
   }
 
-  private static IResult RedirectToMobile(
-    TelegramSettings settings,
-    string? internalToken = null,
-    string? refreshToken = null,
-    string? error = null
-  )
+  private static IResult SuccessRedirectToMobile(TelegramSettings settings, string internalToken, string refreshToken)
   {
     var qs = HttpUtility.ParseQueryString(string.Empty);
+    qs["internalToken"] = internalToken;
+    qs["refreshToken"] = refreshToken;
 
-    if (!string.IsNullOrEmpty(error))
-    {
-      qs["error"] = error;
-    }
-    else
-    {
-      qs["internalToken"] = internalToken;
-      qs["refreshToken"] = refreshToken;
-    }
+    return RedirectToMobile(settings, qs);
+  }
 
+  private static IResult FailedRedirectToMobile(TelegramSettings settings, string error)
+  {
+    var qs = HttpUtility.ParseQueryString(string.Empty);
+    qs["error"] = error;
+    return RedirectToMobile(settings, qs);
+  }
+
+  private static IResult RedirectToMobile(TelegramSettings settings, System.Collections.Specialized.NameValueCollection qs)
+  {
     var redirectUri = string.IsNullOrWhiteSpace(settings.MobileRedirectUri)
       ? "cara://auth"
       : settings.MobileRedirectUri;
@@ -225,78 +220,78 @@ public static class AuthEndpoints
     return Results.Redirect($"https://oauth.telegram.org/auth?{qs}");
   }
 
-    static async Task<TelegramUser?> ValidateIdToken(string idToken, string clientId)
+  static async Task<TelegramUser?> ValidateIdToken(string idToken, string clientId)
+  {
+    using var http = new HttpClient();
+    var jwks = await http.GetStringAsync("https://oauth.telegram.org/.well-known/jwks.json");
+
+    try
     {
-        using var http = new HttpClient();
-        var jwks = await http.GetStringAsync("https://oauth.telegram.org/.well-known/jwks.json");
+      var handler = new JwtSecurityTokenHandler();
+      var keySet = new JsonWebKeySet(jwks);
 
-        try
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var keySet = new JsonWebKeySet(jwks);
+      handler.ValidateToken(idToken, new TokenValidationParameters
+      {
+        ValidIssuer = "https://oauth.telegram.org",
+        ValidAudience = clientId,
+        IssuerSigningKeys = keySet.GetSigningKeys(),
+        ValidAlgorithms = new[] { "RS256" },
+        ValidateLifetime = true
+      }, out var validated);
 
-            handler.ValidateToken(idToken, new TokenValidationParameters
-            {
-                ValidIssuer = "https://oauth.telegram.org",
-                ValidAudience = clientId,
-                IssuerSigningKeys = keySet.GetSigningKeys(),
-                ValidAlgorithms = new[] { "RS256" },
-                ValidateLifetime = true
-            }, out var validated);
-
-            var jwt = validated as JwtSecurityToken;
-            return new TelegramUser(
-                jwt.Subject,
-                jwt.Claims.FirstOrDefault(c => c.Type == "name")?.Value,
-                jwt.Claims.FirstOrDefault(c => c.Type == "preferred_username")?.Value,
-                jwt.Claims.FirstOrDefault(c => c.Type == "phone_number")?.Value,
-                jwt.Claims.FirstOrDefault(c => c.Type == "picture")?.Value
-            );
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"ValidateIdToken failed: {ex.Message}");
-            return null;
-        }
+      var jwt = validated as JwtSecurityToken;
+      return new TelegramUser(
+          jwt.Subject,
+          jwt.Claims.FirstOrDefault(c => c.Type == "name")?.Value,
+          jwt.Claims.FirstOrDefault(c => c.Type == "preferred_username")?.Value,
+          jwt.Claims.FirstOrDefault(c => c.Type == "phone_number")?.Value,
+          jwt.Claims.FirstOrDefault(c => c.Type == "picture")?.Value
+      );
     }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"ValidateIdToken failed: {ex.Message}");
+      return null;
+    }
+  }
 
-    record TelegramUser(
-    string Id,
-    string? Name,
-    string? Username,
-    string? Phone,
-    string? Picture
+  record TelegramUser(
+  string Id,
+  string? Name,
+  string? Username,
+  string? Phone,
+  string? Picture
 );
 
-    public class TelegramTokenResponse
-    {
-        [JsonPropertyName("access_token")]
-        public string AccessToken { get; set; } = string.Empty;
+  public class TelegramTokenResponse
+  {
+    [JsonPropertyName("access_token")]
+    public string AccessToken { get; set; } = string.Empty;
 
-        [JsonPropertyName("id_token")]
-        public string IdToken { get; set; } = string.Empty;
+    [JsonPropertyName("id_token")]
+    public string IdToken { get; set; } = string.Empty;
 
-        [JsonPropertyName("token_type")]
-        public string TokenType { get; set; } = string.Empty;
+    [JsonPropertyName("token_type")]
+    public string TokenType { get; set; } = string.Empty;
 
-        [JsonPropertyName("expires_in")]
-        public int ExpiresIn { get; set; }
+    [JsonPropertyName("expires_in")]
+    public int ExpiresIn { get; set; }
 
-        [JsonPropertyName("scope")]
-        public string Scope { get; set; } = string.Empty;
-    }
+    [JsonPropertyName("scope")]
+    public string Scope { get; set; } = string.Empty;
+  }
 
-    static (string verifier, string challenge) GeneratePkce()
-    {
-        var bytes = RandomNumberGenerator.GetBytes(32);
+  static (string verifier, string challenge) GeneratePkce()
+  {
+    var bytes = RandomNumberGenerator.GetBytes(32);
 
-        var verifier = Convert.ToBase64String(bytes)
-            .Replace("+", "-").Replace("/", "_").TrimEnd('=');
+    var verifier = Convert.ToBase64String(bytes)
+        .Replace("+", "-").Replace("/", "_").TrimEnd('=');
 
-        var challengeBytes = SHA256.HashData(Encoding.ASCII.GetBytes(verifier));
-        var challenge = Convert.ToBase64String(challengeBytes)
-            .Replace("+", "-").Replace("/", "_").TrimEnd('=');
+    var challengeBytes = SHA256.HashData(Encoding.ASCII.GetBytes(verifier));
+    var challenge = Convert.ToBase64String(challengeBytes)
+        .Replace("+", "-").Replace("/", "_").TrimEnd('=');
 
-        return (verifier, challenge);
-    }
+    return (verifier, challenge);
+  }
 }
