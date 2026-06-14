@@ -51,5 +51,17 @@ namespace MainHub.Api.Models
     /// </summary>
     [BsonElement("vehicleIds")]
     public required List<Guid> VehicleIds { get; set; } = [];
-  }
+
+    /// <summary>
+    /// Gets or sets the phone number of the user.
+    /// </summary>
+    [BsonElement("phone")]
+    public required string? Phone { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URL of the user's profile picture.
+    /// </summary>
+    [BsonElement("pictureUrl")]
+    public required string? PictureUrl { get; set; }
+   }
 }

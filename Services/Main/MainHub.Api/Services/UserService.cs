@@ -60,8 +60,11 @@ public interface IUserService
   /// </summary>
   /// <param name="name">The name of the user.</param>
   /// <param name="email">The email of the user.</param>
+  /// <param name="providerId">The provider identifier of the user.</param>
+  /// <param name="phone">The phone number of the user.</param>
+  /// <param name="pictureUrl">The URL of the user's profile picture.</param>
   /// <returns>A task that represents the asynchronous operation.</returns>
-  Task<UserEntity> CreateAsync(string name, string? email, string providerId);
+  Task<UserEntity> CreateAsync(string name, string? email, string providerId, string? phone, string? pictureUrl);
 
   /// <summary>
   /// Deletes a user by their unique identifier asynchronously.
@@ -159,7 +162,9 @@ public class UserService(IUserRepository repository) : IUserService
   public async Task<UserEntity> CreateAsync(
     string name,
     string? email,
-    string providerId
+    string providerId,
+    string? phone,
+    string? pictureUrl
   )
   {
     var now = DateTime.UtcNow;
@@ -171,6 +176,8 @@ public class UserService(IUserRepository repository) : IUserService
       ProviderId = providerId,
       CreatedAt = now,
       UpdatedAt = null,
+      Phone = phone,
+      PictureUrl = pictureUrl,
       VehicleIds = []
     };
 

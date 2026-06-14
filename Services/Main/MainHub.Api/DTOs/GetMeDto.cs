@@ -23,6 +23,16 @@ public class GetMeDto
   public required DateTime? UpdatedAt { get; set; }
 
   /// <summary>
+  ///  Represents the phone number of the user.
+  /// </summary>
+  public required string? Phone { get; set; }
+
+  /// <summary>
+  /// Represents the URL of the user's profile picture.
+  /// </summary>
+  public required string? PictureUrl { get; set; }
+
+  /// <summary>
   /// Explicitly converts a <see cref="UserEntity"/> to a <see cref="GetMeDto"/>.
   /// </summary>
   /// <param name="user">The user entity to convert.</param>
@@ -33,7 +43,9 @@ public class GetMeDto
     {
       Name = user.Name,
       Email = user.Email,
-      UpdatedAt = user.UpdatedAt
+      UpdatedAt = user.UpdatedAt,
+      Phone = user.Phone,
+      PictureUrl = user.PictureUrl,
     };
   }
 }

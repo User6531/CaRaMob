@@ -147,7 +147,9 @@ public static class AuthEndpoints
       );
 
       var name = telegramUser.Name ?? telegramUser.Username ?? $"User {telegramUser.Id}";
-      userEntity = await userService.CreateAsync(name, null, providerId);
+      var phone = telegramUser.Phone;
+      var pictureUrl = telegramUser.Picture;
+      userEntity = await userService.CreateAsync(name, null, providerId, phone, pictureUrl);
     }
 
     if (userEntity == null)
