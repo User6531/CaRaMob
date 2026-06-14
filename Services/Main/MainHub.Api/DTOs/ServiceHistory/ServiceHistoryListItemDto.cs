@@ -21,7 +21,7 @@ public class ServiceHistoryListItemDto
   public required DateTime CreatedAt { get; set; }
 
   /// <summary>
-  /// The service history records associated with the service history entity.
+  /// The first 4 service history records associated with the service history entity.
   /// </summary>
   public required List<ServiceHistoryRecordDto> Records { get; set; } = [];
 }

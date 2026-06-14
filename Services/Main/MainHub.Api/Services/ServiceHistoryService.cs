@@ -184,7 +184,7 @@ public class ServiceHistoryService(
       Id = sh.Id,
       Title = sh.Title,
       CreatedAt = sh.CreatedAt,
-      Records = sh.Records.Select(r => new ServiceHistoryRecordDto
+      Records = sh.Records.Take(4).Select(r => new ServiceHistoryRecordDto
       {
         Id = r.Id,
         Title = r.Title,
