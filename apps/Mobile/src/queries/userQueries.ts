@@ -10,6 +10,22 @@ import {
 } from "../types/api";
 import { useAuth } from "../context/AuthContext";
 
+const normalizeMeResponse = (raw: unknown): MeResponse => {
+  if (!raw || typeof raw !== "object") {
+    throw new Error("Invalid me response");
+  }
+
+  const me = raw as Record<string, unknown>;
+
+  return {
+    name: String(me.name ?? me.Name ?? ""),
+    email: (me.email ?? me.Email ?? null) as string | null | undefined,
+    updatedAt: (me.updatedAt ?? me.UpdatedAt ?? null) as string | null,
+    phone: (me.phone ?? me.Phone ?? null) as string | null,
+    pictureUrl: (me.pictureUrl ?? me.PictureUrl ?? null) as string | null,
+  };
+};
+
 // Query hooks
 export const useMe = () => {
   const { getAccessToken } = useAuth();
@@ -19,7 +35,8 @@ export const useMe = () => {
     queryFn: async () => {
       try {
         const apiClient = createApiClient(getAccessToken);
-        return await apiClient.get<MeResponse>("/user/me");
+        const response = await apiClient.get<unknown>("/user/me");
+        return normalizeMeResponse(response);
       } catch (error) {
         console.error("Error in useMe query:", error);
         throw error;

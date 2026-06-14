@@ -12,10 +12,17 @@ export const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#30363D", // Using theme color directly
+    backgroundColor: "#30363D",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
+  },
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 16,
+    backgroundColor: "#30363D",
   },
   placeholderText: {
     fontSize: 40,
@@ -27,6 +34,10 @@ export const styles = StyleSheet.create({
   },
   email: {
     textAlign: "center",
+  },
+  phone: {
+    textAlign: "center",
+    marginTop: 4,
   },
   infoSection: {
     marginBottom: 24,

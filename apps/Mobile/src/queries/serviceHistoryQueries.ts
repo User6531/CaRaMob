@@ -146,6 +146,49 @@ export const useServiceHistory = (vehicleId: string | undefined) => {
   });
 };
 
+const fetchServiceHistoryById = async (
+  getAccessToken: () => Promise<string | null>,
+  vehicleId: string,
+  serviceHistoryId: string
+): Promise<ServiceHistoryVisitDto> => {
+  const apiClient = createApiClient(getAccessToken);
+  const response = await apiClient.get<unknown>(
+    ENDPOINTS.SERVICE_HISTORY_BY_ID(vehicleId, serviceHistoryId)
+  );
+
+  const visit = normalizeVisit(response);
+  if (!visit) {
+    throw new Error("Не вдалося завантажити деталі запису");
+  }
+
+  return visit;
+};
+
+export const useServiceHistoryDetails = () => {
+  const { getAccessToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      vehicleId,
+      serviceHistoryId,
+    }: {
+      vehicleId: string;
+      serviceHistoryId: string;
+    }) =>
+      queryClient.fetchQuery({
+        queryKey: queryKeys.serviceHistoryDetail(vehicleId, serviceHistoryId),
+        queryFn: () =>
+          fetchServiceHistoryById(
+            getAccessToken,
+            vehicleId,
+            serviceHistoryId
+          ),
+        staleTime: CACHE_STALE_TIME_MS,
+      }),
+  });
+};
+
 export const useCreateServiceHistory = () => {
   const { getAccessToken } = useAuth();
   const queryClient = useQueryClient();
@@ -196,6 +239,12 @@ export const useUpdateServiceHistory = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.serviceHistory(variables.vehicleId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.serviceHistoryDetail(
+          variables.vehicleId,
+          variables.serviceHistoryId
+        ),
+      });
     },
   });
 };
@@ -220,6 +269,12 @@ export const useDeleteServiceHistory = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.serviceHistory(variables.vehicleId),
+      });
+      queryClient.removeQueries({
+        queryKey: queryKeys.serviceHistoryDetail(
+          variables.vehicleId,
+          variables.serviceHistoryId
+        ),
       });
     },
   });

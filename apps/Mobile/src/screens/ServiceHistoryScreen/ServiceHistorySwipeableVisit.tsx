@@ -8,7 +8,7 @@ import { styles } from "./ServiceHistoryScreen.styles";
 
 interface ServiceHistorySwipeableVisitProps {
   visit: ServiceHistoryVisitDto;
-  onPress: (visit: ServiceHistoryVisitDto) => void;
+  vehicleId: string;
   onEditPress: (visit: ServiceHistoryVisitDto) => void;
   onDeletePress: (visit: ServiceHistoryVisitDto) => void;
   onSwipeOpen?: (visitId: string) => void;
@@ -17,7 +17,7 @@ interface ServiceHistorySwipeableVisitProps {
 
 export function ServiceHistorySwipeableVisit({
   visit,
-  onPress,
+  vehicleId,
   onEditPress,
   onDeletePress,
   onSwipeOpen,
@@ -61,13 +61,9 @@ export function ServiceHistorySwipeableVisit({
       friction={2}
       onSwipeableWillOpen={() => onSwipeOpen?.(visit.id)}
     >
-      <TouchableOpacity
-        style={styles.visitCard}
-        onPress={() => onPress(visit)}
-        activeOpacity={0.9}
-      >
-        <ServiceHistoryVisitBody visit={visit} />
-      </TouchableOpacity>
+      <View style={styles.visitCard}>
+        <ServiceHistoryVisitBody visit={visit} vehicleId={vehicleId} />
+      </View>
     </Swipeable>
   );
 }
