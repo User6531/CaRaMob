@@ -94,6 +94,7 @@ public class ServiceHistoryService(
       CreatedAt = existingServiceHistory.CreatedAt,
       Title = updateServiceHistoryDetailsDto.Title,
       UpdatedAt = DateTime.UtcNow,
+      Description = updateServiceHistoryDetailsDto.Description,
       Records = updateServiceHistoryDetailsDto.Records.Select(r => new ServiceHistoryRecordModel
       {
         Id = Guid.NewGuid(),
@@ -121,6 +122,7 @@ public class ServiceHistoryService(
       Title = serviceHistoryDetails.Title,
       CreatedAt = DateTime.UtcNow,
       UpdatedAt = null,
+      Description = serviceHistoryDetails.Description,
       Records = serviceHistoryDetails.Records.Select(r => new ServiceHistoryRecordModel
       {
         Id = Guid.NewGuid(),
@@ -151,6 +153,7 @@ public class ServiceHistoryService(
       Id = serviceHistoryEntity.Id,
       Title = serviceHistoryEntity.Title,
       UpdatedAt = serviceHistoryEntity.UpdatedAt,
+      Description = serviceHistoryEntity.Description,
       Records = serviceHistoryEntity.Records.Select(r => new ServiceHistoryRecordDto
       {
         Id = r.Id,
@@ -183,6 +186,7 @@ public class ServiceHistoryService(
     {
       Id = sh.Id,
       Title = sh.Title,
+      Description = sh.Description,
       CreatedAt = sh.CreatedAt,
     }).ToList();
 

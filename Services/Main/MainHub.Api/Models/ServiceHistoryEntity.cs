@@ -42,6 +42,12 @@ public class ServiceHistoryEntity
   public required DateTime? UpdatedAt { get; set; }
 
   /// <summary>
+  /// Gets or sets the description of the service history.
+  /// </summary>
+  [BsonElement("Description")]
+  public required string Description { get; set; }
+
+  /// <summary>
   /// Gets or sets service history records associated with the service history entity.
   /// </summary>
   [BsonElement("records")]

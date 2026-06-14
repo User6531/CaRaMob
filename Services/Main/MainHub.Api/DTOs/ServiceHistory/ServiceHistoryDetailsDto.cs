@@ -26,6 +26,11 @@ public class ServiceHistoryDetailsDto
   public required DateTime? UpdatedAt { get; set; }
 
   /// <summary>
+  /// The description of the service history dto.
+  /// </summary>
+  public required string Description { get; set; }
+
+  /// <summary>
   /// The service history records associated with the service history entity.
   /// </summary>
   public required List<ServiceHistoryRecordDto> Records { get; set; } = [];
