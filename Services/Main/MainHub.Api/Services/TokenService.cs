@@ -14,6 +14,12 @@ namespace MainHub.Api.Services;
 public interface ITokenService
 {
     /// <summary>
+    /// Generates a JWT token for admin users with elevated privileges.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the admin user.</param>
+    string GenerateAdminToken(string userId);
+
+    /// <summary>
     /// Generates a JWT token for the specified user.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>
@@ -43,11 +49,38 @@ public class TokenService : ITokenService
 {
     private readonly JwtSettings _jwtSettings;
     private readonly SymmetricSecurityKey _key;
+    private readonly AdminJwtSettings _adminJwtSettings;
+    private readonly SymmetricSecurityKey _adminKey;
 
-    public TokenService(IOptions<JwtSettings> jwtSettings)
+    public TokenService(IOptions<JwtSettings> jwtSettings, IOptions<AdminJwtSettings> adminJwtSettings)
     {
         _jwtSettings = jwtSettings.Value;
         _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+        _adminJwtSettings = adminJwtSettings.Value;
+        _adminKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_adminJwtSettings.SecretKey));
+    }
+
+    public string GenerateAdminToken(string userId)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Role, "admin"),
+            new Claim("userId", userId),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var credentials = new SigningCredentials(_adminKey, SecurityAlgorithms.HmacSha256);
+        var expires = DateTime.UtcNow.AddMinutes(_adminJwtSettings.ExpirationMinutes);
+
+        var token = new JwtSecurityToken(
+            issuer: _adminJwtSettings.Issuer,
+            audience: _adminJwtSettings.Audience,
+            claims: claims,
+            expires: expires,
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public string GenerateToken(Guid userId, string providerId)

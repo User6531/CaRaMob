@@ -24,14 +24,23 @@ public static class AuthEndpoints
       .WithTags("Auth");
 
     authBuilder
-      .MapGet("/login", TelegramLoginAsync)
+      .MapGet("/web/login", TelegramWebLoginAsync)
+      .WithSummary("Initiate Telegram login flow for web")
+      .Produces(StatusCodes.Status302Found);
+
+    authBuilder
+      .MapGet("/web/callback", TelegramWebCallbackAsync)
+      .WithSummary("Handle the Telegram login callback for web")
+      .Produces(StatusCodes.Status200OK);
+
+    authBuilder
+      .MapGet("/login", TelegramMobileLoginAsync)
       .WithSummary("Initiate Telegram login flow")
       .Produces(StatusCodes.Status302Found);
 
     authBuilder
       .MapGet("/callback", TelegramCallbackAsync)
-      .WithSummary("Handle the Telegram login callback and exchange the authorization code for an internal JWT token")
-      .Produces<CheckAuthResponseDto>(StatusCodes.Status200OK);
+      .WithSummary("Handle the Telegram login callback and exchange the authorization code for an internal JWT token");
 
     authBuilder
       .MapPost("/refresh-token", RefreshTokenAsync)
@@ -63,6 +72,99 @@ public static class AuthEndpoints
       AccessToken = accessToken,
       RefreshToken = newRefreshToken.Token
     });
+  }
+
+  internal static async Task<IResult> TelegramWebCallbackAsync(
+    HttpRequest request,
+    IOptions<TelegramSettings> telegramSettings,
+    IOptions<AdminSettings> adminSettings,
+    ITokenService tokenService,
+    IRefreshTokenService refreshTokenService,
+    IUserService userService,
+    ILogger<Program> logger
+  )
+  {
+    var code = request.Query["code"].ToString();
+    var state = request.Query["state"].ToString();
+    var settings = telegramSettings.Value;
+
+    logger.LogInformation("Received Telegram callback with code: {Code} and state: {State}", code, state);
+
+    if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
+    {
+      logger.LogError("Telegram callback failed: Missing code or state");
+      return FailedRedirectToWeb(settings, "missing_code_or_state");
+    }
+
+    if (!pkceStateStore.TryRemove(state, out var verifier))
+    {
+      logger.LogError("Telegram callback failed: Invalid state parameter");
+      return FailedRedirectToWeb(settings, "invalid_state");
+    }
+    logger.LogInformation("CALLBACK — state: {state}, verifier: {verifier}", state, verifier);
+
+    // Exchange code to token
+    using var httpClient = new HttpClient();
+    var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{settings.ClientId}:{settings.ClientSecret}"));
+    logger.LogInformation("Credentials: {credentials}", credentials);
+
+    httpClient.DefaultRequestHeaders.Add("Authorization", $"Basic {credentials}");
+
+    var tokenRes = await httpClient.PostAsync("https://oauth.telegram.org/token",
+        new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+                { "grant_type", "authorization_code" },
+                { "code", code },
+                { "redirect_uri", settings.WebCallbackRedirectUri },
+                { "code_verifier", verifier }
+        })
+    );
+
+    logger.LogInformation("Telegram token exchange response: {tokenResponseMessage}", tokenRes);
+    if (!tokenRes.IsSuccessStatusCode)
+    {
+      logger.LogError("Telegram token exchange failed: {StatusCode} - {ReasonPhrase}", tokenRes.StatusCode, tokenRes.ReasonPhrase);
+      return FailedRedirectToWeb(settings, "token_exchange_failed");
+    }
+
+    var raw = await tokenRes.Content.ReadAsStringAsync();
+    logger.LogInformation("Raw token response: {raw}", raw);
+
+    var tokenData = await tokenRes.Content.ReadFromJsonAsync<TelegramTokenResponse>();
+    logger.LogInformation("Received Telegram token response: {tokenData}", tokenData);
+
+    if (tokenData == null || string.IsNullOrEmpty(tokenData.IdToken))
+    {
+      logger.LogError("Telegram token response was invalid or missing id_token");
+      return FailedRedirectToMobile(settings, "invalid_token_response");
+    }
+
+    var telegramUser = await ValidateIdToken(tokenData.IdToken, settings.ClientId);
+    if (telegramUser == null)
+    {
+      logger.LogError("Telegram token response missing NameIdentifier claim");
+      return FailedRedirectToWeb(settings, "invalid_id_token");
+    }
+
+    var userId = telegramUser.Id;
+    var allowedTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
+
+    if (!allowedTelegramIds.Contains(userId) || string.IsNullOrEmpty(userId))
+    {
+      logger.LogError("Telegram user with ID {UserId} is not in the allowed list", userId);
+      return FailedRedirectToWeb(settings, "access_denied");
+    }
+
+    var internalToken = tokenService.GenerateAdminToken(userId);
+    var providerId = $"telegram:{userId}";
+
+
+    logger.LogInformation(
+        "Generated internal JWT token for user: {UserId}",
+        userId
+    );
+
+    return SuccessRedirectToWeb(settings, internalToken, string.Empty, isAdmin: true);
   }
 
   internal static async Task<IResult> TelegramCallbackAsync(
@@ -105,7 +207,7 @@ public static class AuthEndpoints
         {
                 { "grant_type", "authorization_code" },
                 { "code", code },
-                { "redirect_uri", settings.RedirectUri },
+                { "redirect_uri", settings.MobileCallbackRedirectUri },
                 { "code_verifier", verifier }
         })
     );
@@ -189,17 +291,62 @@ public static class AuthEndpoints
     return RedirectToMobile(settings, qs);
   }
 
-  private static IResult RedirectToMobile(TelegramSettings settings, System.Collections.Specialized.NameValueCollection qs)
+  private static IResult RedirectToWeb(TelegramSettings settings, System.Collections.Specialized.NameValueCollection qs)
   {
-    var redirectUri = string.IsNullOrWhiteSpace(settings.MobileRedirectUri)
-      ? "cara://auth"
-      : settings.MobileRedirectUri;
+    var redirectUri = settings.WebRedirectUri;
 
     return Results.Redirect($"{redirectUri}?{qs}");
   }
 
+  private static IResult SuccessRedirectToWeb(TelegramSettings settings, string internalToken, string refreshToken, bool isAdmin)
+  {
+    var qs = HttpUtility.ParseQueryString(string.Empty);
+    qs["internalToken"] = internalToken;
+    qs["refreshToken"] = refreshToken;
+    qs["isAdmin"] = isAdmin.ToString();
+
+    return RedirectToWeb(settings, qs);
+  }
+
+  private static IResult FailedRedirectToWeb(TelegramSettings settings, string error)
+  {
+    var qs = HttpUtility.ParseQueryString(string.Empty);
+    qs["error"] = error;
+    return RedirectToWeb(settings, qs);
+  }
+
+  private static IResult RedirectToMobile(TelegramSettings settings, System.Collections.Specialized.NameValueCollection qs)
+  {
+    var redirectUri = settings.MobileRedirectUri;
+
+    return Results.Redirect($"{redirectUri}?{qs}");
+  }
+
+  internal static async Task<IResult> TelegramMobileLoginAsync(
+    IOptions<TelegramSettings> telegramSettings,
+    ILogger<Program> logger
+  )
+  {
+    var settings = telegramSettings.Value;
+    var redirectUri = settings.MobileCallbackRedirectUri;
+
+    return await TelegramLoginAsync(telegramSettings, redirectUri, logger);
+  }
+
+  internal static async Task<IResult> TelegramWebLoginAsync(
+    IOptions<TelegramSettings> telegramSettings,
+    ILogger<Program> logger
+  )
+  {
+    var settings = telegramSettings.Value;
+    var redirectUri = settings.WebCallbackRedirectUri;
+
+    return await TelegramLoginAsync(telegramSettings, redirectUri, logger);
+  }
+
   internal static async Task<IResult> TelegramLoginAsync(
     IOptions<TelegramSettings> telegramSettings,
+    string redirectUri,
     ILogger<Program> logger
   )
   {
@@ -212,7 +359,7 @@ public static class AuthEndpoints
     var qs = HttpUtility.ParseQueryString(string.Empty);
 
     qs["client_id"] = settings.ClientId;
-    qs["redirect_uri"] = settings.RedirectUri;
+    qs["redirect_uri"] = redirectUri;
     qs["response_type"] = "code";
     qs["scope"] = "openid profile phone";
     qs["state"] = state;

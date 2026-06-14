@@ -16,12 +16,22 @@ public class TelegramSettings
     public required string ClientSecret { get; set; }
 
     /// <summary>
-    /// Gets or sets the redirect URI for Telegram authentication callbacks.
+    /// Gets or sets the mobile callback redirect URI for Telegram authentication.
     /// </summary>
-    public required string RedirectUri { get; set; }
+    public required string MobileCallbackRedirectUri { get; set; }
+
+    /// <summary>
+    /// Gets or sets the web callback redirect URI for Telegram authentication.
+    /// </summary>
+    public required string WebCallbackRedirectUri { get; set; }
 
     /// <summary>
     /// Deep link URI for redirecting back to the mobile app after successful login.
     /// </summary>
-    public string MobileRedirectUri { get; set; } = "cara://auth";
+    public required string MobileRedirectUri { get; set; }
+
+    /// <summary>
+    /// URI for redirecting back to the web client after successful login.
+    /// </summary>
+    public required string WebRedirectUri { get; set; }
 }
