@@ -35,6 +35,12 @@ public interface IUserRepository
     /// The task result contains a list of <see cref="UserEntity"/> objects.
     /// </returns>
     Task<List<UserEntity>> GetAllAsync();
+    Task<List<UserEntity>> GetByProviderPrefixPagedAsync(
+        string providerPrefix,
+        int skip,
+        int take
+    );
+    Task<long> CountByProviderPrefixAsync(string providerPrefix);
 
     /// <summary>
     /// Retrieves a user entity by its unique identifier asynchronously.
@@ -102,6 +108,28 @@ public class UserRepository : IUserRepository
     public async Task<List<UserEntity>> GetAllAsync() =>
         await _users.Find(_ => true).ToListAsync();
 
+    public async Task<List<UserEntity>> GetByProviderPrefixPagedAsync(
+        string providerPrefix,
+        int skip,
+        int take
+    )
+    {
+        var filter = BuildProviderPrefixFilter(providerPrefix);
+
+        return await _users
+            .Find(filter)
+            .SortByDescending(u => u.CreatedAt)
+            .Skip(skip)
+            .Limit(take)
+            .ToListAsync();
+    }
+
+    public async Task<long> CountByProviderPrefixAsync(string providerPrefix)
+    {
+        var filter = BuildProviderPrefixFilter(providerPrefix);
+        return await _users.CountDocumentsAsync(filter);
+    }
+
     public async Task<UserEntity?> GetByIdAsync(Guid id) =>
         await _users.Find(u => u.Id == id).FirstOrDefaultAsync();
 
@@ -112,4 +140,12 @@ public class UserRepository : IUserRepository
 
     public async Task DeleteAsync(Guid id) =>
         await _users.DeleteOneAsync(u => u.Id == id);
+
+    private static FilterDefinition<UserEntity> BuildProviderPrefixFilter(
+        string providerPrefix
+    )
+    {
+        var builder = Builders<UserEntity>.Filter;
+        return builder.Regex(u => u.ProviderId, $"^{providerPrefix}");
+    }
 }

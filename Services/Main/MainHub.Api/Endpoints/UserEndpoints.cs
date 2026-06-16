@@ -1,6 +1,8 @@
 using MainHub.Api.Services;
 using MainHub.Api.DTOs;
 using MainHub.Api.Filters;
+using MainHub.Api.Config;
+using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 namespace MainHub.Api.Endpoints;
@@ -26,6 +28,12 @@ public static class UserEndpoints
       .MapGet("/me", GetMeAsync)
       .WithSummary("Get the authenticated user's information")
       .Produces<GetMeDto>(StatusCodes.Status200OK);
+
+    app.MapGet("/api/admin/drivers", GetDriversAsync)
+      .WithTags("Admin")
+      .RequireAuthorization("RequireAdminJwt")
+      .WithSummary("Get paged list of mobile drivers")
+      .Produces<PagedResultDto<DriverListItemDto>>(StatusCodes.Status200OK);
   }
 
   internal static async Task<IResult> UpdateAsync(
@@ -82,5 +90,45 @@ public static class UserEndpoints
   {
     await userService.DeleteAsync(id);
     return Results.NoContent();
+  }
+
+  internal static async Task<IResult> GetDriversAsync(
+    ClaimsPrincipal userClaims,
+    int page,
+    int pageSize,
+    IUserService userService,
+    IOptions<AdminSettings> adminSettings
+  )
+  {
+    var safePage = page <= 0 ? 1 : page;
+    var safePageSize = pageSize <= 0 ? 20 : Math.Min(pageSize, 100);
+    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
+    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
+
+    if (
+      string.IsNullOrWhiteSpace(currentAdminUserId) ||
+      !allowedAdminTelegramIds.Contains(currentAdminUserId)
+    )
+    {
+      return Results.Forbid();
+    }
+
+    var (drivers, totalItems) = await userService.GetDriversPagedAsync(
+      safePage,
+      safePageSize
+    );
+
+    var totalPages = totalItems == 0
+      ? 0
+      : (int)Math.Ceiling(totalItems / (double)safePageSize);
+
+    return Results.Ok(new PagedResultDto<DriverListItemDto>
+    {
+      Items = drivers.Select(d => d.ToDriverListItemDto()).ToList(),
+      Page = safePage,
+      PageSize = safePageSize,
+      TotalItems = totalItems,
+      TotalPages = totalPages
+    });
   }
 }

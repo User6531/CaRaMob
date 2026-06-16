@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Permission } from "../auth/permissions";
 import { DEFAULT_ROUTE } from "../config/navigation";
 import { AdminLayout } from "../layout/AdminLayout";
+import { DriversPage } from "../pages/DriversPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PlaceholderPage } from "../pages/PlaceholderPage";
 import { StoListPage } from "../pages/StoListPage";
@@ -47,10 +48,7 @@ export function AppRouter() {
           path="/drivers"
           element={
             <PermissionGate requiredPermissions={[Permission.DriversView]}>
-              <PlaceholderPage
-                title="Водії"
-                description="Тимчасова сторінка для майбутнього керування водіями"
-              />
+              <DriversPage />
             </PermissionGate>
           }
         />

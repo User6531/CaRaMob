@@ -72,6 +72,10 @@ public interface IUserService
   /// <param name="id">The unique identifier of the user to delete.</param>
   /// <returns>A task that represents the asynchronous operation.</returns>
   Task DeleteAsync(Guid id);
+  Task<(IReadOnlyList<UserEntity> Items, int TotalItems)> GetDriversPagedAsync(
+    int page,
+    int pageSize
+  );
 
   /// <summary>
   /// Attach a new vehicle to user asynchronously.
@@ -187,4 +191,24 @@ public class UserService(IUserRepository repository) : IUserService
   }
 
   public async Task DeleteAsync(Guid id) => await _repository.DeleteAsync(id);
+
+  public async Task<(IReadOnlyList<UserEntity> Items, int TotalItems)> GetDriversPagedAsync(
+    int page,
+    int pageSize
+  )
+  {
+    var safePage = Math.Max(page, 1);
+    var safePageSize = Math.Clamp(pageSize, 1, 100);
+    var skip = (safePage - 1) * safePageSize;
+
+    var items = await _repository.GetByProviderPrefixPagedAsync(
+      providerPrefix: "telegram:",
+      skip: skip,
+      take: safePageSize
+    );
+
+    var total = await _repository.CountByProviderPrefixAsync(providerPrefix: "telegram:");
+
+    return (items, (int)total);
+  }
 }
