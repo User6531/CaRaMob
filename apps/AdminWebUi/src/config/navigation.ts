@@ -22,10 +22,17 @@ export const NAV_ITEMS: NavItemConfig[] = [
   },
   {
     id: "users",
-    label: "Користувачі",
+    label: "Клієнти",
     path: "/users",
     icon: "M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-8 8a8 8 0 0 1 16 0H4z",
     requiredPermissions: [Permission.UsersView],
+  },
+  {
+    id: "drivers",
+    label: "Водії",
+    path: "/drivers",
+    icon: "M3 13h2l1-3h12l1 3h2v5h-2a2 2 0 1 1-4 0H9a2 2 0 1 1-4 0H3v-5zm4 0h10l-.5-1.5h-9L7 13z",
+    requiredPermissions: [Permission.DriversView],
   },
   {
     id: "settings",

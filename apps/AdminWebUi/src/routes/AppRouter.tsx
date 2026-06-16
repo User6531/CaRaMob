@@ -36,8 +36,20 @@ export function AppRouter() {
           element={
             <PermissionGate requiredPermissions={[Permission.UsersView]}>
               <PlaceholderPage
-                title="Користувачі"
-                description="Керування обліковими записами персоналу СТО"
+                title="Клієнти"
+                description="Керування клієнтськими акаунтами та доступами"
+              />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/drivers"
+          element={
+            <PermissionGate requiredPermissions={[Permission.DriversView]}>
+              <PlaceholderPage
+                title="Водії"
+                description="Тимчасова сторінка для майбутнього керування водіями"
               />
             </PermissionGate>
           }

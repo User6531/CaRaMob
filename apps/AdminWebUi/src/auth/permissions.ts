@@ -9,6 +9,7 @@ export const Permission = {
   StoDelete: "sto.delete",
   UsersView: "users.view",
   UsersManage: "users.manage",
+  DriversView: "drivers.view",
   SettingsView: "settings.view",
 } as const;
 
@@ -25,12 +26,14 @@ export const ROLE_PERMISSIONS = {
     Permission.StoDelete,
     Permission.UsersView,
     Permission.UsersManage,
+    Permission.DriversView,
     Permission.SettingsView,
   ],
   stoAdmin: [
     Permission.StoView,
     Permission.StoEdit,
     Permission.UsersView,
+    Permission.DriversView,
     Permission.SettingsView,
   ],
   stoOperator: [Permission.StoView],
