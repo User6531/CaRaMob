@@ -74,8 +74,7 @@ public interface IUserService
   Task DeleteAsync(Guid id);
   Task<Dictionary<Guid, Guid>> GetOwnerMapByVehicleIdsAsync(IReadOnlyCollection<Guid> vehicleIds);
   Task<(IReadOnlyList<UserEntity> Items, int TotalItems)> GetDriversPagedAsync(
-    int page,
-    int pageSize
+    AdminDriverQueryDto query
   );
 
   /// <summary>
@@ -215,21 +214,18 @@ public class UserService(IUserRepository repository) : IUserService
   }
 
   public async Task<(IReadOnlyList<UserEntity> Items, int TotalItems)> GetDriversPagedAsync(
-    int page,
-    int pageSize
+    AdminDriverQueryDto query
   )
   {
-    var safePage = Math.Max(page, 1);
-    var safePageSize = Math.Clamp(pageSize, 1, 100);
+    var safePage = Math.Max(query.Page, 1);
+    var safePageSize = Math.Clamp(query.PageSize, 1, 100);
+    query.Page = safePage;
+    query.PageSize = safePageSize;
     var skip = (safePage - 1) * safePageSize;
 
-    var items = await _repository.GetByProviderPrefixPagedAsync(
-      providerPrefix: "telegram:",
-      skip: skip,
-      take: safePageSize
-    );
+    var items = await _repository.GetAdminDriversPagedAsync(query, skip, safePageSize);
 
-    var total = await _repository.CountByProviderPrefixAsync(providerPrefix: "telegram:");
+    var total = await _repository.CountAdminDriversAsync(query);
 
     return (items, (int)total);
   }

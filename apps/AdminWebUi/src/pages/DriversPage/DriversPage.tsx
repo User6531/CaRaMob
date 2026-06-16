@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { ADMIN_DRIVERS_URL } from "../../config/api";
 import { Button } from "../../components/Button";
+import { Input } from "../../components/Input";
 import styles from "./DriversPage.module.css";
 
 interface DriverListItem {
@@ -23,6 +24,14 @@ interface PagedResult<T> {
 }
 
 const PAGE_SIZE = 10;
+const EMPTY_FILTERS = {
+  name: "",
+  phone: "",
+  email: "",
+  providerId: "",
+  createdFrom: "",
+  createdTo: "",
+};
 
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat("uk-UA", {
@@ -37,9 +46,29 @@ function formatDate(date: string): string {
 export function DriversPage() {
   const { session } = useAuth();
   const [page, setPage] = useState(1);
+  const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
+  const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS);
   const [data, setData] = useState<PagedResult<DriverListItem> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams({
+      page: String(page),
+      pageSize: String(PAGE_SIZE),
+    });
+
+    Object.entries(appliedFilters).forEach(([key, value]) => {
+      if (value.trim()) {
+        params.set(key, value.trim());
+      }
+    });
+
+    return params.toString();
+  }, [appliedFilters, page]);
+
+  const hasPendingFilters =
+    JSON.stringify(draftFilters) !== JSON.stringify(appliedFilters);
 
   useEffect(() => {
     if (!session?.internalToken) return;
@@ -50,7 +79,7 @@ export function DriversPage() {
       setError(null);
       try {
         const response = await fetch(
-          `${ADMIN_DRIVERS_URL}?page=${page}&pageSize=${PAGE_SIZE}`,
+          `${ADMIN_DRIVERS_URL}?${queryString}`,
           {
             method: "GET",
             headers: {
@@ -80,7 +109,7 @@ export function DriversPage() {
 
     void load();
     return () => controller.abort();
-  }, [page, session?.internalToken]);
+  }, [queryString, session?.internalToken]);
 
   const hasPrev = page > 1;
   const hasNext = useMemo(
@@ -96,6 +125,72 @@ export function DriversPage() {
           Список усіх водіїв, які зареєструвалися через мобільний застосунок.
         </p>
       </header>
+
+      <section className={styles.filters}>
+        <Input
+          label="Ім'я"
+          value={draftFilters.name}
+          onChange={(event) =>
+            setDraftFilters((current) => ({ ...current, name: event.target.value }))
+          }
+        />
+        <Input
+          label="Телефон"
+          value={draftFilters.phone}
+          onChange={(event) =>
+            setDraftFilters((current) => ({ ...current, phone: event.target.value }))
+          }
+        />
+        <Input
+          label="Email"
+          value={draftFilters.email}
+          onChange={(event) =>
+            setDraftFilters((current) => ({ ...current, email: event.target.value }))
+          }
+        />
+        <Input
+          label="Provider"
+          value={draftFilters.providerId}
+          onChange={(event) =>
+            setDraftFilters((current) => ({ ...current, providerId: event.target.value }))
+          }
+        />
+        <Input
+          label="Створено від"
+          type="date"
+          value={draftFilters.createdFrom}
+          onChange={(event) =>
+            setDraftFilters((current) => ({ ...current, createdFrom: event.target.value }))
+          }
+        />
+        <Input
+          label="Створено до"
+          type="date"
+          value={draftFilters.createdTo}
+          onChange={(event) =>
+            setDraftFilters((current) => ({ ...current, createdTo: event.target.value }))
+          }
+        />
+        <Button
+          onClick={() => {
+            setPage(1);
+            setAppliedFilters(draftFilters);
+          }}
+          disabled={!hasPendingFilters}
+        >
+          Застосувати
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setPage(1);
+            setDraftFilters(EMPTY_FILTERS);
+            setAppliedFilters(EMPTY_FILTERS);
+          }}
+        >
+          Скинути фільтри
+        </Button>
+      </section>
 
       <div className={styles.tableCard}>
         {isLoading ? <p className={styles.meta}>Завантаження...</p> : null}

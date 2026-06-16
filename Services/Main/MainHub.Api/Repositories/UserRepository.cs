@@ -2,6 +2,8 @@ using MongoDB.Driver;
 using Microsoft.Extensions.Options;
 using MainHub.Api.Models;
 using MainHub.Api.Config;
+using MainHub.Api.DTOs;
+using MongoDB.Bson;
 
 namespace MainHub.Api.Repositories;
 
@@ -35,12 +37,8 @@ public interface IUserRepository
     /// The task result contains a list of <see cref="UserEntity"/> objects.
     /// </returns>
     Task<List<UserEntity>> GetAllAsync();
-    Task<List<UserEntity>> GetByProviderPrefixPagedAsync(
-        string providerPrefix,
-        int skip,
-        int take
-    );
-    Task<long> CountByProviderPrefixAsync(string providerPrefix);
+    Task<List<UserEntity>> GetAdminDriversPagedAsync(AdminDriverQueryDto query, int skip, int take);
+    Task<long> CountAdminDriversAsync(AdminDriverQueryDto query);
 
     /// <summary>
     /// Retrieves a user entity by its unique identifier asynchronously.
@@ -109,13 +107,13 @@ public class UserRepository : IUserRepository
     public async Task<List<UserEntity>> GetAllAsync() =>
         await _users.Find(_ => true).ToListAsync();
 
-    public async Task<List<UserEntity>> GetByProviderPrefixPagedAsync(
-        string providerPrefix,
+    public async Task<List<UserEntity>> GetAdminDriversPagedAsync(
+        AdminDriverQueryDto query,
         int skip,
         int take
     )
     {
-        var filter = BuildProviderPrefixFilter(providerPrefix);
+        var filter = BuildAdminDriverFilter(query);
 
         return await _users
             .Find(filter)
@@ -125,9 +123,9 @@ public class UserRepository : IUserRepository
             .ToListAsync();
     }
 
-    public async Task<long> CountByProviderPrefixAsync(string providerPrefix)
+    public async Task<long> CountAdminDriversAsync(AdminDriverQueryDto query)
     {
-        var filter = BuildProviderPrefixFilter(providerPrefix);
+        var filter = BuildAdminDriverFilter(query);
         return await _users.CountDocumentsAsync(filter);
     }
 
@@ -153,11 +151,58 @@ public class UserRepository : IUserRepository
     public async Task DeleteAsync(Guid id) =>
         await _users.DeleteOneAsync(u => u.Id == id);
 
-    private static FilterDefinition<UserEntity> BuildProviderPrefixFilter(
-        string providerPrefix
+    private static FilterDefinition<UserEntity> BuildAdminDriverFilter(
+        AdminDriverQueryDto query
     )
     {
         var builder = Builders<UserEntity>.Filter;
-        return builder.Regex(u => u.ProviderId, $"^{providerPrefix}");
+        var filters = new List<FilterDefinition<UserEntity>>
+        {
+            builder.Regex(u => u.ProviderId, "^telegram:")
+        };
+
+        if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            filters.Add(builder.Regex(
+                u => u.Name,
+                new BsonRegularExpression(query.Name.Trim(), "i")
+            ));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Email))
+        {
+            filters.Add(builder.Regex(
+                u => u.Email,
+                new BsonRegularExpression(query.Email.Trim(), "i")
+            ));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Phone))
+        {
+            filters.Add(builder.Regex(
+                u => u.Phone,
+                new BsonRegularExpression(query.Phone.Trim(), "i")
+            ));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.ProviderId))
+        {
+            filters.Add(builder.Regex(
+                u => u.ProviderId,
+                new BsonRegularExpression(query.ProviderId.Trim(), "i")
+            ));
+        }
+
+        if (query.CreatedFrom.HasValue)
+        {
+            filters.Add(builder.Gte(u => u.CreatedAt, query.CreatedFrom.Value));
+        }
+
+        if (query.CreatedTo.HasValue)
+        {
+            filters.Add(builder.Lte(u => u.CreatedAt, query.CreatedTo.Value));
+        }
+
+        return builder.And(filters);
     }
 }

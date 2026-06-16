@@ -106,14 +106,15 @@ public static class UserEndpoints
 
   internal static async Task<IResult> GetDriversAsync(
     ClaimsPrincipal userClaims,
-    int page,
-    int pageSize,
+    [AsParameters] AdminDriverQueryDto query,
     IUserService userService,
     IOptions<AdminSettings> adminSettings
   )
   {
-    var safePage = page <= 0 ? 1 : page;
-    var safePageSize = pageSize <= 0 ? 20 : Math.Min(pageSize, 100);
+    var safePage = query.Page <= 0 ? 1 : query.Page;
+    var safePageSize = query.PageSize <= 0 ? 20 : Math.Min(query.PageSize, 100);
+    query.Page = safePage;
+    query.PageSize = safePageSize;
     var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
     var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
 
@@ -125,10 +126,7 @@ public static class UserEndpoints
       return Results.Forbid();
     }
 
-    var (drivers, totalItems) = await userService.GetDriversPagedAsync(
-      safePage,
-      safePageSize
-    );
+    var (drivers, totalItems) = await userService.GetDriversPagedAsync(query);
 
     var totalPages = totalItems == 0
       ? 0
