@@ -21,6 +21,7 @@ interface PagedResult<T> {
   pageSize: number;
   totalItems: number;
   totalPages: number;
+  
 }
 
 const PAGE_SIZE = 10;
