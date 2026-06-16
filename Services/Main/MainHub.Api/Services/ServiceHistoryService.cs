@@ -1,5 +1,6 @@
 using MongoDB.Driver;
 using MainHub.Api.DTOs.ServiceHistory;
+using MainHub.Api.DTOs;
 using MainHub.Api.Repositories;
 using MainHub.Api.Models;
 
@@ -60,6 +61,8 @@ public interface IServiceHistoryService
   /// <param name="userId">The unique identifier of the user.</param>
   /// <returns>A task that represents the asynchronous operation.</returns>
   Task UpdateAsync(Guid vehicleId, Guid serviceHistoryId, CreateServiceHistoryDetailsDto updateServiceHistoryDetailsDto, Guid userId);
+  Task<List<AdminServiceHistoryVisitDto>> GetAdminVisitsByVehicleIdAsync(Guid vehicleId);
+  Task<List<ServiceHistoryRecordDto>> GetAdminRecordsByServiceHistoryIdAsync(Guid serviceHistoryId);
 }
 
 public class ServiceHistoryService(
@@ -218,5 +221,38 @@ public class ServiceHistoryService(
     {
       throw new ArgumentException("The specified vehicle does not found.", nameof(vehicleId));
     }
+  }
+
+  public async Task<List<AdminServiceHistoryVisitDto>> GetAdminVisitsByVehicleIdAsync(Guid vehicleId)
+  {
+    var visits = await _repository.GetAllByVehicleIdAsync(vehicleId);
+    return visits.Select(v => new AdminServiceHistoryVisitDto
+    {
+      Id = v.Id,
+      VehicleId = v.VehicleId,
+      Title = v.Title,
+      Description = v.Description,
+      CreatedAt = v.CreatedAt,
+      UpdatedAt = v.UpdatedAt
+    }).ToList();
+  }
+
+  public async Task<List<ServiceHistoryRecordDto>> GetAdminRecordsByServiceHistoryIdAsync(
+    Guid serviceHistoryId
+  )
+  {
+    var visit = await _repository.GetByServiceHistoryIdAsync(serviceHistoryId);
+    if (visit is null)
+    {
+      throw new KeyNotFoundException("Service history visit not found.");
+    }
+
+    return visit.Records.Select(r => new ServiceHistoryRecordDto
+    {
+      Id = r.Id,
+      Title = r.Title,
+      Description = r.Description,
+      Price = r.Price
+    }).ToList();
   }
 }

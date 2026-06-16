@@ -2,6 +2,9 @@ using System.Security.Claims;
 using MainHub.Api.Services;
 using MainHub.Api.DTOs.ServiceHistory;
 using MainHub.Api.Filters;
+using MainHub.Api.Config;
+using MainHub.Api.DTOs;
+using Microsoft.Extensions.Options;
 
 namespace MainHub.Api.Endpoints;
 
@@ -50,6 +53,18 @@ public static partial class ServiceHistoryEndpoints
       .MapDelete("/{vehicleId}/{serviceHistoryId}", DeleteAsync)
       .WithSummary("Delete a service history record by its id for a vehicle")
       .Produces(StatusCodes.Status204NoContent);
+
+    app.MapGet("/api/admin/vehicles/{vehicleId}/service-history", GetAdminVehicleHistoryAsync)
+      .WithTags("Admin")
+      .RequireAuthorization("RequireAdminJwt")
+      .WithSummary("Get service history visits by vehicle id for admin")
+      .Produces<List<AdminServiceHistoryVisitDto>>(StatusCodes.Status200OK);
+
+    app.MapGet("/api/admin/service-history/{serviceHistoryId}/records", GetAdminServiceRecordsAsync)
+      .WithTags("Admin")
+      .RequireAuthorization("RequireAdminJwt")
+      .WithSummary("Get service records by service history id for admin")
+      .Produces<List<ServiceHistoryRecordDto>>(StatusCodes.Status200OK);
   }
 
   internal static async Task<IResult> GetServiceHistoryByIdAsync(
@@ -150,6 +165,57 @@ public static partial class ServiceHistoryEndpoints
     catch (Exception ex)
     {
       return Results.BadRequest(ex.Message);
+    }
+  }
+
+  internal static async Task<IResult> GetAdminVehicleHistoryAsync(
+    ClaimsPrincipal userClaims,
+    Guid vehicleId,
+    IServiceHistoryService serviceHistoryService,
+    IOptions<AdminSettings> adminSettings
+  )
+  {
+    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
+    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
+
+    if (
+      string.IsNullOrWhiteSpace(currentAdminUserId) ||
+      !allowedAdminTelegramIds.Contains(currentAdminUserId)
+    )
+    {
+      return Results.Forbid();
+    }
+
+    var visits = await serviceHistoryService.GetAdminVisitsByVehicleIdAsync(vehicleId);
+    return Results.Ok(visits);
+  }
+
+  internal static async Task<IResult> GetAdminServiceRecordsAsync(
+    ClaimsPrincipal userClaims,
+    Guid serviceHistoryId,
+    IServiceHistoryService serviceHistoryService,
+    IOptions<AdminSettings> adminSettings
+  )
+  {
+    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
+    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
+
+    if (
+      string.IsNullOrWhiteSpace(currentAdminUserId) ||
+      !allowedAdminTelegramIds.Contains(currentAdminUserId)
+    )
+    {
+      return Results.Forbid();
+    }
+
+    try
+    {
+      var records = await serviceHistoryService.GetAdminRecordsByServiceHistoryIdAsync(serviceHistoryId);
+      return Results.Ok(records);
+    }
+    catch (KeyNotFoundException)
+    {
+      return Results.NotFound();
     }
   }
 }

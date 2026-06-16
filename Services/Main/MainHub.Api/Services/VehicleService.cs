@@ -42,6 +42,7 @@ public interface IVehicleService
   /// <param name="userId">The unique identifier of the user.</param>
   Task DeleteAsync(Guid vehicleId, Guid userId);
   Task<(IReadOnlyList<VehicleEntity> Items, int TotalItems)> GetAdminPagedAsync(AdminVehicleQueryDto query);
+  Task<VehicleEntity?> GetAdminVehicleByIdAsync(Guid vehicleId);
 }
 
 public class VehicleService(
@@ -245,5 +246,10 @@ public class VehicleService(
     var total = await _repository.CountAdminAsync(query);
 
     return (items, (int)total);
+  }
+
+  public async Task<VehicleEntity?> GetAdminVehicleByIdAsync(Guid vehicleId)
+  {
+    return await _repository.GetByIdAsync(vehicleId);
   }
 }

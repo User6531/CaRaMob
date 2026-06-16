@@ -10,3 +10,9 @@ export const ADMIN_DRIVER_DETAILS_URL = (driverId: string) =>
   `${API_BASE_URL}/api/admin/drivers/${driverId}`;
 export const ADMIN_DRIVER_VEHICLES_URL = (driverId: string) =>
   `${API_BASE_URL}/api/admin/drivers/${driverId}/vehicles`;
+export const ADMIN_VEHICLE_HISTORY_URL = (vehicleId: string) =>
+  `${API_BASE_URL}/api/admin/vehicles/${vehicleId}/service-history`;
+export const ADMIN_VEHICLE_DETAILS_URL = (vehicleId: string) =>
+  `${API_BASE_URL}/api/admin/vehicles/${vehicleId}`;
+export const ADMIN_SERVICE_HISTORY_RECORDS_URL = (serviceHistoryId: string) =>
+  `${API_BASE_URL}/api/admin/service-history/${serviceHistoryId}/records`;

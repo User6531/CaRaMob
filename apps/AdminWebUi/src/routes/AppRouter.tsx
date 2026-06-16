@@ -7,6 +7,7 @@ import { DriversPage } from "../pages/DriversPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PlaceholderPage } from "../pages/PlaceholderPage";
 import { StoListPage } from "../pages/StoListPage";
+import { VehicleServiceHistoryPage } from "../pages/VehicleServiceHistoryPage";
 import { VehiclesPage } from "../pages/VehiclesPage";
 import { PermissionGate } from "./PermissionGate";
 import { ProtectedRoute } from "./ProtectedRoute";
@@ -69,6 +70,15 @@ export function AppRouter() {
           element={
             <PermissionGate requiredPermissions={[Permission.VehiclesView]}>
               <VehiclesPage />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/vehicles/:vehicleId/service-history"
+          element={
+            <PermissionGate requiredPermissions={[Permission.VehiclesView]}>
+              <VehicleServiceHistoryPage />
             </PermissionGate>
           }
         />

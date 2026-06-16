@@ -66,6 +66,12 @@ public static partial class VehicleEndpoints
       .RequireAuthorization("RequireAdminJwt")
       .WithSummary("Get paged vehicles list for global admin")
       .Produces<PagedResultDto<AdminVehicleListItemDto>>(StatusCodes.Status200OK);
+
+    app.MapGet("/api/admin/vehicles/{vehicleId}", GetAdminVehicleByIdAsync)
+      .WithTags("Admin")
+      .RequireAuthorization("RequireAdminJwt")
+      .WithSummary("Get single vehicle details for global admin")
+      .Produces<AdminVehicleListItemDto>(StatusCodes.Status200OK);
   }
 
   internal static async Task<IResult> GetVehicleByIdAsync(
@@ -265,5 +271,34 @@ public static partial class VehicleEndpoints
       TotalItems = totalItems,
       TotalPages = totalPages
     });
+  }
+
+  internal static async Task<IResult> GetAdminVehicleByIdAsync(
+    ClaimsPrincipal userClaims,
+    Guid vehicleId,
+    IVehicleService vehicleService,
+    IUserService userService,
+    IOptions<AdminSettings> adminSettings
+  )
+  {
+    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
+    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
+
+    if (
+      string.IsNullOrWhiteSpace(currentAdminUserId) ||
+      !allowedAdminTelegramIds.Contains(currentAdminUserId)
+    )
+    {
+      return Results.Forbid();
+    }
+
+    var vehicle = await vehicleService.GetAdminVehicleByIdAsync(vehicleId);
+    if (vehicle is null)
+    {
+      return Results.NotFound();
+    }
+
+    var ownerMap = await userService.GetOwnerMapByVehicleIdsAsync([vehicle.Id]);
+    return Results.Ok(vehicle.ToAdminVehicleListItemDto(ownerMap.GetValueOrDefault(vehicle.Id)));
   }
 }

@@ -1,38 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../../auth/AuthContext";
-import { ADMIN_DRIVERS_URL } from "../../config/api";
+import { useMemo } from "react";
 import { Button } from "../../components/Button";
+import {
+  DataTable,
+  TableActionLink,
+  type DataTableColumn,
+} from "../../components/DataTable";
 import { Input } from "../../components/Input";
+import { useDriversQuery } from "../../queries";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import {
+  applyDriverFilters,
+  resetDriverFilters,
+  setDraftDriverFilter,
+  setDriverPage,
+} from "../../store/slices/driversFiltersSlice";
+import type { DriverListItem } from "../../types/admin";
 import styles from "./DriversPage.module.css";
 
-interface DriverListItem {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  providerId: string;
-  createdAt: string;
-}
-
-interface PagedResult<T> {
-  items: T[];
-  page: number;
-  pageSize: number;
-  totalItems: number;
-  totalPages: number;
-  
-}
-
 const PAGE_SIZE = 10;
-const EMPTY_FILTERS = {
-  name: "",
-  phone: "",
-  email: "",
-  providerId: "",
-  createdFrom: "",
-  createdTo: "",
-};
 
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat("uk-UA", {
@@ -44,73 +29,44 @@ function formatDate(date: string): string {
   }).format(new Date(date));
 }
 
+const driverColumns: DataTableColumn<DriverListItem>[] = [
+  { key: "name", header: "Ім'я", render: (driver) => driver.name },
+  { key: "phone", header: "Телефон", render: (driver) => driver.phone ?? "-" },
+  { key: "email", header: "Email", render: (driver) => driver.email ?? "-" },
+  { key: "providerId", header: "Provider", render: (driver) => driver.providerId },
+  {
+    key: "createdAt",
+    header: "Створено",
+    render: (driver) => formatDate(driver.createdAt),
+  },
+  {
+    key: "actions",
+    header: "Дії",
+    render: (driver) => (
+      <TableActionLink to={`/drivers/${driver.id}`}>Деталі</TableActionLink>
+    ),
+  },
+];
+
 export function DriversPage() {
-  const { session } = useAuth();
-  const [page, setPage] = useState(1);
-  const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
-  const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS);
-  const [data, setData] = useState<PagedResult<DriverListItem> | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { draftFilters, appliedFilters, page } = useAppSelector(
+    (state) => state.driversFilters,
+  );
 
-  const queryString = useMemo(() => {
-    const params = new URLSearchParams({
-      page: String(page),
-      pageSize: String(PAGE_SIZE),
-    });
+  const listParams = useMemo(
+    () => ({
+      page,
+      pageSize: PAGE_SIZE,
+      filters: appliedFilters,
+    }),
+    [appliedFilters, page],
+  );
 
-    Object.entries(appliedFilters).forEach(([key, value]) => {
-      if (value.trim()) {
-        params.set(key, value.trim());
-      }
-    });
-
-    return params.toString();
-  }, [appliedFilters, page]);
+  const { data, isLoading, isError, isFetching } = useDriversQuery(listParams);
 
   const hasPendingFilters =
     JSON.stringify(draftFilters) !== JSON.stringify(appliedFilters);
-
-  useEffect(() => {
-    if (!session?.internalToken) return;
-
-    const controller = new AbortController();
-    const load = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(
-          `${ADMIN_DRIVERS_URL}?${queryString}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${session.internalToken}`,
-            },
-            signal: controller.signal,
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const payload = (await response.json()) as PagedResult<DriverListItem>;
-        setData(payload);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError("Не вдалося завантажити список водіїв.");
-        setData(null);
-        console.error(err);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void load();
-    return () => controller.abort();
-  }, [queryString, session?.internalToken]);
 
   const hasPrev = page > 1;
   const hasNext = useMemo(
@@ -132,28 +88,30 @@ export function DriversPage() {
           label="Ім'я"
           value={draftFilters.name}
           onChange={(event) =>
-            setDraftFilters((current) => ({ ...current, name: event.target.value }))
+            dispatch(setDraftDriverFilter({ key: "name", value: event.target.value }))
           }
         />
         <Input
           label="Телефон"
           value={draftFilters.phone}
           onChange={(event) =>
-            setDraftFilters((current) => ({ ...current, phone: event.target.value }))
+            dispatch(setDraftDriverFilter({ key: "phone", value: event.target.value }))
           }
         />
         <Input
           label="Email"
           value={draftFilters.email}
           onChange={(event) =>
-            setDraftFilters((current) => ({ ...current, email: event.target.value }))
+            dispatch(setDraftDriverFilter({ key: "email", value: event.target.value }))
           }
         />
         <Input
           label="Provider"
           value={draftFilters.providerId}
           onChange={(event) =>
-            setDraftFilters((current) => ({ ...current, providerId: event.target.value }))
+            dispatch(
+              setDraftDriverFilter({ key: "providerId", value: event.target.value }),
+            )
           }
         />
         <Input
@@ -161,7 +119,9 @@ export function DriversPage() {
           type="date"
           value={draftFilters.createdFrom}
           onChange={(event) =>
-            setDraftFilters((current) => ({ ...current, createdFrom: event.target.value }))
+            dispatch(
+              setDraftDriverFilter({ key: "createdFrom", value: event.target.value }),
+            )
           }
         />
         <Input
@@ -169,90 +129,51 @@ export function DriversPage() {
           type="date"
           value={draftFilters.createdTo}
           onChange={(event) =>
-            setDraftFilters((current) => ({ ...current, createdTo: event.target.value }))
+            dispatch(setDraftDriverFilter({ key: "createdTo", value: event.target.value }))
           }
         />
         <Button
-          onClick={() => {
-            setPage(1);
-            setAppliedFilters(draftFilters);
-          }}
+          onClick={() => dispatch(applyDriverFilters())}
           disabled={!hasPendingFilters}
         >
           Застосувати
         </Button>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setPage(1);
-            setDraftFilters(EMPTY_FILTERS);
-            setAppliedFilters(EMPTY_FILTERS);
-          }}
-        >
+        <Button variant="secondary" onClick={() => dispatch(resetDriverFilters())}>
           Скинути фільтри
         </Button>
       </section>
 
       <div className={styles.tableCard}>
         {isLoading ? <p className={styles.meta}>Завантаження...</p> : null}
-        {error ? <p className={styles.error}>{error}</p> : null}
+        {isError ? <p className={styles.error}>Не вдалося завантажити список водіїв.</p> : null}
 
-        {!isLoading && !error ? (
+        {!isLoading && !isError ? (
           <>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Ім'я</th>
-                  <th>Телефон</th>
-                  <th>Email</th>
-                  <th>Provider</th>
-                  <th>Створено</th>
-                  <th>Дії</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data?.items.length ? (
-                  data.items.map((driver) => (
-                    <tr key={driver.id}>
-                      <td>{driver.name}</td>
-                      <td>{driver.phone ?? "-"}</td>
-                      <td>{driver.email ?? "-"}</td>
-                      <td>{driver.providerId}</td>
-                      <td>{formatDate(driver.createdAt)}</td>
-                      <td>
-                        <Link className={styles.linkButton} to={`/drivers/${driver.id}`}>
-                          Деталі
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className={styles.empty}>
-                      Водіїв поки що немає.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <DataTable
+              columns={driverColumns}
+              data={data?.items ?? []}
+              getRowKey={(driver) => driver.id}
+              emptyMessage="Водіїв поки що немає."
+            />
 
             <div className={styles.footer}>
               <p className={styles.meta}>
                 Сторінка {data?.page ?? page} з {data?.totalPages ?? 0} | Всього:{" "}
                 {data?.totalItems ?? 0}
+                {isFetching && !isLoading ? " • Оновлення..." : ""}
               </p>
               <div className={styles.actions}>
                 <Button
                   variant="secondary"
-                  onClick={() => setPage((current) => current - 1)}
-                  disabled={!hasPrev || isLoading}
+                  onClick={() => dispatch(setDriverPage(page - 1))}
+                  disabled={!hasPrev || isFetching}
                 >
                   Назад
                 </Button>
                 <Button
                   variant="secondary"
-                  onClick={() => setPage((current) => current + 1)}
-                  disabled={!hasNext || isLoading}
+                  onClick={() => dispatch(setDriverPage(page + 1))}
+                  disabled={!hasNext || isFetching}
                 >
                   Далі
                 </Button>

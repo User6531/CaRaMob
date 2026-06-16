@@ -46,23 +46,6 @@
   margin: 2px 0 0;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  text-align: left;
-  padding: 8px;
-  border-bottom: 1px solid var(--border-secondary);
-}
-
-.empty {
-  text-align: center;
-  color: var(--text-secondary);
-}
-
 .meta {
   color: var(--text-secondary);
 }
