@@ -51,6 +51,7 @@ public interface IUserRepository
     /// The task result contains the <see cref="UserEntity"/> if found; otherwise, <c>null</c>.
     /// </returns>
     Task<UserEntity?> GetByIdAsync(Guid id);
+    Task<List<UserEntity>> GetByVehicleIdsAsync(IReadOnlyCollection<Guid> vehicleIds);
 
     /// <summary>
     /// Creates a new user entity asynchronously.
@@ -132,6 +133,17 @@ public class UserRepository : IUserRepository
 
     public async Task<UserEntity?> GetByIdAsync(Guid id) =>
         await _users.Find(u => u.Id == id).FirstOrDefaultAsync();
+
+    public async Task<List<UserEntity>> GetByVehicleIdsAsync(IReadOnlyCollection<Guid> vehicleIds)
+    {
+        if (vehicleIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<UserEntity>.Filter.AnyIn(u => u.VehicleIds, vehicleIds);
+        return await _users.Find(filter).ToListAsync();
+    }
 
     public async Task CreateAsync(UserEntity user)
     {

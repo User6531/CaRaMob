@@ -2,10 +2,12 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Permission } from "../auth/permissions";
 import { DEFAULT_ROUTE } from "../config/navigation";
 import { AdminLayout } from "../layout/AdminLayout";
+import { DriverDetailsPage } from "../pages/DriverDetailsPage";
 import { DriversPage } from "../pages/DriversPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PlaceholderPage } from "../pages/PlaceholderPage";
 import { StoListPage } from "../pages/StoListPage";
+import { VehiclesPage } from "../pages/VehiclesPage";
 import { PermissionGate } from "./PermissionGate";
 import { ProtectedRoute } from "./ProtectedRoute";
 
@@ -49,6 +51,24 @@ export function AppRouter() {
           element={
             <PermissionGate requiredPermissions={[Permission.DriversView]}>
               <DriversPage />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/drivers/:driverId"
+          element={
+            <PermissionGate requiredPermissions={[Permission.DriversView]}>
+              <DriverDetailsPage />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/vehicles"
+          element={
+            <PermissionGate requiredPermissions={[Permission.VehiclesView]}>
+              <VehiclesPage />
             </PermissionGate>
           }
         />

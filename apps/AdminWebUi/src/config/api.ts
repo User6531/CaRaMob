@@ -5,3 +5,8 @@ export const API_BASE_URL =
 
 export const TELEGRAM_WEB_LOGIN_URL = `${API_BASE_URL}/api/auth/web/login`;
 export const ADMIN_DRIVERS_URL = `${API_BASE_URL}/api/admin/drivers`;
+export const ADMIN_VEHICLES_URL = `${API_BASE_URL}/api/admin/vehicles`;
+export const ADMIN_DRIVER_DETAILS_URL = (driverId: string) =>
+  `${API_BASE_URL}/api/admin/drivers/${driverId}`;
+export const ADMIN_DRIVER_VEHICLES_URL = (driverId: string) =>
+  `${API_BASE_URL}/api/admin/drivers/${driverId}/vehicles`;

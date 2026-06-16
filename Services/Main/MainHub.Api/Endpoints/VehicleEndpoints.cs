@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using MainHub.Api.Filters;
 using System.Security.Claims;
 using MainHub.Api.Services;
+using MainHub.Api.Config;
+using Microsoft.Extensions.Options;
 
 namespace MainHub.Api.Endpoints;
 
@@ -58,6 +60,12 @@ public static partial class VehicleEndpoints
       .Produces(StatusCodes.Status201Created)
       .Produces<string>(StatusCodes.Status400BadRequest)
       .ProducesValidationProblem();
+
+    app.MapGet("/api/admin/vehicles", GetAdminVehiclesAsync)
+      .WithTags("Admin")
+      .RequireAuthorization("RequireAdminJwt")
+      .WithSummary("Get paged vehicles list for global admin")
+      .Produces<PagedResultDto<AdminVehicleListItemDto>>(StatusCodes.Status200OK);
   }
 
   internal static async Task<IResult> GetVehicleByIdAsync(
@@ -221,4 +229,41 @@ public static partial class VehicleEndpoints
 
   [GeneratedRegex(@"^[A-HJ-NPR-Z0-9]{17}$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
   private static partial Regex VinRegex();
+
+  internal static async Task<IResult> GetAdminVehiclesAsync(
+    ClaimsPrincipal userClaims,
+    [AsParameters] AdminVehicleQueryDto query,
+    IVehicleService vehicleService,
+    IUserService userService,
+    IOptions<AdminSettings> adminSettings
+  )
+  {
+    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
+    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
+
+    if (
+      string.IsNullOrWhiteSpace(currentAdminUserId) ||
+      !allowedAdminTelegramIds.Contains(currentAdminUserId)
+    )
+    {
+      return Results.Forbid();
+    }
+
+    var (vehicles, totalItems) = await vehicleService.GetAdminPagedAsync(query);
+    var ownerMap = await userService.GetOwnerMapByVehicleIdsAsync(vehicles.Select(v => v.Id).ToList());
+    var totalPages = totalItems == 0
+      ? 0
+      : (int)Math.Ceiling(totalItems / (double)query.PageSize);
+
+    return Results.Ok(new PagedResultDto<AdminVehicleListItemDto>
+    {
+      Items = vehicles
+        .Select(v => v.ToAdminVehicleListItemDto(ownerMap.GetValueOrDefault(v.Id)))
+        .ToList(),
+      Page = query.Page,
+      PageSize = query.PageSize,
+      TotalItems = totalItems,
+      TotalPages = totalPages
+    });
+  }
 }

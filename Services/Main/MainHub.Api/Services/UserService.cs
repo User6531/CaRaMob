@@ -72,6 +72,7 @@ public interface IUserService
   /// <param name="id">The unique identifier of the user to delete.</param>
   /// <returns>A task that represents the asynchronous operation.</returns>
   Task DeleteAsync(Guid id);
+  Task<Dictionary<Guid, Guid>> GetOwnerMapByVehicleIdsAsync(IReadOnlyCollection<Guid> vehicleIds);
   Task<(IReadOnlyList<UserEntity> Items, int TotalItems)> GetDriversPagedAsync(
     int page,
     int pageSize
@@ -191,6 +192,27 @@ public class UserService(IUserRepository repository) : IUserService
   }
 
   public async Task DeleteAsync(Guid id) => await _repository.DeleteAsync(id);
+
+  public async Task<Dictionary<Guid, Guid>> GetOwnerMapByVehicleIdsAsync(
+    IReadOnlyCollection<Guid> vehicleIds
+  )
+  {
+    var users = await _repository.GetByVehicleIdsAsync(vehicleIds);
+    var result = new Dictionary<Guid, Guid>();
+
+    foreach (var user in users)
+    {
+      foreach (var vehicleId in user.VehicleIds)
+      {
+        if (vehicleIds.Contains(vehicleId))
+        {
+          result[vehicleId] = user.Id;
+        }
+      }
+    }
+
+    return result;
+  }
 
   public async Task<(IReadOnlyList<UserEntity> Items, int TotalItems)> GetDriversPagedAsync(
     int page,

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { ADMIN_DRIVERS_URL } from "../../config/api";
 import { Button } from "../../components/Button";
@@ -110,6 +111,7 @@ export function DriversPage() {
                   <th>Email</th>
                   <th>Provider</th>
                   <th>Створено</th>
+                  <th>Дії</th>
                 </tr>
               </thead>
               <tbody>
@@ -121,11 +123,16 @@ export function DriversPage() {
                       <td>{driver.email ?? "-"}</td>
                       <td>{driver.providerId}</td>
                       <td>{formatDate(driver.createdAt)}</td>
+                      <td>
+                        <Link className={styles.linkButton} to={`/drivers/${driver.id}`}>
+                          Деталі
+                        </Link>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className={styles.empty}>
+                    <td colSpan={6} className={styles.empty}>
                       Водіїв поки що немає.
                     </td>
                   </tr>

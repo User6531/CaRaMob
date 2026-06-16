@@ -34,6 +34,18 @@ public static class UserEndpoints
       .RequireAuthorization("RequireAdminJwt")
       .WithSummary("Get paged list of mobile drivers")
       .Produces<PagedResultDto<DriverListItemDto>>(StatusCodes.Status200OK);
+
+    app.MapGet("/api/admin/drivers/{driverId}", GetDriverByIdAsync)
+      .WithTags("Admin")
+      .RequireAuthorization("RequireAdminJwt")
+      .WithSummary("Get driver details by id for admin")
+      .Produces<AdminDriverDetailsDto>(StatusCodes.Status200OK);
+
+    app.MapGet("/api/admin/drivers/{driverId}/vehicles", GetDriverVehiclesAsync)
+      .WithTags("Admin")
+      .RequireAuthorization("RequireAdminJwt")
+      .WithSummary("Get vehicles for a specific driver")
+      .Produces<List<VehicleListItemDto>>(StatusCodes.Status200OK);
   }
 
   internal static async Task<IResult> UpdateAsync(
@@ -130,5 +142,61 @@ public static class UserEndpoints
       TotalItems = totalItems,
       TotalPages = totalPages
     });
+  }
+
+  internal static async Task<IResult> GetDriverByIdAsync(
+    ClaimsPrincipal userClaims,
+    Guid driverId,
+    IUserService userService,
+    IOptions<AdminSettings> adminSettings
+  )
+  {
+    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
+    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
+
+    if (
+      string.IsNullOrWhiteSpace(currentAdminUserId) ||
+      !allowedAdminTelegramIds.Contains(currentAdminUserId)
+    )
+    {
+      return Results.Forbid();
+    }
+
+    var user = await userService.GetByIdAsync(driverId);
+    if (user is null)
+    {
+      return Results.NotFound();
+    }
+
+    return Results.Ok(user.ToAdminDriverDetailsDto());
+  }
+
+  internal static async Task<IResult> GetDriverVehiclesAsync(
+    ClaimsPrincipal userClaims,
+    Guid driverId,
+    IUserService userService,
+    IVehicleService vehicleService,
+    IOptions<AdminSettings> adminSettings
+  )
+  {
+    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
+    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
+
+    if (
+      string.IsNullOrWhiteSpace(currentAdminUserId) ||
+      !allowedAdminTelegramIds.Contains(currentAdminUserId)
+    )
+    {
+      return Results.Forbid();
+    }
+
+    var user = await userService.GetByIdAsync(driverId);
+    if (user is null)
+    {
+      return Results.NotFound();
+    }
+
+    var vehicles = await vehicleService.GetAllByUserAsync(driverId);
+    return Results.Ok(vehicles);
   }
 }

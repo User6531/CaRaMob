@@ -41,6 +41,7 @@ public interface IVehicleService
   /// <param name="vehicleId">The unique identifier of the vehicle to delete.</param
   /// <param name="userId">The unique identifier of the user.</param>
   Task DeleteAsync(Guid vehicleId, Guid userId);
+  Task<(IReadOnlyList<VehicleEntity> Items, int TotalItems)> GetAdminPagedAsync(AdminVehicleQueryDto query);
 }
 
 public class VehicleService(
@@ -230,5 +231,19 @@ public class VehicleService(
     }
 
     return true;
+  }
+
+  public async Task<(IReadOnlyList<VehicleEntity> Items, int TotalItems)> GetAdminPagedAsync(AdminVehicleQueryDto query)
+  {
+    var safePage = query.Page <= 0 ? 1 : query.Page;
+    var safePageSize = query.PageSize <= 0 ? 20 : Math.Min(query.PageSize, 100);
+    query.Page = safePage;
+    query.PageSize = safePageSize;
+
+    var skip = (safePage - 1) * safePageSize;
+    var items = await _repository.GetAdminPagedAsync(query, skip, safePageSize);
+    var total = await _repository.CountAdminAsync(query);
+
+    return (items, (int)total);
   }
 }

@@ -1,9 +1,9 @@
 .page {
-  max-width: 1200px;
+  max-width: 1280px;
 }
 
 .header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .title {
@@ -16,16 +16,46 @@
   color: var(--text-secondary);
 }
 
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: end;
+}
+
+.selectField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.selectField label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.selectField select {
+  width: 100%;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  color: var(--text-primary);
+}
+
 .tableCard {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
   padding: 16px;
+  overflow-x: auto;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 1020px;
 }
 
 .table th,
@@ -33,7 +63,7 @@
   text-align: left;
   padding: 10px 8px;
   border-bottom: 1px solid var(--border-secondary);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .table th {
@@ -48,11 +78,15 @@
 }
 
 .footer {
-  margin-top: 14px;
+  margin-top: 12px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
 }
 
 .meta {
@@ -62,12 +96,6 @@
 
 .error {
   color: var(--accent-error);
-  margin-bottom: 10px;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
 }
 
 .linkButton {
@@ -79,7 +107,7 @@
   padding: 6px 10px;
   color: var(--text-primary);
   background-color: var(--bg-tertiary);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
 }
 
