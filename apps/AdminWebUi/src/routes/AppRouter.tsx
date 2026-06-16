@@ -1,0 +1,62 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import { Permission } from "../auth/permissions";
+import { DEFAULT_ROUTE } from "../config/navigation";
+import { AdminLayout } from "../layout/AdminLayout";
+import { LoginPage } from "../pages/LoginPage";
+import { PlaceholderPage } from "../pages/PlaceholderPage";
+import { StoListPage } from "../pages/StoListPage";
+import { PermissionGate } from "./PermissionGate";
+import { ProtectedRoute } from "./ProtectedRoute";
+
+export function AppRouter() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route
+        element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to={DEFAULT_ROUTE} replace />} />
+
+        <Route
+          path="/sto"
+          element={
+            <PermissionGate requiredPermissions={[Permission.StoView]}>
+              <StoListPage />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <PermissionGate requiredPermissions={[Permission.UsersView]}>
+              <PlaceholderPage
+                title="Користувачі"
+                description="Керування обліковими записами персоналу СТО"
+              />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <PermissionGate requiredPermissions={[Permission.SettingsView]}>
+              <PlaceholderPage
+                title="Налаштування"
+                description="Загальні налаштування адмін-панелі"
+              />
+            </PermissionGate>
+          }
+        />
+
+        <Route path="*" element={<Navigate to={DEFAULT_ROUTE} replace />} />
+      </Route>
+    </Routes>
+  );
+}

@@ -146,12 +146,12 @@ public static class AuthEndpoints
       return FailedRedirectToWeb(settings, "invalid_id_token");
     }
 
-    var userId = telegramUser.Id;
+    var userId = telegramUser.Subject;
     var allowedTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
 
-    if (!allowedTelegramIds.Contains(userId) || string.IsNullOrEmpty(userId))
+    if (string.IsNullOrWhiteSpace(userId) || !allowedTelegramIds.Contains(userId))
     {
-      logger.LogError("Telegram user with ID {UserId} is not in the allowed list", userId);
+      logger.LogError("Telegram user with sub {UserId} is not in the allowed list", userId);
       return FailedRedirectToWeb(settings, "access_denied");
     }
 
@@ -238,7 +238,7 @@ public static class AuthEndpoints
       return FailedRedirectToMobile(settings, "invalid_id_token");
     }
 
-    var providerId = $"telegram:{telegramUser.Id}";
+    var providerId = $"telegram:{telegramUser.Subject}";
     var userEntity = await userService.GetUserByProviderIdAsync(providerId);
 
     if (userEntity == null)
@@ -248,7 +248,7 @@ public static class AuthEndpoints
           providerId
       );
 
-      var name = telegramUser.Name ?? telegramUser.Username ?? $"User {telegramUser.Id}";
+      var name = telegramUser.Name ?? telegramUser.Username ?? $"User {telegramUser.Subject}";
       var phone = telegramUser.Phone;
       var pictureUrl = telegramUser.Picture;
       userEntity = await userService.CreateAsync(name, null, providerId, phone, pictureUrl);
@@ -404,8 +404,8 @@ public static class AuthEndpoints
     }
   }
 
-  record TelegramUser(
-  string Id,
+record TelegramUser(
+  string Subject,
   string? Name,
   string? Username,
   string? Phone,

@@ -33,6 +33,9 @@ builder.Services.Configure<JwtSettings>(
 builder.Services.Configure<AdminJwtSettings>(
     builder.Configuration.GetSection("AdminJwtSettings")
 );
+builder.Services.Configure<AdminSettings>(
+    builder.Configuration.GetSection("AdminSettings")
+);
 
 // 🟦 Load Telegram authentication settings from configuration file
 builder.Services.Configure<TelegramSettings>(

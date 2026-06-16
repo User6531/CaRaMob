@@ -1,0 +1,23 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.active {
+  background-color: rgba(74, 222, 158, 0.15);
+  color: var(--accent-success);
+}
+
+.inactive {
+  background-color: rgba(110, 118, 129, 0.2);
+  color: var(--status-offline);
+}
+
+.pending {
+  background-color: rgba(210, 153, 34, 0.15);
+  color: var(--accent-warning);
+}

@@ -1,0 +1,22 @@
+.page {
+  max-width: 720px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.description {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.card {
+  padding: 24px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+}

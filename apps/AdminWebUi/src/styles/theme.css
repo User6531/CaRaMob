@@ -1,0 +1,54 @@
+/* Shared with Mobile app — dark theme tokens */
+:root {
+  --bg-primary: #202936;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-quaternary: #30363d;
+
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --text-inverse: #0d1117;
+
+  --accent-primary: #4ade9e;
+  --accent-secondary: #3bc98e;
+  --accent-success: #4ade9e;
+  --accent-warning: #d29922;
+  --accent-error: #f85149;
+  --accent-info: #4ade9e;
+
+  --interactive-primary: #4ade9e;
+  --interactive-primary-hover: #3bc98e;
+  --interactive-secondary: #21262d;
+  --interactive-secondary-hover: #30363d;
+  --interactive-danger: #da3633;
+  --interactive-danger-hover: #f85149;
+
+  --border-primary: #30363d;
+  --border-secondary: #21262d;
+  --border-focus: #4ade9e;
+
+  --shadow-small: rgba(0, 0, 0, 0.3);
+  --shadow-medium: rgba(0, 0, 0, 0.4);
+  --shadow-large: rgba(0, 0, 0, 0.5);
+
+  --status-online: #4ade9e;
+  --status-offline: #6e7681;
+  --status-away: #d29922;
+  --status-busy: #f85149;
+
+  --special-placeholder: #6e7681;
+  --special-disabled: #484f58;
+  --special-overlay: rgba(0, 0, 0, 0.6);
+
+  --page-background: #0d1117;
+
+  --sidebar-width: 260px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", sans-serif;
+}
