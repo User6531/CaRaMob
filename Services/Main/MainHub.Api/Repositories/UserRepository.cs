@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using MainHub.Api.Models;
 using MainHub.Api.Config;
 using MainHub.Api.DTOs;
-using MongoDB.Bson;
 
 namespace MainHub.Api.Repositories;
 
@@ -156,53 +155,10 @@ public class UserRepository : IUserRepository
     )
     {
         var builder = Builders<UserEntity>.Filter;
-        var filters = new List<FilterDefinition<UserEntity>>
-        {
-            builder.Regex(u => u.ProviderId, "^telegram:")
-        };
 
-        if (!string.IsNullOrWhiteSpace(query.Name))
-        {
-            filters.Add(builder.Regex(
-                u => u.Name,
-                new BsonRegularExpression(query.Name.Trim(), "i")
-            ));
-        }
+        // TODO: restore query filters in a later iteration
+        _ = query;
 
-        if (!string.IsNullOrWhiteSpace(query.Email))
-        {
-            filters.Add(builder.Regex(
-                u => u.Email,
-                new BsonRegularExpression(query.Email.Trim(), "i")
-            ));
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.Phone))
-        {
-            filters.Add(builder.Regex(
-                u => u.Phone,
-                new BsonRegularExpression(query.Phone.Trim(), "i")
-            ));
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.ProviderId))
-        {
-            filters.Add(builder.Regex(
-                u => u.ProviderId,
-                new BsonRegularExpression(query.ProviderId.Trim(), "i")
-            ));
-        }
-
-        if (query.CreatedFrom.HasValue)
-        {
-            filters.Add(builder.Gte(u => u.CreatedAt, query.CreatedFrom.Value));
-        }
-
-        if (query.CreatedTo.HasValue)
-        {
-            filters.Add(builder.Lte(u => u.CreatedAt, query.CreatedTo.Value));
-        }
-
-        return builder.And(filters);
+        return builder.Regex(u => u.ProviderId, "^telegram:");
     }
 }

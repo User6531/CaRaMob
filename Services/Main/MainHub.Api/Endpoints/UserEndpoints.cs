@@ -1,8 +1,6 @@
 using MainHub.Api.Services;
 using MainHub.Api.DTOs;
 using MainHub.Api.Filters;
-using MainHub.Api.Config;
-using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 namespace MainHub.Api.Endpoints;
@@ -105,96 +103,29 @@ public static class UserEndpoints
   }
 
   internal static async Task<IResult> GetDriversAsync(
-    ClaimsPrincipal userClaims,
     [AsParameters] AdminDriverQueryDto query,
-    IUserService userService,
-    IOptions<AdminSettings> adminSettings
+    IUserService userService
   )
   {
-    var safePage = query.Page <= 0 ? 1 : query.Page;
-    var safePageSize = query.PageSize <= 0 ? 20 : Math.Min(query.PageSize, 100);
-    query.Page = safePage;
-    query.PageSize = safePageSize;
-    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
-    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
-
-    if (
-      string.IsNullOrWhiteSpace(currentAdminUserId) ||
-      !allowedAdminTelegramIds.Contains(currentAdminUserId)
-    )
-    {
-      return Results.Forbid();
-    }
-
-    var (drivers, totalItems) = await userService.GetDriversPagedAsync(query);
-
-    var totalPages = totalItems == 0
-      ? 0
-      : (int)Math.Ceiling(totalItems / (double)safePageSize);
-
-    return Results.Ok(new PagedResultDto<DriverListItemDto>
-    {
-      Items = drivers.Select(d => d.ToDriverListItemDto()).ToList(),
-      Page = safePage,
-      PageSize = safePageSize,
-      TotalItems = totalItems,
-      TotalPages = totalPages
-    });
+    var result = await userService.GetAdminDriversPagedAsync(query);
+    return Results.Ok(result);
   }
 
   internal static async Task<IResult> GetDriverByIdAsync(
-    ClaimsPrincipal userClaims,
     Guid driverId,
-    IUserService userService,
-    IOptions<AdminSettings> adminSettings
+    IUserService userService
   )
   {
-    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
-    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
-
-    if (
-      string.IsNullOrWhiteSpace(currentAdminUserId) ||
-      !allowedAdminTelegramIds.Contains(currentAdminUserId)
-    )
-    {
-      return Results.Forbid();
-    }
-
-    var user = await userService.GetByIdAsync(driverId);
-    if (user is null)
-    {
-      return Results.NotFound();
-    }
-
-    return Results.Ok(user.ToAdminDriverDetailsDto());
+    var driver = await userService.GetAdminDriverByIdAsync(driverId);
+    return driver is null ? Results.NotFound() : Results.Ok(driver);
   }
 
   internal static async Task<IResult> GetDriverVehiclesAsync(
-    ClaimsPrincipal userClaims,
     Guid driverId,
-    IUserService userService,
-    IVehicleService vehicleService,
-    IOptions<AdminSettings> adminSettings
+    IVehicleService vehicleService
   )
   {
-    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
-    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
-
-    if (
-      string.IsNullOrWhiteSpace(currentAdminUserId) ||
-      !allowedAdminTelegramIds.Contains(currentAdminUserId)
-    )
-    {
-      return Results.Forbid();
-    }
-
-    var user = await userService.GetByIdAsync(driverId);
-    if (user is null)
-    {
-      return Results.NotFound();
-    }
-
-    var vehicles = await vehicleService.GetAllByUserAsync(driverId);
-    return Results.Ok(vehicles);
+    var vehicles = await vehicleService.GetAdminDriverVehiclesAsync(driverId);
+    return vehicles is null ? Results.NotFound() : Results.Ok(vehicles);
   }
 }

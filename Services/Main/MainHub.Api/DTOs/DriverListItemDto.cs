@@ -11,13 +11,9 @@ public class DriverListItemDto
   public string? PictureUrl { get; set; }
   public required string ProviderId { get; set; }
   public required DateTime CreatedAt { get; set; }
-}
 
-public static class DriverListItemDtoMapper
-{
-  public static DriverListItemDto ToDriverListItemDto(this UserEntity user)
-  {
-    return new DriverListItemDto
+  public static explicit operator DriverListItemDto(UserEntity user) =>
+    new()
     {
       Id = user.Id,
       Name = user.Name,
@@ -25,7 +21,6 @@ public static class DriverListItemDtoMapper
       Phone = user.Phone,
       PictureUrl = user.PictureUrl,
       ProviderId = user.ProviderId,
-      CreatedAt = user.CreatedAt
+      CreatedAt = user.CreatedAt,
     };
-  }
 }

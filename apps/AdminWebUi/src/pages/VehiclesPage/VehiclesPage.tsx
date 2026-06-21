@@ -6,26 +6,16 @@ import {
   TableActions,
   type DataTableColumn,
 } from "../../components/DataTable";
-import { Input } from "../../components/Input";
-import { Select } from "../../components/Select";
 import { useVehiclesQuery } from "../../queries";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import {
-  applyVehicleFilters,
-  resetVehicleFilters,
-  setDraftVehicleFilter,
-  setVehiclePage,
-} from "../../store/slices/vehiclesFiltersSlice";
+import { setVehiclePage } from "../../store/slices/vehiclesFiltersSlice";
 import type { VehicleListItem } from "../../types/admin";
-import type { VehicleFilters } from "../../types/filters";
 import {
   formatFuelType,
   formatTransmissionType,
   formatWheelDriveType,
-  FUEL_TYPE_FILTER_OPTIONS,
-  TRANSMISSION_FILTER_OPTIONS,
-  WHEEL_DRIVE_FILTER_OPTIONS,
 } from "../../utils/vehicleLabels";
+import { totalPages } from "../../utils/pagination";
 import styles from "./VehiclesPage.module.css";
 
 const PAGE_SIZE = 10;
@@ -69,27 +59,20 @@ const vehicleColumns: DataTableColumn<VehicleListItem>[] = [
   {
     key: "actions",
     header: "Дії",
-    render: (vehicle) =>
-      vehicle.ownerUserId ? (
-        <TableActions>
-          <TableActionLink to={`/drivers/${vehicle.ownerUserId}`}>Водій</TableActionLink>
-          <TableActionLink to={`/vehicles/${vehicle.id}/service-history`}>
-            Історія
-          </TableActionLink>
-        </TableActions>
-      ) : (
+    render: (vehicle) => (
+      <TableActions>
+        <TableActionLink to={`/drivers/${vehicle.ownerUserId}`}>Водій</TableActionLink>
         <TableActionLink to={`/vehicles/${vehicle.id}/service-history`}>
           Історія
         </TableActionLink>
-      ),
+      </TableActions>
+    ),
   },
 ];
 
 export function VehiclesPage() {
   const dispatch = useAppDispatch();
-  const { draftFilters, appliedFilters, page } = useAppSelector(
-    (state) => state.vehiclesFilters,
-  );
+  const { appliedFilters, page } = useAppSelector((state) => state.vehiclesFilters);
 
   const listParams = useMemo(
     () => ({
@@ -102,15 +85,13 @@ export function VehiclesPage() {
 
   const { data, isLoading, isError, isFetching } = useVehiclesQuery(listParams);
 
-  const hasPendingFilters =
-    JSON.stringify(draftFilters) !== JSON.stringify(appliedFilters);
+  const pageCount = useMemo(
+    () => totalPages(data?.totalItems ?? 0, PAGE_SIZE),
+    [data?.totalItems],
+  );
 
   const hasPrev = page > 1;
-  const hasNext = (data?.totalPages ?? 0) > page;
-
-  const setDraftFilter = (key: keyof VehicleFilters, value: string) => {
-    dispatch(setDraftVehicleFilter({ key, value }));
-  };
+  const hasNext = pageCount > page;
 
   return (
     <div className={styles.page}>
@@ -120,6 +101,7 @@ export function VehiclesPage() {
       </header>
 
       <section className={styles.filters}>
+        {/*
         <Input
           label="Марка"
           value={draftFilters.brand}
@@ -187,6 +169,7 @@ export function VehiclesPage() {
         <Button variant="secondary" onClick={() => dispatch(resetVehicleFilters())}>
           Скинути фільтри
         </Button>
+        */}
       </section>
 
       <div className={styles.tableCard}>
@@ -205,7 +188,7 @@ export function VehiclesPage() {
 
             <div className={styles.footer}>
               <p className={styles.meta}>
-                Сторінка {data?.page ?? page} з {data?.totalPages ?? 0} | Всього:{" "}
+                Сторінка {page} з {pageCount} | Всього:{" "}
                 {data?.totalItems ?? 0}
                 {isFetching && !isLoading ? " • Оновлення..." : ""}
               </p>

@@ -11,13 +11,9 @@ public class AdminDriverDetailsDto
   public string? PictureUrl { get; set; }
   public required string ProviderId { get; set; }
   public required DateTime CreatedAt { get; set; }
-}
 
-public static class AdminDriverDetailsDtoMapper
-{
-  public static AdminDriverDetailsDto ToAdminDriverDetailsDto(this UserEntity user)
-  {
-    return new AdminDriverDetailsDto
+  public static explicit operator AdminDriverDetailsDto(UserEntity user) =>
+    new()
     {
       Id = user.Id,
       Name = user.Name,
@@ -27,5 +23,4 @@ public static class AdminDriverDetailsDtoMapper
       ProviderId = user.ProviderId,
       CreatedAt = user.CreatedAt,
     };
-  }
 }

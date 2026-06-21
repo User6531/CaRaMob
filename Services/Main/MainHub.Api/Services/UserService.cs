@@ -1,6 +1,7 @@
 using MainHub.Api.Models;
 using MainHub.Api.Repositories;
 using MainHub.Api.DTOs;
+using MainHub.Api.Shared;
 using MongoDB.Driver;
 
 namespace MainHub.Api.Services;
@@ -73,9 +74,8 @@ public interface IUserService
   /// <returns>A task that represents the asynchronous operation.</returns>
   Task DeleteAsync(Guid id);
   Task<Dictionary<Guid, Guid>> GetOwnerMapByVehicleIdsAsync(IReadOnlyCollection<Guid> vehicleIds);
-  Task<(IReadOnlyList<UserEntity> Items, int TotalItems)> GetDriversPagedAsync(
-    AdminDriverQueryDto query
-  );
+  Task<PagedResultDto<DriverListItemDto>> GetAdminDriversPagedAsync(AdminDriverQueryDto query);
+  Task<AdminDriverDetailsDto?> GetAdminDriverByIdAsync(Guid driverId);
 
   /// <summary>
   /// Attach a new vehicle to user asynchronously.
@@ -213,20 +213,27 @@ public class UserService(IUserRepository repository) : IUserService
     return result;
   }
 
-  public async Task<(IReadOnlyList<UserEntity> Items, int TotalItems)> GetDriversPagedAsync(
+  public async Task<PagedResultDto<DriverListItemDto>> GetAdminDriversPagedAsync(
     AdminDriverQueryDto query
   )
   {
-    var safePage = Math.Max(query.Page, 1);
-    var safePageSize = Math.Clamp(query.PageSize, 1, 100);
+    var (safePage, safePageSize, skip) = PaginationHelper.Normalize(query.Page, query.PageSize);
     query.Page = safePage;
     query.PageSize = safePageSize;
-    var skip = (safePage - 1) * safePageSize;
 
     var items = await _repository.GetAdminDriversPagedAsync(query, skip, safePageSize);
+    var totalItems = (int)await _repository.CountAdminDriversAsync(query);
 
-    var total = await _repository.CountAdminDriversAsync(query);
+    return new PagedResultDto<DriverListItemDto>
+    {
+      Items = items.Select(d => (DriverListItemDto)d).ToList(),
+      TotalItems = totalItems,
+    };
+  }
 
-    return (items, (int)total);
+  public async Task<AdminDriverDetailsDto?> GetAdminDriverByIdAsync(Guid driverId)
+  {
+    var user = await _repository.GetByIdAsync(driverId);
+    return user is null ? null : (AdminDriverDetailsDto)user;
   }
 }

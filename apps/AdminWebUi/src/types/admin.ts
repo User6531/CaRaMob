@@ -1,9 +1,6 @@
 export interface PagedResult<T> {
   items: T[];
-  page: number;
-  pageSize: number;
   totalItems: number;
-  totalPages: number;
 }
 
 export interface DriverListItem {
@@ -36,7 +33,7 @@ export interface DriverVehicle {
 
 export interface VehicleListItem {
   id: string;
-  ownerUserId?: string;
+  ownerUserId: string;
   brand: string;
   model: string;
   year: number;
@@ -52,7 +49,7 @@ export interface VehicleListItem {
 
 export interface VehicleDetails {
   id: string;
-  ownerUserId?: string;
+  ownerUserId: string;
   brand: string;
   model: string;
   year: number;

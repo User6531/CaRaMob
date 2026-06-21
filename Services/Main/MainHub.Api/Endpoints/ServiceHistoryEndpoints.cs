@@ -2,9 +2,7 @@ using System.Security.Claims;
 using MainHub.Api.Services;
 using MainHub.Api.DTOs.ServiceHistory;
 using MainHub.Api.Filters;
-using MainHub.Api.Config;
 using MainHub.Api.DTOs;
-using Microsoft.Extensions.Options;
 
 namespace MainHub.Api.Endpoints;
 
@@ -169,45 +167,19 @@ public static partial class ServiceHistoryEndpoints
   }
 
   internal static async Task<IResult> GetAdminVehicleHistoryAsync(
-    ClaimsPrincipal userClaims,
     Guid vehicleId,
-    IServiceHistoryService serviceHistoryService,
-    IOptions<AdminSettings> adminSettings
+    IServiceHistoryService serviceHistoryService
   )
   {
-    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
-    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
-
-    if (
-      string.IsNullOrWhiteSpace(currentAdminUserId) ||
-      !allowedAdminTelegramIds.Contains(currentAdminUserId)
-    )
-    {
-      return Results.Forbid();
-    }
-
     var visits = await serviceHistoryService.GetAdminVisitsByVehicleIdAsync(vehicleId);
     return Results.Ok(visits);
   }
 
   internal static async Task<IResult> GetAdminServiceRecordsAsync(
-    ClaimsPrincipal userClaims,
     Guid serviceHistoryId,
-    IServiceHistoryService serviceHistoryService,
-    IOptions<AdminSettings> adminSettings
+    IServiceHistoryService serviceHistoryService
   )
   {
-    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
-    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
-
-    if (
-      string.IsNullOrWhiteSpace(currentAdminUserId) ||
-      !allowedAdminTelegramIds.Contains(currentAdminUserId)
-    )
-    {
-      return Results.Forbid();
-    }
-
     try
     {
       var records = await serviceHistoryService.GetAdminRecordsByServiceHistoryIdAsync(serviceHistoryId);

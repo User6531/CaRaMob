@@ -1,6 +1,7 @@
 using MainHub.Api.Repositories;
 using MainHub.Api.DTOs;
 using MainHub.Api.Models;
+using MainHub.Api.Shared;
 using MongoDB.Driver;
 
 namespace MainHub.Api.Services;
@@ -41,8 +42,9 @@ public interface IVehicleService
   /// <param name="vehicleId">The unique identifier of the vehicle to delete.</param
   /// <param name="userId">The unique identifier of the user.</param>
   Task DeleteAsync(Guid vehicleId, Guid userId);
-  Task<(IReadOnlyList<VehicleEntity> Items, int TotalItems)> GetAdminPagedAsync(AdminVehicleQueryDto query);
-  Task<VehicleEntity?> GetAdminVehicleByIdAsync(Guid vehicleId);
+  Task<PagedResultDto<AdminVehicleListItemDto>> GetAdminVehiclesPagedAsync(AdminVehicleQueryDto query);
+  Task<AdminVehicleListItemDto?> GetAdminVehicleListItemByIdAsync(Guid vehicleId);
+  Task<List<VehicleListItemDto>?> GetAdminDriverVehiclesAsync(Guid driverId);
 }
 
 public class VehicleService(
@@ -234,22 +236,62 @@ public class VehicleService(
     return true;
   }
 
-  public async Task<(IReadOnlyList<VehicleEntity> Items, int TotalItems)> GetAdminPagedAsync(AdminVehicleQueryDto query)
+  private static AdminVehicleListItemDto MapAdminVehicleListItem(
+    VehicleEntity vehicle,
+    IReadOnlyDictionary<Guid, Guid> ownerMap
+  )
   {
-    var safePage = query.Page <= 0 ? 1 : query.Page;
-    var safePageSize = query.PageSize <= 0 ? 20 : Math.Min(query.PageSize, 100);
+    if (!ownerMap.TryGetValue(vehicle.Id, out var ownerUserId))
+    {
+      throw new InvalidOperationException(
+        $"Vehicle {vehicle.Id} has no assigned owner."
+      );
+    }
+
+    return (AdminVehicleListItemDto)(vehicle, ownerUserId);
+  }
+
+  public async Task<PagedResultDto<AdminVehicleListItemDto>> GetAdminVehiclesPagedAsync(
+    AdminVehicleQueryDto query
+  )
+  {
+    var (safePage, safePageSize, skip) = PaginationHelper.Normalize(query.Page, query.PageSize);
     query.Page = safePage;
     query.PageSize = safePageSize;
 
-    var skip = (safePage - 1) * safePageSize;
     var items = await _repository.GetAdminPagedAsync(query, skip, safePageSize);
-    var total = await _repository.CountAdminAsync(query);
+    var totalItems = (int)await _repository.CountAdminAsync(query);
+    var ownerMap = await _userService.GetOwnerMapByVehicleIdsAsync(items.Select(v => v.Id).ToList());
 
-    return (items, (int)total);
+    return new PagedResultDto<AdminVehicleListItemDto>
+    {
+      Items = items
+        .Select(v => MapAdminVehicleListItem(v, ownerMap))
+        .ToList(),
+      TotalItems = totalItems,
+    };
   }
 
-  public async Task<VehicleEntity?> GetAdminVehicleByIdAsync(Guid vehicleId)
+  public async Task<AdminVehicleListItemDto?> GetAdminVehicleListItemByIdAsync(Guid vehicleId)
   {
-    return await _repository.GetByIdAsync(vehicleId);
+    var vehicle = await _repository.GetByIdAsync(vehicleId);
+    if (vehicle is null)
+    {
+      return null;
+    }
+
+    var ownerMap = await _userService.GetOwnerMapByVehicleIdsAsync([vehicle.Id]);
+    return MapAdminVehicleListItem(vehicle, ownerMap);
+  }
+
+  public async Task<List<VehicleListItemDto>?> GetAdminDriverVehiclesAsync(Guid driverId)
+  {
+    var user = await _userService.GetByIdAsync(driverId);
+    if (user is null)
+    {
+      return null;
+    }
+
+    return await GetAllByUserAsync(driverId);
   }
 }

@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 using MainHub.Api.Filters;
 using System.Security.Claims;
 using MainHub.Api.Services;
-using MainHub.Api.Config;
-using Microsoft.Extensions.Options;
 
 namespace MainHub.Api.Endpoints;
 
@@ -237,68 +235,20 @@ public static partial class VehicleEndpoints
   private static partial Regex VinRegex();
 
   internal static async Task<IResult> GetAdminVehiclesAsync(
-    ClaimsPrincipal userClaims,
     [AsParameters] AdminVehicleQueryDto query,
-    IVehicleService vehicleService,
-    IUserService userService,
-    IOptions<AdminSettings> adminSettings
+    IVehicleService vehicleService
   )
   {
-    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
-    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
-
-    if (
-      string.IsNullOrWhiteSpace(currentAdminUserId) ||
-      !allowedAdminTelegramIds.Contains(currentAdminUserId)
-    )
-    {
-      return Results.Forbid();
-    }
-
-    var (vehicles, totalItems) = await vehicleService.GetAdminPagedAsync(query);
-    var ownerMap = await userService.GetOwnerMapByVehicleIdsAsync(vehicles.Select(v => v.Id).ToList());
-    var totalPages = totalItems == 0
-      ? 0
-      : (int)Math.Ceiling(totalItems / (double)query.PageSize);
-
-    return Results.Ok(new PagedResultDto<AdminVehicleListItemDto>
-    {
-      Items = vehicles
-        .Select(v => v.ToAdminVehicleListItemDto(ownerMap.GetValueOrDefault(v.Id)))
-        .ToList(),
-      Page = query.Page,
-      PageSize = query.PageSize,
-      TotalItems = totalItems,
-      TotalPages = totalPages
-    });
+    var result = await vehicleService.GetAdminVehiclesPagedAsync(query);
+    return Results.Ok(result);
   }
 
   internal static async Task<IResult> GetAdminVehicleByIdAsync(
-    ClaimsPrincipal userClaims,
     Guid vehicleId,
-    IVehicleService vehicleService,
-    IUserService userService,
-    IOptions<AdminSettings> adminSettings
+    IVehicleService vehicleService
   )
   {
-    var allowedAdminTelegramIds = adminSettings.Value.AllowedTelegramIds ?? [];
-    var currentAdminUserId = userClaims.FindFirst("userId")?.Value;
-
-    if (
-      string.IsNullOrWhiteSpace(currentAdminUserId) ||
-      !allowedAdminTelegramIds.Contains(currentAdminUserId)
-    )
-    {
-      return Results.Forbid();
-    }
-
-    var vehicle = await vehicleService.GetAdminVehicleByIdAsync(vehicleId);
-    if (vehicle is null)
-    {
-      return Results.NotFound();
-    }
-
-    var ownerMap = await userService.GetOwnerMapByVehicleIdsAsync([vehicle.Id]);
-    return Results.Ok(vehicle.ToAdminVehicleListItemDto(ownerMap.GetValueOrDefault(vehicle.Id)));
+    var vehicle = await vehicleService.GetAdminVehicleListItemByIdAsync(vehicleId);
+    return vehicle is null ? Results.NotFound() : Results.Ok(vehicle);
   }
 }

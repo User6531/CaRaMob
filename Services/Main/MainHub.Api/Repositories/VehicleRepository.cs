@@ -115,41 +115,10 @@ public class VehicleRepository : IVehicleRepository
   private static FilterDefinition<VehicleEntity> BuildAdminFilter(AdminVehicleQueryDto query)
   {
     var builder = Builders<VehicleEntity>.Filter;
-    var filters = new List<FilterDefinition<VehicleEntity>>();
 
-    if (!string.IsNullOrWhiteSpace(query.Brand))
-      filters.Add(builder.Regex(v => v.Brand, new MongoDB.Bson.BsonRegularExpression(query.Brand.Trim(), "i")));
+    // TODO: restore query filters in a later iteration
+    _ = query;
 
-    if (!string.IsNullOrWhiteSpace(query.Model))
-      filters.Add(builder.Regex(v => v.Model, new MongoDB.Bson.BsonRegularExpression(query.Model.Trim(), "i")));
-
-    if (!string.IsNullOrWhiteSpace(query.Vin))
-      filters.Add(builder.Regex(v => v.Vin, new MongoDB.Bson.BsonRegularExpression(query.Vin.Trim(), "i")));
-
-    if (!string.IsNullOrWhiteSpace(query.LicensePlate))
-      filters.Add(builder.Regex(v => v.LicensePlate, new MongoDB.Bson.BsonRegularExpression(query.LicensePlate.Trim(), "i")));
-
-    if (!string.IsNullOrWhiteSpace(query.Color))
-      filters.Add(builder.Regex(v => v.Color, new MongoDB.Bson.BsonRegularExpression(query.Color.Trim(), "i")));
-
-    if (query.FuelType.HasValue)
-      filters.Add(builder.Eq(v => v.FuelType, query.FuelType.Value));
-
-    if (query.TransmissionType.HasValue)
-      filters.Add(builder.Eq(v => v.TransmissionType, query.TransmissionType.Value));
-
-    if (query.WheelDriveType.HasValue)
-      filters.Add(builder.Eq(v => v.WheelDriveType, query.WheelDriveType.Value));
-
-    if (query.YearFrom.HasValue)
-      filters.Add(builder.Gte(v => v.Year, query.YearFrom.Value));
-
-    if (query.YearTo.HasValue)
-      filters.Add(builder.Lte(v => v.Year, query.YearTo.Value));
-
-    if (filters.Count == 0)
-      return builder.Empty;
-
-    return builder.And(filters);
+    return builder.Empty;
   }
 }

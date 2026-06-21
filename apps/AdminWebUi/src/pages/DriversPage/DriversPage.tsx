@@ -5,16 +5,11 @@ import {
   TableActionLink,
   type DataTableColumn,
 } from "../../components/DataTable";
-import { Input } from "../../components/Input";
 import { useDriversQuery } from "../../queries";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import {
-  applyDriverFilters,
-  resetDriverFilters,
-  setDraftDriverFilter,
-  setDriverPage,
-} from "../../store/slices/driversFiltersSlice";
+import { setDriverPage } from "../../store/slices/driversFiltersSlice";
 import type { DriverListItem } from "../../types/admin";
+import { totalPages } from "../../utils/pagination";
 import styles from "./DriversPage.module.css";
 
 const PAGE_SIZE = 10;
@@ -50,9 +45,7 @@ const driverColumns: DataTableColumn<DriverListItem>[] = [
 
 export function DriversPage() {
   const dispatch = useAppDispatch();
-  const { draftFilters, appliedFilters, page } = useAppSelector(
-    (state) => state.driversFilters,
-  );
+  const { appliedFilters, page } = useAppSelector((state) => state.driversFilters);
 
   const listParams = useMemo(
     () => ({
@@ -65,14 +58,13 @@ export function DriversPage() {
 
   const { data, isLoading, isError, isFetching } = useDriversQuery(listParams);
 
-  const hasPendingFilters =
-    JSON.stringify(draftFilters) !== JSON.stringify(appliedFilters);
+  const pageCount = useMemo(
+    () => totalPages(data?.totalItems ?? 0, PAGE_SIZE),
+    [data?.totalItems],
+  );
 
   const hasPrev = page > 1;
-  const hasNext = useMemo(
-    () => (data?.totalPages ?? 0) > page,
-    [data?.totalPages, page],
-  );
+  const hasNext = pageCount > page;
 
   return (
     <div className={styles.page}>
@@ -84,6 +76,7 @@ export function DriversPage() {
       </header>
 
       <section className={styles.filters}>
+        {/*
         <Input
           label="Ім'я"
           value={draftFilters.name}
@@ -141,6 +134,7 @@ export function DriversPage() {
         <Button variant="secondary" onClick={() => dispatch(resetDriverFilters())}>
           Скинути фільтри
         </Button>
+        */}
       </section>
 
       <div className={styles.tableCard}>
@@ -158,7 +152,7 @@ export function DriversPage() {
 
             <div className={styles.footer}>
               <p className={styles.meta}>
-                Сторінка {data?.page ?? page} з {data?.totalPages ?? 0} | Всього:{" "}
+                Сторінка {page} з {pageCount} | Всього:{" "}
                 {data?.totalItems ?? 0}
                 {isFetching && !isLoading ? " • Оновлення..." : ""}
               </p>
