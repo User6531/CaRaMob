@@ -1,6 +1,7 @@
 using MainHub.Api.Models;
 using MainHub.Api.Repositories;
 using MainHub.Api.DTOs;
+using MainHub.Api.Shared;
 using MongoDB.Driver;
 
 namespace MainHub.Api.Services;
@@ -72,6 +73,9 @@ public interface IUserService
   /// <param name="id">The unique identifier of the user to delete.</param>
   /// <returns>A task that represents the asynchronous operation.</returns>
   Task DeleteAsync(Guid id);
+  Task<Dictionary<Guid, Guid>> GetOwnerMapByVehicleIdsAsync(IReadOnlyCollection<Guid> vehicleIds);
+  Task<PagedResultDto<DriverListItemDto>> GetAdminDriversPagedAsync(AdminDriverQueryDto query);
+  Task<AdminDriverDetailsDto?> GetAdminDriverByIdAsync(Guid driverId);
 
   /// <summary>
   /// Attach a new vehicle to user asynchronously.
@@ -187,4 +191,49 @@ public class UserService(IUserRepository repository) : IUserService
   }
 
   public async Task DeleteAsync(Guid id) => await _repository.DeleteAsync(id);
+
+  public async Task<Dictionary<Guid, Guid>> GetOwnerMapByVehicleIdsAsync(
+    IReadOnlyCollection<Guid> vehicleIds
+  )
+  {
+    var users = await _repository.GetByVehicleIdsAsync(vehicleIds);
+    var result = new Dictionary<Guid, Guid>();
+
+    foreach (var user in users)
+    {
+      foreach (var vehicleId in user.VehicleIds)
+      {
+        if (vehicleIds.Contains(vehicleId))
+        {
+          result[vehicleId] = user.Id;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public async Task<PagedResultDto<DriverListItemDto>> GetAdminDriversPagedAsync(
+    AdminDriverQueryDto query
+  )
+  {
+    var (safePage, safePageSize, skip) = PaginationHelper.Normalize(query.Page, query.PageSize);
+    query.Page = safePage;
+    query.PageSize = safePageSize;
+
+    var items = await _repository.GetAdminDriversPagedAsync(query, skip, safePageSize);
+    var totalItems = (int)await _repository.CountAdminDriversAsync(query);
+
+    return new PagedResultDto<DriverListItemDto>
+    {
+      Items = items.Select(d => (DriverListItemDto)d).ToList(),
+      TotalItems = totalItems,
+    };
+  }
+
+  public async Task<AdminDriverDetailsDto?> GetAdminDriverByIdAsync(Guid driverId)
+  {
+    var user = await _repository.GetByIdAsync(driverId);
+    return user is null ? null : (AdminDriverDetailsDto)user;
+  }
 }

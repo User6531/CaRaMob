@@ -2,6 +2,7 @@ using MongoDB.Driver;
 using Microsoft.Extensions.Options;
 using MainHub.Api.Models;
 using MainHub.Api.Config;
+using MainHub.Api.DTOs;
 
 namespace MainHub.Api.Repositories;
 
@@ -45,6 +46,8 @@ public interface IVehicleRepository
     FilterDefinition<VehicleEntity> filter,
     UpdateDefinition<VehicleEntity> update
   );
+  Task<List<VehicleEntity>> GetAdminPagedAsync(AdminVehicleQueryDto query, int skip, int take);
+  Task<long> CountAdminAsync(AdminVehicleQueryDto query);
 }
 
 public class VehicleRepository : IVehicleRepository
@@ -86,5 +89,36 @@ public class VehicleRepository : IVehicleRepository
   {
     var filter = Builders<VehicleEntity>.Filter.Eq(v => v.Id, vehicleId);
     await _vehicles.DeleteOneAsync(filter);
+  }
+
+  public async Task<List<VehicleEntity>> GetAdminPagedAsync(
+    AdminVehicleQueryDto query,
+    int skip,
+    int take
+  )
+  {
+    var filter = BuildAdminFilter(query);
+    return await _vehicles
+      .Find(filter)
+      .SortByDescending(v => v.CreatedAt)
+      .Skip(skip)
+      .Limit(take)
+      .ToListAsync();
+  }
+
+  public async Task<long> CountAdminAsync(AdminVehicleQueryDto query)
+  {
+    var filter = BuildAdminFilter(query);
+    return await _vehicles.CountDocumentsAsync(filter);
+  }
+
+  private static FilterDefinition<VehicleEntity> BuildAdminFilter(AdminVehicleQueryDto query)
+  {
+    var builder = Builders<VehicleEntity>.Filter;
+
+    // TODO: restore query filters in a later iteration
+    _ = query;
+
+    return builder.Empty;
   }
 }

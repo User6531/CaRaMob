@@ -37,6 +37,7 @@ public interface IServiceHistoryRepository
   /// <param name="serviceHistoryId">The unique identifier of the service history record.</param>
   /// <returns>A task that represents the asynchronous operation. The task result contains the service history details.</returns>
   Task<ServiceHistoryEntity> GetByIdAsync(Guid vehicleId, Guid serviceHistoryId);
+  Task<ServiceHistoryEntity?> GetByServiceHistoryIdAsync(Guid serviceHistoryId);
 
   /// <summary>
   /// Creates a new service history record for a vehicle asynchronously.
@@ -82,6 +83,12 @@ public class ServiceHistoryRepository : IServiceHistoryRepository
       Builders<ServiceHistoryEntity>.Filter.Eq(sh => sh.Id, serviceHistoryId)
     );
 
+    return await _serviceHistories.Find(filter).FirstOrDefaultAsync();
+  }
+
+  public async Task<ServiceHistoryEntity?> GetByServiceHistoryIdAsync(Guid serviceHistoryId)
+  {
+    var filter = Builders<ServiceHistoryEntity>.Filter.Eq(sh => sh.Id, serviceHistoryId);
     return await _serviceHistories.Find(filter).FirstOrDefaultAsync();
   }
 

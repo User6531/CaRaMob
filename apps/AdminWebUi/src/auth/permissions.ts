@@ -10,6 +10,7 @@ export const Permission = {
   UsersView: "users.view",
   UsersManage: "users.manage",
   DriversView: "drivers.view",
+  VehiclesView: "vehicles.view",
   SettingsView: "settings.view",
 } as const;
 
@@ -27,6 +28,7 @@ export const ROLE_PERMISSIONS = {
     Permission.UsersView,
     Permission.UsersManage,
     Permission.DriversView,
+    Permission.VehiclesView,
     Permission.SettingsView,
   ],
   stoAdmin: [

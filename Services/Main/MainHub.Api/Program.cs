@@ -8,12 +8,14 @@ using MainHub.Api.Repositories;
 using MainHub.Api.Services;
 using MainHub.Api.Endpoints;
 using MainHub.Api.Validators;
+using MainHub.Api.Authorization;
 using FluentValidation;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Arex388.NhtsaVpic.Extensions.Microsoft.DependencyInjection;
 using MainHub.Api.DTOs;
 using AspNetCore.Swagger.Themes;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +68,8 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IServiceHistoryService, ServiceHistoryService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
+builder.Services.AddSingleton<IAuthorizationHandler, AllowedTelegramAdminAuthorizationHandler>();
+
 builder.Services.AddNhtsaVpic();
 
 // 🟦 Register FluentValidation validators
@@ -105,6 +109,17 @@ builder.Services.AddSwaggerGen(c =>
             },
             Array.Empty<string>()
         }
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AdminWebUi", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5100", "http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
@@ -178,6 +193,7 @@ builder.Services.AddAuthorization(options =>
         policy.AuthenticationSchemes.Add("AdminJwt");
         policy.RequireAuthenticatedUser();
         policy.RequireRole("admin");
+        policy.Requirements.Add(new AllowedTelegramAdminRequirement());
     });
 });
 
@@ -191,6 +207,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AdminWebUi");
 app.UseAuthentication();
 app.UseAuthorization();
 

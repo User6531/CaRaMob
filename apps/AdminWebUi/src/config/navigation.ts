@@ -35,6 +35,13 @@ export const NAV_ITEMS: NavItemConfig[] = [
     requiredPermissions: [Permission.DriversView],
   },
   {
+    id: "vehicles",
+    label: "Авто",
+    path: "/vehicles",
+    icon: "M4 14l1-3h14l1 3v4h-2a2 2 0 1 1-4 0H10a2 2 0 1 1-4 0H4v-4zm2-.5h12l-.4-1.2H6.4L6 13.5z",
+    requiredPermissions: [Permission.VehiclesView],
+  },
+  {
     id: "settings",
     label: "Налаштування",
     path: "/settings",
