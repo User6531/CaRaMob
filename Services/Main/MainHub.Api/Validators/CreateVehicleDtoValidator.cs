@@ -61,12 +61,18 @@ public class CreateVehicleDtoValidator : AbstractValidator<CreateVehicleDto>
       .When(x => x.BoughtAt.HasValue);
 
     RuleFor(x => x.EngineCapacity)
-      .NotEmpty()
-      .WithMessage("Engine capacity is required.")
       .GreaterThan(0)
       .WithMessage("Engine capacity must be greater than 0.")
       .LessThanOrEqualTo(10000)
-      .WithMessage("Engine capacity must be less than or equal to 10000.");
+      .WithMessage("Engine capacity must be less than or equal to 10000.")
+      .When(x => x.FuelType is not FuelType.Electric and not FuelType.Hydrogen);
+
+    RuleFor(x => x.EngineCapacity)
+      .GreaterThanOrEqualTo(0)
+      .WithMessage("Engine capacity cannot be negative.")
+      .LessThanOrEqualTo(10000)
+      .WithMessage("Engine capacity must be less than or equal to 10000.")
+      .When(x => x.FuelType is FuelType.Electric or FuelType.Hydrogen);
 
     RuleFor(x => x.Mileage)
       .NotEmpty()

@@ -11,9 +11,10 @@ export const useVehicles = () => {
 
   return useQuery({
     queryKey: queryKeys.vehicles,
-    queryFn: () => {
+    queryFn: async () => {
       const apiClient = createApiClient(getAccessToken);
-      return apiClient.get<VehicleListItem[]>(ENDPOINTS.VEHICLES);
+      const result = await apiClient.get<VehicleListItem[]>(ENDPOINTS.VEHICLES);
+      return Array.isArray(result) ? result : [];
     },
     staleTime: CACHE_STALE_TIME_MS,
   });

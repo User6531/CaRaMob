@@ -20,9 +20,44 @@ export const styles = StyleSheet.create({
   form: {
     flex: 1,
   },
+  stepHeaderContainer: {
+    marginBottom: 16,
+  },
+  stepHeaderTop: {
+    marginBottom: 10,
+  },
+  stepTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  stepSubtitle: {
+    fontSize: 14,
+  },
+  stepDots: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  stepDot: {
+    flex: 1,
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: "#30363D",
+  },
+  stepDotCompleted: {
+    backgroundColor: "#2EA043",
+  },
+  stepDotActive: {
+    backgroundColor: "#F2CC60",
+  },
+  stepCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    marginBottom: 12,
+  },
   imageSection: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 24,
   },
   imageContainer: {
     width: 200,
@@ -59,6 +94,36 @@ export const styles = StyleSheet.create({
   input: {
     // Additional input styles if needed
   },
+  dateInputText: {
+    paddingVertical: 12,
+  },
+  datePickerModalRoot: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  datePickerBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  },
+  datePickerSheet: {
+    backgroundColor: "#161B22",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingBottom: 24,
+  },
+  datePickerHeader: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#30363D",
+  },
+  datePickerDoneText: {
+    color: "#4ade9e",
+    fontWeight: "600",
+  },
   vinDecodeContainer: {
     flexDirection: "row",
     gap: 12,
@@ -79,7 +144,7 @@ export const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    marginTop: 8,
     marginBottom: 40,
     gap: 12,
   },

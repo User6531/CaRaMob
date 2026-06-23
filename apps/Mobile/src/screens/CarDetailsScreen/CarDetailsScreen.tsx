@@ -15,6 +15,7 @@ import { styles } from "./CarDetailsScreen.styles";
 import { CarDetailsScreenProps } from "../../navigation/types";
 import { useVehicle, useDeleteVehicle } from "../../queries";
 import { FuelType, TransmissionType, WheelDriveType } from "../../types/api";
+import { requiresEngineDisplacement } from "../../utils/vehicleFormUtils";
 
 const FUEL_LABELS: Record<FuelType, string> = {
   [FuelType.Gasoline]: "Бензин",
@@ -248,14 +249,16 @@ export default function CarDetailsScreen({
             </Text>
           </View>
 
-          <View style={styles.detailRow}>
-            <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
-              Об&apos;єм двигуна:
-            </Text>
-            <Text style={[globalStyles.textPrimary, styles.detailValue]}>
-              {car.engineCapacity / 1000} л
-            </Text>
-          </View>
+          {requiresEngineDisplacement(car.fuelType) && (
+            <View style={styles.detailRow}>
+              <Text style={[globalStyles.textSecondary, styles.detailLabel]}>
+                Об&apos;єм двигуна:
+              </Text>
+              <Text style={[globalStyles.textPrimary, styles.detailValue]}>
+                {(car.engineCapacity / 1000).toFixed(1)} л
+              </Text>
+            </View>
+          )}
 
           <View style={styles.detailRow}>
             <Text style={[globalStyles.textSecondary, styles.detailLabel]}>

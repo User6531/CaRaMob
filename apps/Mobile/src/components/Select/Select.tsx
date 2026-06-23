@@ -84,10 +84,7 @@ export const Select: React.FC<SelectProps> = ({
         disabled={disabled}
       >
         <Text
-          style={[
-            styles.selectText,
-            !selectedOption && styles.placeholderText,
-          ]}
+          style={[styles.selectText, !selectedOption && styles.placeholderText]}
         >
           {selectedOption ? selectedOption.label : placeholder}
         </Text>
@@ -109,7 +106,10 @@ export const Select: React.FC<SelectProps> = ({
             activeOpacity={1}
             onPress={handleModalClose}
           />
-          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+          <View
+            style={styles.modalContent}
+            onStartShouldSetResponder={() => true}
+          >
             {/* Заголовок */}
             <View style={styles.modalHeader}>
               <Text style={[globalStyles.textPrimary, styles.modalTitle]}>
@@ -171,9 +171,7 @@ export const Select: React.FC<SelectProps> = ({
                 />
               ) : (
                 <View style={styles.noResultsContainer}>
-                  <Text style={styles.noResultsText}>
-                    Нічого не знайдено
-                  </Text>
+                  <Text style={styles.noResultsText}>Нічого не знайдено</Text>
                 </View>
               )}
             </View>
@@ -240,6 +238,8 @@ const styles = StyleSheet.create({
     maxHeight: 600,
     overflow: "hidden",
     shadowColor: "#000",
+    borderWidth: 1,
+    borderColor: "#21262d", // theme.colors.border.primary
     shadowOffset: {
       width: 0,
       height: 4,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
+
     borderBottomColor: "#30363d", // theme.colors.border.primary
   },
   modalTitle: {
@@ -285,6 +285,8 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     marginBottom: 0,
+    borderWidth: 1,
+    borderColor: "#3bc98e",
   },
   optionsContainer: {
     flex: 1,
@@ -330,6 +332,3 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
 });
-
-
-

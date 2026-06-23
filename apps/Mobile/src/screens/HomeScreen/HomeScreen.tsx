@@ -23,6 +23,7 @@ import { RefreshStatusBar } from "../../components/RefreshStatusBar";
 import { ServiceHistoryContent } from "../ServiceHistoryScreen/ServiceHistoryContent";
 import { useTheme } from "../../hooks/useTheme";
 import { FuelType, TransmissionType, WheelDriveType } from "../../types/api";
+import { formatEngineDisplay } from "../../utils/vehicleFormUtils";
 
 const FUEL_LABELS: Record<FuelType, string> = {
   [FuelType.Gasoline]: "Бензин",
@@ -487,8 +488,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                           <View style={styles.infoRow}>
                             <Text style={styles.infoLabel}>Двигун</Text>
                             <Text style={styles.infoValue}>
-                              {(car.engineCapacity / 1000).toFixed(1)} л,{" "}
-                              {car.enginePower} к.с.
+                              {formatEngineDisplay(
+                                car.engineCapacity,
+                                car.enginePower,
+                                car.fuelType as FuelType
+                              )}
                             </Text>
                           </View>
                           <View style={styles.infoRow}>

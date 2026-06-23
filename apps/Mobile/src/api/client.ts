@@ -1,6 +1,9 @@
 import { API_CONFIG, getNgrokHeaders } from "../config/api";
+import { tryRefreshAccessToken } from "./authTokenBridge";
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
+
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 export class ApiClient {
   private baseURL: string;
@@ -14,149 +17,89 @@ export class ApiClient {
     this.getAccessToken = getAccessToken;
   }
 
-  private async getHeaders(): Promise<HeadersInit> {
-    const token = await this.getAccessToken();
+  private async getHeaders(token?: string | null): Promise<HeadersInit> {
+    const accessToken = token ?? (await this.getAccessToken());
 
     return {
       "Content-Type": "application/json",
       ...getNgrokHeaders(),
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     };
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "GET",
-      headers: await this.getHeaders(),
-    });
-
-    if (!response.ok) {
-      // Спробуємо отримати текст помилки
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const errorText = await response.text();
-        if (errorText) {
-          errorMessage = errorText;
-        }
-      } catch (e) {
-        // Ігноруємо помилки парсингу тексту
+  private async readErrorMessage(response: Response): Promise<string> {
+    let errorMessage = `HTTP error! status: ${response.status}`;
+    try {
+      const errorText = await response.text();
+      if (errorText) {
+        errorMessage = errorText;
       }
-      throw new Error(errorMessage);
+    } catch {
+      // Ignore body read errors.
     }
-
-    // Перевіряємо чи відповідь є JSON
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      const responseText = await response.text();
-      throw new Error(
-        `Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`
-      );
-    }
-
-    return response.json();
+    return errorMessage;
   }
 
-  async post<T>(endpoint: string, data: any): Promise<T> {
+  private async request<T>(
+    method: HttpMethod,
+    endpoint: string,
+    body?: unknown,
+    hasRetried = false
+  ): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "POST",
+      method,
       headers: await this.getHeaders(),
-      body: JSON.stringify(data),
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
 
-    if (!response.ok) {
-      // Спробуємо отримати текст помилки
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const errorText = await response.text();
-        if (errorText) {
-          errorMessage = errorText;
-        }
-      } catch (e) {
-        // Ігноруємо помилки парсингу тексту
+    if (response.status === 401 && !hasRetried) {
+      const refreshedToken = await tryRefreshAccessToken();
+      if (refreshedToken) {
+        return this.request<T>(method, endpoint, body, true);
       }
-      throw new Error(errorMessage);
     }
-
-    // Перевіряємо чи є контент для парсингу
-    const contentType = response.headers.get("content-type");
-    const contentLength = response.headers.get("content-length");
-
-    // Якщо немає контенту або content-length = 0, повертаємо порожній об'єкт
-    if (!contentLength || contentLength === "0") {
-      return {} as T;
-    }
-
-    // Перевіряємо чи відповідь є JSON
-    if (!contentType || !contentType.includes("application/json")) {
-      const responseText = await response.text();
-      throw new Error(
-        `Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`
-      );
-    }
-
-    return response.json();
-  }
-
-  async put<T>(endpoint: string, data: any): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "PUT",
-      headers: await this.getHeaders(),
-      body: JSON.stringify(data),
-    });
 
     if (!response.ok) {
-      // Спробуємо отримати текст помилки
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const errorText = await response.text();
-        if (errorText) {
-          errorMessage = errorText;
-        }
-      } catch (e) {
-        // Ігноруємо помилки парсингу тексту
-      }
-      throw new Error(errorMessage);
+      throw new Error(await this.readErrorMessage(response));
     }
 
-    // Перевіряємо чи є контент для парсингу
-    const contentType = response.headers.get("content-type");
-    const contentLength = response.headers.get("content-length");
-
-    // Якщо немає контенту або content-length = 0, повертаємо порожній об'єкт
-    if (!contentLength || contentLength === "0") {
-      return {} as T;
-    }
-
-    // Перевіряємо чи відповідь є JSON
-    if (!contentType || !contentType.includes("application/json")) {
-      const responseText = await response.text();
-      throw new Error(
-        `Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`
-      );
-    }
-
-    return response.json();
-  }
-
-  async delete<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: "DELETE",
-      headers: await this.getHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // 204 No Content — тіла немає, не викликаємо .json()
     if (response.status === 204) {
       return {} as T;
     }
-    return response.json();
+
+    const contentType = response.headers.get("content-type");
+    const responseText = await response.text();
+
+    if (!responseText) {
+      return {} as T;
+    }
+
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error(
+        `Expected JSON response but got: ${contentType}. Response: ${responseText.substring(0, 200)}...`
+      );
+    }
+
+    return JSON.parse(responseText) as T;
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>("GET", endpoint);
+  }
+
+  async post<T>(endpoint: string, data: unknown): Promise<T> {
+    return this.request<T>("POST", endpoint, data);
+  }
+
+  async put<T>(endpoint: string, data: unknown): Promise<T> {
+    return this.request<T>("PUT", endpoint, data);
+  }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    return this.request<T>("DELETE", endpoint);
   }
 }
 
-// Функція для створення API клієнта з токеном
 export const createApiClient = (
   getAccessToken: () => Promise<string | null>
 ) => {
