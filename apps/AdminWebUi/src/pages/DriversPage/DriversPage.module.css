@@ -31,6 +31,30 @@
   padding: 16px;
 }
 
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-secondary);
+  font-size: 14px;
+}
+
+.table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 20px;
+}
+
 .footer {
   margin-top: 14px;
   display: flex;
@@ -52,4 +76,21 @@
 .actions {
   display: flex;
   gap: 8px;
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.linkButton:hover {
+  background-color: var(--interactive-secondary-hover);
 }
