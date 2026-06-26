@@ -21,6 +21,7 @@ import { useVehicles, useVehicle, useServiceHistory } from "../../queries";
 import { BottomNavBar, BottomNavTab } from "../../components/BottomNavBar";
 import { RefreshStatusBar } from "../../components/RefreshStatusBar";
 import { ServiceHistoryContent } from "../ServiceHistoryScreen/ServiceHistoryContent";
+import { ServicesContent } from "../ServicesScreen/ServicesContent";
 import { useTheme } from "../../hooks/useTheme";
 import { FuelType, TransmissionType, WheelDriveType } from "../../types/api";
 
@@ -608,7 +609,15 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         ) : null}
 
         {activeTab === "chats" ? renderTabPlaceholder("Чати") : null}
-        {activeTab === "services" ? renderTabPlaceholder("Мої сервіси") : null}
+
+        {activeTab === "services" ? (
+          <ServicesContent
+            onServicePress={(serviceId) =>
+              navigation.navigate("ServiceShopDetail", { serviceId })
+            }
+            contentContainerStyle={{ paddingBottom: scrollBottomPadding }}
+          />
+        ) : null}
       </View>
 
       {/* Bottom nav */}

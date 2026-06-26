@@ -15,6 +15,7 @@ import CarDetailsScreen from "../screens/CarDetailsScreen/CarDetailsScreen";
 import ServiceHistoryScreen from "../screens/ServiceHistoryScreen/ServiceHistoryScreen";
 import ServiceHistoryCreateScreen from "../screens/ServiceHistoryCreateScreen/ServiceHistoryCreateScreen";
 import ServiceHistoryEditScreen from "../screens/ServiceHistoryEditScreen/ServiceHistoryEditScreen";
+import ServiceShopDetailScreen from "../screens/ServiceShopDetailScreen/ServiceShopDetailScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -127,6 +128,14 @@ export default function AppNavigator() {
               options={{
                 ...darkHeaderOptions,
                 title: "Редагування запису",
+              }}
+            />
+            <Stack.Screen
+              name="ServiceShopDetail"
+              component={ServiceShopDetailScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Автосервіс",
               }}
             />
           </>
