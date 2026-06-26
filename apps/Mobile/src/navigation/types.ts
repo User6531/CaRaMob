@@ -19,6 +19,7 @@ export type RootStackParamList = {
     visit: ServiceHistoryVisitDto;
   };
   ServiceShopDetail: { serviceId: string };
+  ServiceBooking: { serviceId: string; serviceName?: string };
   Notifications: undefined;
 };
 
@@ -86,4 +87,9 @@ export type ServiceShopDetailScreenProps = NativeStackScreenProps<
 export type NotificationsScreenProps = NativeStackScreenProps<
   RootStackParamList,
   "Notifications"
+>;
+
+export type ServiceBookingScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "ServiceBooking"
 >;

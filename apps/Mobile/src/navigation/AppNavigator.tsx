@@ -15,6 +15,7 @@ import ServiceHistoryScreen from "../screens/ServiceHistoryScreen/ServiceHistory
 import ServiceHistoryCreateScreen from "../screens/ServiceHistoryCreateScreen/ServiceHistoryCreateScreen";
 import ServiceHistoryEditScreen from "../screens/ServiceHistoryEditScreen/ServiceHistoryEditScreen";
 import ServiceShopDetailScreen from "../screens/ServiceShopDetailScreen/ServiceShopDetailScreen";
+import ServiceBookingScreen from "../screens/ServiceBookingScreen/ServiceBookingScreen";
 import NotificationsScreen from "../screens/NotificationsScreen/NotificationsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -128,6 +129,14 @@ export default function AppNavigator() {
               options={{
                 ...darkHeaderOptions,
                 title: "Автосервіс",
+              }}
+            />
+            <Stack.Screen
+              name="ServiceBooking"
+              component={ServiceBookingScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Онлайн запис",
               }}
             />
             <Stack.Screen

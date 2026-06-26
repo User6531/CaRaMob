@@ -236,6 +236,22 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
+  bookingButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: theme.colors.interactive.primary,
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginTop: 4,
+    marginBottom: 10,
+  },
+  bookingButtonText: {
+    color: theme.colors.text.inverse,
+    fontSize: 15,
+    fontWeight: "600",
+  },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",

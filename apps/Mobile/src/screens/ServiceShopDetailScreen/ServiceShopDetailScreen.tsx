@@ -39,6 +39,7 @@ const SOCIAL_CONFIG: Record<
 };
 
 export default function ServiceShopDetailScreen({
+  navigation,
   route,
 }: ServiceShopDetailScreenProps) {
   const theme = useTheme();
@@ -288,6 +289,20 @@ export default function ServiceShopDetailScreen({
               </View>
             </Animated.View>
           ) : null}
+
+          <TouchableOpacity
+            style={styles.bookingButton}
+            onPress={() =>
+              navigation.navigate("ServiceBooking", {
+                serviceId: service.id,
+                serviceName: service.name,
+              })
+            }
+            activeOpacity={0.85}
+          >
+            <Feather name="calendar" size={18} color={theme.colors.text.inverse} />
+            <Text style={styles.bookingButtonText}>Онлайн запис</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.actionButton}
