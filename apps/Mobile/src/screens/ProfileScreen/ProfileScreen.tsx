@@ -186,6 +186,23 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       </Animated.View>
 
       <Animated.View entering={FadeIn.duration(300).delay(180)}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Режим СТО</Text>
+          <Text style={styles.mechanicSectionText}>
+            Перейдіть до робочого простору механіка для керування ремонтами
+          </Text>
+          <TouchableOpacity
+            style={styles.mechanicButton}
+            onPress={() => navigation.navigate("MechanicHome")}
+            activeOpacity={0.85}
+          >
+            <Feather name="tool" size={18} color={theme.colors.text.inverse} />
+            <Text style={styles.mechanicButtonText}>Акаунт механіка</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.duration(300).delay(240)}>
         <View style={styles.actionsSection}>
           <TouchableOpacity
             style={styles.editButton}
@@ -198,7 +215,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         </View>
       </Animated.View>
 
-      <Animated.View entering={FadeIn.duration(300).delay(240)}>
+      <Animated.View entering={FadeIn.duration(300).delay(300)}>
         <View style={styles.dangerSection}>
           <Text style={styles.dangerTitle}>Вихід з акаунту</Text>
           <Text style={styles.dangerText}>

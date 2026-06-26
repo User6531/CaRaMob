@@ -157,6 +157,27 @@ export const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 14,
   },
+  mechanicSectionText: {
+    color: "#B0B0B0",
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  mechanicButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: theme.colors.interactive.primary,
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginTop: 4,
+  },
+  mechanicButtonText: {
+    color: theme.colors.text.inverse,
+    fontSize: 15,
+    fontWeight: "600",
+  },
   editButton: {
     flexDirection: "row",
     alignItems: "center",

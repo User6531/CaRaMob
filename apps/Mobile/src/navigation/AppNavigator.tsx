@@ -17,6 +17,8 @@ import ServiceHistoryEditScreen from "../screens/ServiceHistoryEditScreen/Servic
 import ServiceShopDetailScreen from "../screens/ServiceShopDetailScreen/ServiceShopDetailScreen";
 import ServiceBookingScreen from "../screens/ServiceBookingScreen/ServiceBookingScreen";
 import NotificationsScreen from "../screens/NotificationsScreen/NotificationsScreen";
+import MechanicHomeScreen from "../screens/MechanicHomeScreen/MechanicHomeScreen";
+import MechanicProfileScreen from "../screens/MechanicProfileScreen/MechanicProfileScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -145,6 +147,22 @@ export default function AppNavigator() {
               options={{
                 ...darkHeaderOptions,
                 title: "Сповіщення",
+              }}
+            />
+            <Stack.Screen
+              name="MechanicHome"
+              component={MechanicHomeScreen}
+              options={{
+                headerShown: false,
+                gestureEnabled: false,
+              }}
+            />
+            <Stack.Screen
+              name="MechanicProfile"
+              component={MechanicProfileScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Профіль механіка",
               }}
             />
           </>

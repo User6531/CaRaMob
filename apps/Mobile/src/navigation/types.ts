@@ -21,6 +21,8 @@ export type RootStackParamList = {
   ServiceShopDetail: { serviceId: string };
   ServiceBooking: { serviceId: string; serviceName?: string };
   Notifications: undefined;
+  MechanicHome: undefined;
+  MechanicProfile: undefined;
 };
 
 // Типи для кожного скріна
@@ -92,4 +94,14 @@ export type NotificationsScreenProps = NativeStackScreenProps<
 export type ServiceBookingScreenProps = NativeStackScreenProps<
   RootStackParamList,
   "ServiceBooking"
+>;
+
+export type MechanicHomeScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "MechanicHome"
+>;
+
+export type MechanicProfileScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "MechanicProfile"
 >;
