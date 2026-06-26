@@ -11,11 +11,11 @@ import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import ProfileSetupScreen from "../screens/ProfileSetupScreen/ProfileSetupScreen";
 import CarCardScreen from "../screens/CarCardScreen/CarCardScreen";
 import CarEditScreen from "../screens/CarEditScreen/CarEditScreen";
-import CarDetailsScreen from "../screens/CarDetailsScreen/CarDetailsScreen";
 import ServiceHistoryScreen from "../screens/ServiceHistoryScreen/ServiceHistoryScreen";
 import ServiceHistoryCreateScreen from "../screens/ServiceHistoryCreateScreen/ServiceHistoryCreateScreen";
 import ServiceHistoryEditScreen from "../screens/ServiceHistoryEditScreen/ServiceHistoryEditScreen";
 import ServiceShopDetailScreen from "../screens/ServiceShopDetailScreen/ServiceShopDetailScreen";
+import NotificationsScreen from "../screens/NotificationsScreen/NotificationsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -99,14 +99,6 @@ export default function AppNavigator() {
               }}
             />
             <Stack.Screen
-              name="CarDetails"
-              component={CarDetailsScreen}
-              options={{
-                ...darkHeaderOptions,
-                title: "Деталі автомобіля",
-              }}
-            />
-            <Stack.Screen
               name="ServiceHistory"
               component={ServiceHistoryScreen}
               options={{
@@ -136,6 +128,14 @@ export default function AppNavigator() {
               options={{
                 ...darkHeaderOptions,
                 title: "Автосервіс",
+              }}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationsScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Сповіщення",
               }}
             />
           </>

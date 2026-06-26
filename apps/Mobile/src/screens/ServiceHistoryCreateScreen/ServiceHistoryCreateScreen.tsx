@@ -1,11 +1,13 @@
 import React from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, ActivityIndicator, Text, View } from "react-native";
 import { FormScreen } from "../../components/FormScreen";
 import { useServiceHistoryCreateDraft } from "../../hooks/useServiceHistoryCreateDraft";
 import { useStatusBar } from "../../hooks/useStatusBar";
 import { useCreateServiceHistory } from "../../queries";
 import { ServiceHistoryCreateScreenProps } from "../../navigation/types";
 import { globalStyles } from "../../styles/globalStyles";
+import { useTheme } from "../../hooks/useTheme";
+import { ServiceHistoryForm } from "./ServiceHistoryForm";
 import { styles } from "./ServiceHistoryCreateScreen.styles";
 
 export default function ServiceHistoryCreateScreen({
@@ -13,6 +15,7 @@ export default function ServiceHistoryCreateScreen({
   route,
 }: ServiceHistoryCreateScreenProps) {
   useStatusBar();
+  const theme = useTheme();
   const { vehicleId, vehicleTitle } = route.params;
   const createServiceHistory = useCreateServiceHistory();
   const {
@@ -106,6 +109,7 @@ export default function ServiceHistoryCreateScreen({
           styles.loadingContainer,
         ]}
       >
+        <ActivityIndicator size="large" color={theme.colors.accent.primary} />
         <Text style={globalStyles.loadingText}>Завантаження форми...</Text>
       </View>
     );
@@ -116,113 +120,26 @@ export default function ServiceHistoryCreateScreen({
       style={[globalStyles.container, globalStyles.pageBackground]}
       contentContainerStyle={styles.contentContainer}
     >
-      <Text style={styles.title}>Новий запис обслуговування</Text>
-      <Text style={styles.subtitle}>
-        {vehicleTitle
-          ? `Авто: ${vehicleTitle}`
-          : "Створення запису для вибраного авто"}
-      </Text>
-      {hasRestoredDraft ? (
-        <Text style={styles.draftHint}>
-          Відновлено збережений чернетковий запис
-        </Text>
-      ) : null}
-
-      <View style={styles.formCard}>
-        <View>
-          <Text style={styles.label}>Назва візиту / СТО</Text>
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Наприклад: Bosch Service, ТО 120000"
-            placeholderTextColor="#8E8E93"
-            style={styles.input}
-          />
-        </View>
-
-        <View>
-          <Text style={styles.label}>Опис</Text>
-          <TextInput
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Короткий опис візиту"
-            placeholderTextColor="#8E8E93"
-            style={[styles.input, styles.textarea]}
-            multiline
-          />
-        </View>
-
-        <View>
-          <Text style={styles.label}>Список робіт</Text>
-          {works.map((work, index) => (
-            <View key={work.id} style={styles.workItem}>
-              <View style={styles.workItemHeader}>
-                <Text style={styles.workItemTitle}>Робота #{index + 1}</Text>
-                <TouchableOpacity
-                  onPress={() => removeWork(work.id)}
-                  disabled={works.length === 1}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={[
-                      styles.removeWorkText,
-                      works.length === 1 && styles.removeWorkTextDisabled,
-                    ]}
-                  >
-                    Видалити
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                value={work.title}
-                onChangeText={(value) => updateWorkTitle(work.id, value)}
-                placeholder="Назва або короткий опис роботи"
-                placeholderTextColor="#8E8E93"
-                style={[styles.input, styles.workField]}
-              />
-              <TextInput
-                value={work.price}
-                onChangeText={(value) => updateWorkPrice(work.id, value)}
-                placeholder="Ціна, грн"
-                placeholderTextColor="#8E8E93"
-                style={[styles.input, styles.workField]}
-                keyboardType="decimal-pad"
-              />
-            </View>
-          ))}
-          <TouchableOpacity
-            style={styles.addWorkButton}
-            onPress={addWork}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.addWorkButtonText}>+ Додати роботу</Text>
-          </TouchableOpacity>
-          <Text style={styles.hint}>
-            Додайте довільну кількість робіт. Для кожної роботи вкажіть назву і
-            ціну більше 0.
-          </Text>
-        </View>
-
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={[globalStyles.buttonSecondary, styles.actionButton]}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.8}
-          >
-            <Text style={globalStyles.buttonSecondaryText}>Скасувати</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[globalStyles.buttonPrimary, styles.actionButton]}
-            onPress={handleSave}
-            activeOpacity={0.8}
-            disabled={createServiceHistory.isPending}
-          >
-            <Text style={globalStyles.buttonPrimaryText}>
-              {createServiceHistory.isPending ? "Збереження..." : "Зберегти"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <ServiceHistoryForm
+        pageTitle="Новий запис"
+        pageSubtitle="Додайте візит до автосервісу з переліком виконаних робіт"
+        vehicleTitle={vehicleTitle}
+        draftHint={hasRestoredDraft}
+        title={title}
+        onTitleChange={setTitle}
+        description={description}
+        onDescriptionChange={setDescription}
+        works={works}
+        onAddWork={addWork}
+        onRemoveWork={removeWork}
+        onWorkTitleChange={updateWorkTitle}
+        onWorkPriceChange={updateWorkPrice}
+        onCancel={() => navigation.goBack()}
+        onSave={handleSave}
+        isSaving={createServiceHistory.isPending}
+        saveLabel="Зберегти запис"
+        savingLabel="Збереження..."
+      />
     </FormScreen>
   );
 }

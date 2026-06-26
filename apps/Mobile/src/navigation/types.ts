@@ -11,7 +11,6 @@ export type RootStackParamList = {
   ProfileSetup: undefined;
   CarCard: undefined;
   CarEdit: { carId: string };
-  CarDetails: { carId: string };
   ServiceHistory: { vehicleId: string; vehicleTitle?: string };
   ServiceHistoryCreate: { vehicleId: string; vehicleTitle?: string };
   ServiceHistoryEdit: {
@@ -20,6 +19,7 @@ export type RootStackParamList = {
     visit: ServiceHistoryVisitDto;
   };
   ServiceShopDetail: { serviceId: string };
+  Notifications: undefined;
 };
 
 // Типи для кожного скріна
@@ -63,11 +63,6 @@ export type CarEditScreenProps = NativeStackScreenProps<
   "CarEdit"
 >;
 
-export type CarDetailsScreenProps = NativeStackScreenProps<
-  RootStackParamList,
-  "CarDetails"
->;
-
 export type ServiceHistoryScreenProps = NativeStackScreenProps<
   RootStackParamList,
   "ServiceHistory"
@@ -86,4 +81,9 @@ export type ServiceHistoryEditScreenProps = NativeStackScreenProps<
 export type ServiceShopDetailScreenProps = NativeStackScreenProps<
   RootStackParamList,
   "ServiceShopDetail"
+>;
+
+export type NotificationsScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "Notifications"
 >;
