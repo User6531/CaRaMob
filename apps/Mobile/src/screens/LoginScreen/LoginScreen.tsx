@@ -46,9 +46,10 @@ export default function LoginScreen() {
         ]}
       >
         <Image
-          source={require("../../../assets/images/icon.png")}
+          source={require("../../../assets/images/iconLogin.png")}
           style={styles.logo}
         />
+
         <Text style={[globalStyles.textLarge, styles.title]}>
           Привіт, готові рухатись?
         </Text>
