@@ -4,9 +4,10 @@ name: Telegram Notifications
 # Defines which GitHub events trigger this workflow.
 on:
   # Trigger when commits are pushed.
-  push:
-    # Only run for pushes to the "dev" branch.
-    branches: [dev]
+  # push:
+  # Only run for pushes to the "dev" branch.
+  # branches: [dev]
+
   # Trigger on pull request activity.
   pull_request:
     # Only run for pull requests targeting the "dev" branch.
