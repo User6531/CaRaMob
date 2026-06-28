@@ -8,50 +8,76 @@ on:
     types: [opened, reopened, closed, ready_for_review]
 
 concurrency:
-  group: telegram-${{ github.ref }}
+  group: telegram-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   notify:
     runs-on: ubuntu-latest
-
+    continue-on-error: true
     steps:
       - name: Send Telegram message (push)
         if: github.event_name == 'push' && github.event.head_commit != null
         env:
-          MESSAGE: |
-            🚀 New push!
-
-            Repository: ${{ github.repository }}
-            Ref: ${{ github.ref_name }}
-            Author: ${{ github.actor }}
-
-            Commit:
-            ${{ github.event.head_commit.message }}
-
-            https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPO: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          SHA: ${{ github.sha }}
         run: |
-          curl -X POST \
-            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            --data-urlencode text="$MESSAGE"
+          set -euo pipefail
+          MESSAGE="🚀 New push!
+
+          Repository: ${REPO}
+          Ref: ${REF_NAME}
+          Author: ${ACTOR}
+
+          Commit:
+          ${COMMIT_MSG}
+
+          https://github.com/${REPO}/commit/${SHA}"
+          MESSAGE="${MESSAGE:0:4000}"
+          curl -sS --fail-with-body --retry 3 --retry-delay 2 -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MESSAGE}"
 
       - name: Send Telegram message (pull request)
         if: >-
           github.event_name == 'pull_request' &&
           !(github.event.action == 'opened' && github.event.pull_request.draft)
         env:
-          MESSAGE: |
-            🔀 Pull request ${{ github.event.action == 'closed' && github.event.pull_request.merged && '✅ merged' || github.event.action == 'closed' && '❌ closed' || github.event.action == 'ready_for_review' && '👀 ready for review' || github.event.action }}!
-
-            Repository: ${{ github.repository }}
-            PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
-            ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
-            Author: ${{ github.actor }}
-
-            ${{ github.event.pull_request.html_url }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_HEAD: ${{ github.event.pull_request.head.ref }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          STATUS: >-
+            ${{ (github.event.action == 'closed' && github.event.pull_request.merged && '✅ merged')
+             || (github.event.action == 'closed' && '❌ closed')
+             || (github.event.action == 'ready_for_review' && '👀 ready for review')
+             || github.event.action }}
         run: |
-          curl -X POST \
-            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            --data-urlencode text="$MESSAGE"
+          set -euo pipefail
+          MESSAGE="🔀 Pull request ${STATUS}!
+
+          Repository: ${REPO}
+          PR #${PR_NUMBER}: ${PR_TITLE}
+          ${PR_HEAD} → ${PR_BASE}
+          Author: ${ACTOR}
+
+          ${PR_URL}"
+          MESSAGE="${MESSAGE:0:4000}"
+          curl -sS --fail-with-body --retry 3 --retry-delay 2 -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MESSAGE}"
