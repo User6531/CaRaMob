@@ -9,8 +9,20 @@ jobs:
 
     steps:
       - name: Send Telegram message
+        env:
+          MESSAGE: |
+            🚀 New push!
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Author: ${{ github.actor }}
+
+            Commit:
+            ${{ github.event.head_commit.message }}
+
+            https://github.com/${{ github.repository }}/commit/${{ github.sha }}
         run: |
           curl -X POST \
             "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="Hello from GitHub!"
+            --data-urlencode text="$MESSAGE"
