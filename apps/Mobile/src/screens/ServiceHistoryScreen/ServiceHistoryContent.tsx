@@ -9,6 +9,8 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { usePullToRefresh } from "../../hooks/usePullToRefresh";
@@ -18,6 +20,7 @@ import { useDeleteServiceHistory, useServiceHistory } from "../../queries";
 import { ServiceHistoryVisitDto } from "../../types/api";
 import { globalStyles } from "../../styles/globalStyles";
 import { ServiceHistorySwipeableVisit } from "./ServiceHistorySwipeableVisit";
+import { formatVisitCount } from "./serviceHistoryUtils";
 import { styles } from "./ServiceHistoryScreen.styles";
 
 export interface ServiceHistoryContentProps {
@@ -110,6 +113,7 @@ export function ServiceHistoryContent({
   if (isError) {
     return (
       <View style={[styles.errorContainer, { flex: 1 }]}>
+        <Feather name="alert-circle" size={32} color="#8E8E93" />
         <Text style={globalStyles.textPrimary}>
           Не вдалося завантажити історію обслуговування
         </Text>
@@ -130,70 +134,115 @@ export function ServiceHistoryContent({
   return (
     <View style={styles.panel}>
       <RefreshStatusBar visible={isRefreshing} />
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={[
-        styles.contentContainer,
-        { paddingTop: 0 },
-        contentContainerStyle,
-      ]}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.colors.accent.primary}
-          colors={[theme.colors.accent.primary]}
-          progressViewOffset={insets.top}
-        />
-      }
-    >
-      <View style={[styles.scrollContent, { paddingTop: scrollTopInset }]}>
-        <Text style={styles.pageTitle}>Історія обслуговування</Text>
-        <Text style={styles.pageSubtitle}>
-          {vehicleTitle
-            ? `${vehicleTitle} - ${visits.length} візитів`
-            : `${visits.length} візитів`}
-        </Text>
-        <View style={styles.topActions}>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={onAddPress}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.addButtonText}>+ Додати запис</Text>
-          </TouchableOpacity>
-        </View>
-
-        {visits.map((visit) => (
-          <ServiceHistorySwipeableVisit
-            key={visit.id}
-            visit={visit}
-            vehicleId={vehicleId}
-            onEditPress={handleEditPress}
-            onDeletePress={handleDeletePress}
-            onSwipeOpen={closeOtherSwipeables}
-            swipeableRef={(ref) => {
-              if (ref) {
-                swipeableRefs.current.set(visit.id, ref);
-              } else {
-                swipeableRefs.current.delete(visit.id);
-              }
-            }}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingTop: 0 },
+          contentContainerStyle,
+        ]}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.accent.primary}
+            colors={[theme.colors.accent.primary]}
+            progressViewOffset={insets.top}
           />
-        ))}
-
-        {!visits.length ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>Історія поки порожня</Text>
-            <Text style={styles.emptyText}>
-              Коли в автосервісі з&apos;являться записи, вони будуть відображені
-              тут.
+        }
+      >
+        <View style={[styles.scrollContent, { paddingTop: scrollTopInset }]}>
+          <Animated.View entering={FadeIn.duration(280)}>
+            <Text style={styles.pageTitle}>Історія</Text>
+            <Text style={styles.pageSubtitle}>
+              {vehicleTitle
+                ? `Обслуговування для ${vehicleTitle}`
+                : "Записи візитів до автосервісу"}
             </Text>
-          </View>
-        ) : null}
-      </View>
-    </ScrollView>
+
+            {vehicleTitle ? (
+              <View style={styles.vehicleBadge}>
+                <Feather
+                  name="file-text"
+                  size={14}
+                  color={theme.colors.accent.primary}
+                />
+                <Text style={styles.vehicleBadgeText}>
+                  {formatVisitCount(visits.length)}
+                </Text>
+              </View>
+            ) : null}
+          </Animated.View>
+
+          <Animated.View entering={FadeIn.duration(300).delay(60)}>
+            <View style={styles.topActions}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={onAddPress}
+                activeOpacity={0.85}
+              >
+                <Feather
+                  name="plus"
+                  size={16}
+                  color={theme.colors.accent.primary}
+                />
+                <Text style={styles.addButtonText}>Додати запис</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+
+          {visits.length > 0 ? (
+            <View style={styles.listSection}>
+              {visits.map((visit, index) => (
+                <ServiceHistorySwipeableVisit
+                  key={visit.id}
+                  visit={visit}
+                  vehicleId={vehicleId}
+                  index={index}
+                  onEditPress={handleEditPress}
+                  onDeletePress={handleDeletePress}
+                  onSwipeOpen={closeOtherSwipeables}
+                  swipeableRef={(ref) => {
+                    if (ref) {
+                      swipeableRefs.current.set(visit.id, ref);
+                    } else {
+                      swipeableRefs.current.delete(visit.id);
+                    }
+                  }}
+                />
+              ))}
+            </View>
+          ) : (
+            <Animated.View entering={FadeIn.duration(300).delay(100)}>
+              <View style={styles.emptyCard}>
+                <Feather
+                  name="clipboard"
+                  size={36}
+                  color={theme.colors.accent.primary}
+                />
+                <Text style={styles.emptyTitle}>Історія поки порожня</Text>
+                <Text style={styles.emptyText}>
+                  Додайте перший запис про візит до автосервісу — тут буде
+                  зберігатись список виконаних робіт і витрат.
+                </Text>
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={onAddPress}
+                  activeOpacity={0.85}
+                >
+                  <Feather
+                    name="plus"
+                    size={16}
+                    color={theme.colors.accent.primary}
+                  />
+                  <Text style={styles.addButtonText}>Додати перший запис</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }

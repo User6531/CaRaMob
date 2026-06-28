@@ -7,15 +7,22 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
 import { FormScreen } from "../../components/FormScreen";
-import { theme } from "../../styles/theme";
+import { useStatusBar } from "../../hooks/useStatusBar";
+import { useTheme } from "../../hooks/useTheme";
 import { useMe, useUpdateUserProfile } from "../../queries/userQueries";
+import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./ProfileEditScreen.styles";
 import { ProfileEditScreenProps } from "../../navigation/types";
+import { formatPhone } from "../ProfileScreen/profileUtils";
 
 export default function ProfileEditScreen({
   navigation,
 }: ProfileEditScreenProps) {
+  useStatusBar();
+  const theme = useTheme();
   const { data: meData, isLoading: isLoadingMe } = useMe();
   const updateUserMutation = useUpdateUserProfile();
 
@@ -23,7 +30,6 @@ export default function ProfileEditScreen({
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Завантажуємо дані користувача
   useEffect(() => {
     if (meData) {
       setName(meData.name || "");
@@ -46,22 +52,15 @@ export default function ProfileEditScreen({
     }
 
     try {
-      const result = await updateUserMutation.mutateAsync({
+      await updateUserMutation.mutateAsync({
         name: name.trim(),
         email: email.trim(),
       });
 
-      console.log("Update result:", result);
-
       Alert.alert("Успішно!", "Профіль успішно оновлено", [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack(),
-        },
+        { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      console.error("Error updating user profile:", error);
-
       let errorMessage = "Не вдалося оновити профіль. Спробуйте ще раз.";
 
       if (error instanceof Error) {
@@ -94,10 +93,7 @@ export default function ProfileEditScreen({
         "Скасувати зміни?",
         "Ви вже внесли зміни. Ви впевнені, що хочете скасувати?",
         [
-          {
-            text: "Продовжити редагування",
-            style: "cancel",
-          },
+          { text: "Продовжити редагування", style: "cancel" },
           {
             text: "Скасувати",
             style: "destructive",
@@ -112,91 +108,130 @@ export default function ProfileEditScreen({
 
   if (isLoading || isLoadingMe) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
+      <View
+        style={[
+          globalStyles.container,
+          globalStyles.pageBackground,
+          styles.loadingContainer,
+        ]}
+      >
         <ActivityIndicator size="large" color={theme.colors.accent.primary} />
-        <Text style={styles.loadingText}>Завантаження профілю...</Text>
+        <Text style={globalStyles.loadingText}>Завантаження профілю...</Text>
       </View>
     );
   }
 
   if (!meData) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <Text style={styles.errorText}>
+      <View
+        style={[
+          globalStyles.container,
+          globalStyles.pageBackground,
+          styles.errorContainer,
+        ]}
+      >
+        <Feather name="alert-circle" size={32} color="#8E8E93" />
+        <Text style={globalStyles.textPrimary}>
           Не вдалося завантажити дані профілю
         </Text>
         <TouchableOpacity
-          style={styles.retryButton}
+          style={[globalStyles.buttonPrimary, styles.retryButton]}
           onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
         >
-          <Text style={styles.retryButtonText}>Повернутися</Text>
+          <Text style={globalStyles.buttonPrimaryText}>Повернутися</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
+  const isSaving = updateUserMutation.isPending;
+
   return (
     <FormScreen
-      style={styles.container}
-      contentContainerStyle={styles.scrollContainer}
+      style={[globalStyles.container, globalStyles.pageBackground]}
+      contentContainerStyle={styles.contentContainer}
     >
-        <View style={styles.header}>
-          <Text style={styles.title}>Редагування профілю</Text>
-          <Text style={styles.subtitle}>Оновіть інформацію про себе</Text>
-        </View>
+      <Animated.View entering={FadeIn.duration(280)}>
+        <Text style={styles.pageTitle}>Редагування</Text>
+        <Text style={styles.pageSubtitle}>
+          Оновіть ім&apos;я та контактну пошту
+        </Text>
+      </Animated.View>
 
-        <View style={styles.form}>
-          {/* Name Field */}
-          <View style={styles.inputContainer}>
+      <Animated.View entering={FadeIn.duration(300).delay(60)}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Особисті дані</Text>
+
+          <View style={styles.field}>
             <Text style={styles.label}>Ім&apos;я *</Text>
             <TextInput
               style={styles.input}
               value={name}
               onChangeText={setName}
               placeholder="Введіть ваше ім'я"
-              placeholderTextColor="#999"
+              placeholderTextColor="#8E8E93"
+              autoCapitalize="words"
             />
           </View>
 
-          {/* Email Field */}
-          <View style={styles.inputContainer}>
+          <View style={styles.field}>
             <Text style={styles.label}>Пошта *</Text>
             <TextInput
               style={styles.input}
               value={email}
               onChangeText={setEmail}
-              placeholder="Введіть вашу пошту"
-              placeholderTextColor="#999"
+              placeholder="name@example.com"
+              placeholderTextColor="#8E8E93"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
             />
           </View>
 
-          {/* Action Buttons */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleCancel}
-            >
-              <Text style={styles.cancelButtonText}>Скасувати</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.saveButton,
-                updateUserMutation.isPending && styles.saveButtonDisabled,
-              ]}
-              onPress={handleSave}
-              disabled={updateUserMutation.isPending}
-            >
-              {updateUserMutation.isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text style={styles.saveButtonText}>Зберегти</Text>
-              )}
-            </TouchableOpacity>
+          <View style={styles.field}>
+            <Text style={styles.label}>Телефон</Text>
+            <TextInput
+              style={[styles.input, styles.inputReadOnly]}
+              value={formatPhone(meData.phone)}
+              editable={false}
+            />
+            <Text style={styles.hint}>
+              Номер телефону прив&apos;язаний до акаунту і не редагується тут
+            </Text>
           </View>
         </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.duration(300).delay(120)}>
+        <View style={styles.actionsSection}>
+          <TouchableOpacity
+            style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+            onPress={handleSave}
+            disabled={isSaving}
+            activeOpacity={0.85}
+          >
+            {isSaving ? (
+              <ActivityIndicator size="small" color={theme.colors.text.inverse} />
+            ) : (
+              <Feather name="check" size={18} color={theme.colors.text.inverse} />
+            )}
+            <Text style={styles.saveButtonText}>
+              {isSaving ? "Збереження..." : "Зберегти зміни"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={handleCancel}
+            disabled={isSaving}
+            activeOpacity={0.85}
+          >
+            <Feather name="x" size={18} color={theme.colors.accent.primary} />
+            <Text style={styles.cancelButtonText}>Скасувати</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     </FormScreen>
   );
 }

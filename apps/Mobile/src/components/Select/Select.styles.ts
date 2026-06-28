@@ -1,0 +1,205 @@
+import { StyleSheet } from "react-native";
+import { theme } from "../../styles/theme";
+
+export const styles = StyleSheet.create({
+  container: {
+    marginBottom: 0,
+  },
+  label: {
+    color: "#8E8E93",
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  selectButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#232527",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  selectButtonOpen: {
+    borderColor: "rgba(74, 222, 158, 0.28)",
+  },
+  selectValueRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  selectText: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 15,
+  },
+  placeholderText: {
+    color: "#8E8E93",
+  },
+  selectError: {
+    borderColor: theme.colors.accent.error,
+  },
+  selectDisabled: {
+    opacity: 0.5,
+  },
+  errorText: {
+    color: theme.colors.accent.error,
+    fontSize: 12,
+    marginTop: 4,
+  },
+  swatch: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  modalRoot: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+  },
+  sheet: {
+    backgroundColor: "#1A1C1E",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    maxHeight: "85%",
+    overflow: "hidden",
+  },
+  handle: {
+    alignSelf: "center",
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  sheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  sheetHeaderContent: {
+    flex: 1,
+  },
+  sheetTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "700",
+    flex: 1,
+  },
+  sheetSubtitle: {
+    color: "#8E8E93",
+    fontSize: 13,
+    marginTop: 2,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  searchInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#232527",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 15,
+    paddingVertical: 11,
+  },
+  optionsList: {
+    flexGrow: 0,
+  },
+  optionsListContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+  },
+  optionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "transparent",
+    gap: 12,
+  },
+  optionItemSelected: {
+    backgroundColor: "rgba(74, 222, 158, 0.1)",
+    borderColor: "rgba(74, 222, 158, 0.22)",
+  },
+  optionText: {
+    flex: 1,
+    color: "#B0B0B0",
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  optionTextSelected: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
+  noResultsContainer: {
+    paddingVertical: 36,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    gap: 8,
+  },
+  noResultsTitle: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  noResultsText: {
+    color: "#8E8E93",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  sheetFooter: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255, 255, 255, 0.06)",
+  },
+  doneButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.accent.dark,
+    borderRadius: 12,
+    paddingVertical: 13,
+    borderWidth: 1,
+    borderColor: "rgba(74, 222, 158, 0.15)",
+  },
+  doneButtonText: {
+    color: theme.colors.accent.primary,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+});

@@ -24,3 +24,9 @@ export const getRecordsTotalPrice = (
       typeof record.price === "number" ? sum + record.price : sum,
     0
   );
+
+export function formatVisitCount(count: number): string {
+  if (count === 1) return "1 візит";
+  if (count >= 2 && count <= 4) return `${count} візити`;
+  return `${count} візитів`;
+}

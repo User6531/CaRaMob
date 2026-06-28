@@ -11,10 +11,14 @@ import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import ProfileSetupScreen from "../screens/ProfileSetupScreen/ProfileSetupScreen";
 import CarCardScreen from "../screens/CarCardScreen/CarCardScreen";
 import CarEditScreen from "../screens/CarEditScreen/CarEditScreen";
-import CarDetailsScreen from "../screens/CarDetailsScreen/CarDetailsScreen";
 import ServiceHistoryScreen from "../screens/ServiceHistoryScreen/ServiceHistoryScreen";
 import ServiceHistoryCreateScreen from "../screens/ServiceHistoryCreateScreen/ServiceHistoryCreateScreen";
 import ServiceHistoryEditScreen from "../screens/ServiceHistoryEditScreen/ServiceHistoryEditScreen";
+import ServiceShopDetailScreen from "../screens/ServiceShopDetailScreen/ServiceShopDetailScreen";
+import ServiceBookingScreen from "../screens/ServiceBookingScreen/ServiceBookingScreen";
+import NotificationsScreen from "../screens/NotificationsScreen/NotificationsScreen";
+import MechanicHomeScreen from "../screens/MechanicHomeScreen/MechanicHomeScreen";
+import MechanicProfileScreen from "../screens/MechanicProfileScreen/MechanicProfileScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -98,14 +102,6 @@ export default function AppNavigator() {
               }}
             />
             <Stack.Screen
-              name="CarDetails"
-              component={CarDetailsScreen}
-              options={{
-                ...darkHeaderOptions,
-                title: "Деталі автомобіля",
-              }}
-            />
-            <Stack.Screen
               name="ServiceHistory"
               component={ServiceHistoryScreen}
               options={{
@@ -127,6 +123,46 @@ export default function AppNavigator() {
               options={{
                 ...darkHeaderOptions,
                 title: "Редагування запису",
+              }}
+            />
+            <Stack.Screen
+              name="ServiceShopDetail"
+              component={ServiceShopDetailScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Автосервіс",
+              }}
+            />
+            <Stack.Screen
+              name="ServiceBooking"
+              component={ServiceBookingScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Онлайн запис",
+              }}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationsScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Сповіщення",
+              }}
+            />
+            <Stack.Screen
+              name="MechanicHome"
+              component={MechanicHomeScreen}
+              options={{
+                headerShown: false,
+                gestureEnabled: false,
+              }}
+            />
+            <Stack.Screen
+              name="MechanicProfile"
+              component={MechanicProfileScreen}
+              options={{
+                ...darkHeaderOptions,
+                title: "Профіль механіка",
               }}
             />
           </>

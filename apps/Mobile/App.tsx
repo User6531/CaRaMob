@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import { CarProvider } from './src/context/CarContext';
+import { NotificationsProvider } from './src/context/NotificationsContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { queryClient } from './src/lib/queryClient';
 import { configureStatusBar } from './src/styles/globalStyles';
@@ -24,8 +25,10 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <CarProvider>
-              <StatusBar style="light" backgroundColor="#0D1117" />
-              <AppNavigator />
+              <NotificationsProvider>
+                <StatusBar style="light" backgroundColor="#0D1117" />
+                <AppNavigator />
+              </NotificationsProvider>
             </CarProvider>
           </AuthProvider>
         </QueryClientProvider>

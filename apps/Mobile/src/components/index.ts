@@ -6,6 +6,9 @@ export { Input } from "./Input";
 export { Select } from "./Select";
 export type { SelectOption } from "./Select";
 export { VinDecoder } from "./VinDecoder";
+export { NotificationBellButton } from "./NotificationBellButton";
+export { MechanicBottomNavBar } from "./MechanicBottomNavBar";
+export type { MechanicBottomNavTab } from "./MechanicBottomNavBar";
 
 
 
