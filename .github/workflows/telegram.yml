@@ -1,74 +1,153 @@
 name: Telegram Notifications
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    types:
-      - opened
-      - reopened
-      - closed
+    types: [opened, reopened, closed, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
 
 jobs:
-  notify:
+  pr-opened:
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
     runs-on: ubuntu-latest
-
     steps:
-      - name: Build message
-        id: msg
+      - name: Notify
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ACTOR: ${{ github.actor }}
+          HEAD: ${{ github.event.pull_request.head.ref }}
+          BASE: ${{ github.event.pull_request.base.ref }}
         run: |
-          EVENT="${{ github.event_name }}"
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=🟢 PR Opened
+${PR_TITLE}
+Author: ${ACTOR}
+Branch: ${HEAD} → ${BASE}
+${PR_URL}"
 
-          if [ "$EVENT" = "push" ]; then
-            TEXT="🚀 Push to ${{ github.ref_name }}
-
-Repo: ${{ github.repository }}
-Author: ${{ github.actor }}
-
-Commit: ${{ github.event.head_commit.message }}
-
-https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-          
-          elif [ "$EVENT" = "pull_request" ]; then
-
-            ACTION="${{ github.event.action }}"
-
-            if [ "$ACTION" = "opened" ]; then
-              TEXT="🟢 PR Opened
-
-Title: ${{ github.event.pull_request.title }}
-Author: ${{ github.actor }}
-Branch: ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
-
-${{ github.event.pull_request.html_url }}"
-            
-            elif [ "$ACTION" = "closed" ]; then
-
-              if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
-                TEXT="✅ PR Merged
-
-Title: ${{ github.event.pull_request.title }}
-Merged by: ${{ github.actor }}
-
-${{ github.event.pull_request.html_url }}"
-              else
-                TEXT="❌ PR Closed (not merged)
-
-Title: ${{ github.event.pull_request.title }}
-
-${{ github.event.pull_request.html_url }}"
-              fi
-            fi
-          fi
-
-          echo "TEXT<<EOF" >> $GITHUB_ENV
-          echo "$TEXT" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Send Telegram message
+  pr-reopened:
+    if: github.event_name == 'pull_request' && github.event.action == 'reopened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ACTOR: ${{ github.actor }}
         run: |
-          curl -s -X POST \
-            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            --data-urlencode text="$TEXT"
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=🔄 PR Reopened
+${PR_TITLE}
+By: ${ACTOR}
+${PR_URL}"
+
+  pr-ready:
+    if: github.event_name == 'pull_request' && github.event.action == 'ready_for_review'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=👀 PR Ready for Review
+${PR_TITLE}
+By: ${ACTOR}
+${PR_URL}"
+
+  pr-merged:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=✅ PR Merged
+${PR_TITLE}
+By: ${ACTOR}
+${PR_URL}"
+
+  pr-closed:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=🔴 PR Closed (unmerged)
+${PR_TITLE}
+By: ${ACTOR}
+${PR_URL}"
+
+  review:
+    if: github.event_name == 'pull_request_review'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ACTOR: ${{ github.actor }}
+          STATE: ${{ github.event.review.state }}
+        run: |
+          case "$STATE" in
+            approved) EMOJI="✅" ;;
+            changes_requested) EMOJI="🔁" ;;
+            *) EMOJI="💬" ;;
+          esac
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=${EMOJI} PR Review: ${STATE}
+${PR_TITLE}
+Reviewer: ${ACTOR}
+${PR_URL}"
+
+  workflow-failed:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WF_NAME: ${{ github.event.workflow_run.name }}
+          WF_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          WF_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=❌ Workflow Failed
+${WF_NAME}
+Branch: ${WF_BRANCH}
+${WF_URL}"
