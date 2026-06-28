@@ -6,13 +6,14 @@ on:
   pull_request_review:
     types: [submitted]
   workflow_run:
-    workflows: ["*"]
+    workflows: ["CI", "Build", "Tests"]
     types: [completed]
 
 jobs:
   pr-opened:
     if: github.event_name == 'pull_request' && github.event.action == 'opened'
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Notify
         env:
@@ -24,17 +25,15 @@ jobs:
           HEAD: ${{ github.event.pull_request.head.ref }}
           BASE: ${{ github.event.pull_request.base.ref }}
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+          TEXT=$(printf "🟢 PR Opened\n%s\nAuthor: %s\nBranch: %s → %s\n%s" "$PR_TITLE" "$ACTOR" "$HEAD" "$BASE" "$PR_URL")
+          curl -sf -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=🟢 PR Opened
-${PR_TITLE}
-Author: ${ACTOR}
-Branch: ${HEAD} → ${BASE}
-${PR_URL}"
+            --data-urlencode "text=${TEXT}"
 
   pr-reopened:
     if: github.event_name == 'pull_request' && github.event.action == 'reopened'
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Notify
         env:
@@ -43,17 +42,18 @@ ${PR_URL}"
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           ACTOR: ${{ github.actor }}
+          HEAD: ${{ github.event.pull_request.head.ref }}
+          BASE: ${{ github.event.pull_request.base.ref }}
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+          TEXT=$(printf "🔄 PR Reopened\n%s\nBy: %s\nBranch: %s → %s\n%s" "$PR_TITLE" "$ACTOR" "$HEAD" "$BASE" "$PR_URL")
+          curl -sf -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=🔄 PR Reopened
-${PR_TITLE}
-By: ${ACTOR}
-${PR_URL}"
+            --data-urlencode "text=${TEXT}"
 
   pr-ready:
     if: github.event_name == 'pull_request' && github.event.action == 'ready_for_review'
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Notify
         env:
@@ -63,16 +63,15 @@ ${PR_URL}"
           PR_URL: ${{ github.event.pull_request.html_url }}
           ACTOR: ${{ github.actor }}
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+          TEXT=$(printf "👀 PR Ready for Review\n%s\nBy: %s\n%s" "$PR_TITLE" "$ACTOR" "$PR_URL")
+          curl -sf -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=👀 PR Ready for Review
-${PR_TITLE}
-By: ${ACTOR}
-${PR_URL}"
+            --data-urlencode "text=${TEXT}"
 
   pr-merged:
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Notify
         env:
@@ -82,16 +81,15 @@ ${PR_URL}"
           PR_URL: ${{ github.event.pull_request.html_url }}
           ACTOR: ${{ github.actor }}
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+          TEXT=$(printf "✅ PR Merged\n%s\nBy: %s\n%s" "$PR_TITLE" "$ACTOR" "$PR_URL")
+          curl -sf -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=✅ PR Merged
-${PR_TITLE}
-By: ${ACTOR}
-${PR_URL}"
+            --data-urlencode "text=${TEXT}"
 
   pr-closed:
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Notify
         env:
@@ -101,16 +99,15 @@ ${PR_URL}"
           PR_URL: ${{ github.event.pull_request.html_url }}
           ACTOR: ${{ github.actor }}
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+          TEXT=$(printf "🔴 PR Closed (unmerged)\n%s\nBy: %s\n%s" "$PR_TITLE" "$ACTOR" "$PR_URL")
+          curl -sf -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=🔴 PR Closed (unmerged)
-${PR_TITLE}
-By: ${ACTOR}
-${PR_URL}"
+            --data-urlencode "text=${TEXT}"
 
   review:
     if: github.event_name == 'pull_request_review'
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Notify
         env:
@@ -126,16 +123,15 @@ ${PR_URL}"
             changes_requested) EMOJI="🔁" ;;
             *) EMOJI="💬" ;;
           esac
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+          TEXT=$(printf "%s PR Review: %s\n%s\nReviewer: %s\n%s" "$EMOJI" "$STATE" "$PR_TITLE" "$ACTOR" "$PR_URL")
+          curl -sf -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=${EMOJI} PR Review: ${STATE}
-${PR_TITLE}
-Reviewer: ${ACTOR}
-${PR_URL}"
+            --data-urlencode "text=${TEXT}"
 
   workflow-failed:
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure'
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.name != 'Telegram Notifications'
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Notify
         env:
@@ -145,9 +141,7 @@ ${PR_URL}"
           WF_BRANCH: ${{ github.event.workflow_run.head_branch }}
           WF_URL: ${{ github.event.workflow_run.html_url }}
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+          TEXT=$(printf "❌ Workflow Failed\n%s\nBranch: %s\n%s" "$WF_NAME" "$WF_BRANCH" "$WF_URL")
+          curl -sf -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=❌ Workflow Failed
-${WF_NAME}
-Branch: ${WF_BRANCH}
-${WF_URL}"
+            --data-urlencode "text=${TEXT}"
