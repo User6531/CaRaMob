@@ -20,7 +20,7 @@ jobs:
           MESSAGE: |
             🚀 New push!
 
-            Repository: ${{ github.repository }}
+            # Repository: ${{ github.repository }}
             Ref: ${{ github.ref_name }}
             Author: ${{ github.actor }}
 
