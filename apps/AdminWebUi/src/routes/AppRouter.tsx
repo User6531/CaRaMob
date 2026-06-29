@@ -7,6 +7,7 @@ import { DriversPage } from "../pages/DriversPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PlaceholderPage } from "../pages/PlaceholderPage";
 import { StoListPage } from "../pages/StoListPage";
+import { StoQueuePage } from "../pages/StoQueuePage";
 import { VehicleServiceHistoryPage } from "../pages/VehicleServiceHistoryPage";
 import { VehiclesPage } from "../pages/VehiclesPage";
 import { PermissionGate } from "./PermissionGate";
@@ -31,6 +32,15 @@ export function AppRouter() {
           element={
             <PermissionGate requiredPermissions={[Permission.StoView]}>
               <StoListPage />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/sto/queue"
+          element={
+            <PermissionGate requiredPermissions={[Permission.StoView]}>
+              <StoQueuePage />
             </PermissionGate>
           }
         />

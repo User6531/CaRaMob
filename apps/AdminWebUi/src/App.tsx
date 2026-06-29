@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { StoProvider } from "./context/StoContext";
+import { StoVehicleProvider } from "./context/StoVehicleContext";
 import { queryClient } from "./lib/queryClient";
 import { AppRouter } from "./routes/AppRouter";
 import { persistor, store } from "./store";
@@ -17,7 +18,9 @@ function App() {
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
               <StoProvider>
-                <AppRouter />
+                <StoVehicleProvider>
+                  <AppRouter />
+                </StoVehicleProvider>
               </StoProvider>
             </AuthProvider>
             <ReactQueryDevtools initialIsOpen={false} />
