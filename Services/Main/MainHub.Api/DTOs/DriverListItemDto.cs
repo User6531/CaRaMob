@@ -2,7 +2,7 @@ using MainHub.Api.Models;
 
 namespace MainHub.Api.DTOs;
 
-public class DriverListItemDto
+public class AdminUserListItemDto
 {
   public required Guid Id { get; set; }
   public required string Name { get; set; }
@@ -12,7 +12,7 @@ public class DriverListItemDto
   public required string ProviderId { get; set; }
   public required DateTime CreatedAt { get; set; }
 
-  public static explicit operator DriverListItemDto(UserEntity user) =>
+  public static explicit operator AdminUserListItemDto(UserEntity user) =>
     new()
     {
       Id = user.Id,

@@ -1,9 +1,9 @@
-using MainHub.Api.DTOs;
 using Arex388.NhtsaVpic;
-using System.Text.RegularExpressions;
+using MainHub.Api.DTOs;
 using MainHub.Api.Filters;
-using System.Security.Claims;
 using MainHub.Api.Services;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace MainHub.Api.Endpoints;
 
@@ -58,18 +58,6 @@ public static partial class VehicleEndpoints
       .Produces(StatusCodes.Status201Created)
       .Produces<string>(StatusCodes.Status400BadRequest)
       .ProducesValidationProblem();
-
-    app.MapGet("/api/admin/vehicles", GetAdminVehiclesAsync)
-      .WithTags("Admin")
-      .RequireAuthorization("RequireAdminJwt")
-      .WithSummary("Get paged vehicles list for global admin")
-      .Produces<PagedResultDto<AdminVehicleListItemDto>>(StatusCodes.Status200OK);
-
-    app.MapGet("/api/admin/vehicles/{vehicleId}", GetAdminVehicleByIdAsync)
-      .WithTags("Admin")
-      .RequireAuthorization("RequireAdminJwt")
-      .WithSummary("Get single vehicle details for global admin")
-      .Produces<AdminVehicleListItemDto>(StatusCodes.Status200OK);
   }
 
   internal static async Task<IResult> GetVehicleByIdAsync(
@@ -233,22 +221,4 @@ public static partial class VehicleEndpoints
 
   [GeneratedRegex(@"^[A-HJ-NPR-Z0-9]{17}$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
   private static partial Regex VinRegex();
-
-  internal static async Task<IResult> GetAdminVehiclesAsync(
-    [AsParameters] AdminVehicleQueryDto query,
-    IVehicleService vehicleService
-  )
-  {
-    var result = await vehicleService.GetAdminVehiclesPagedAsync(query);
-    return Results.Ok(result);
-  }
-
-  internal static async Task<IResult> GetAdminVehicleByIdAsync(
-    Guid vehicleId,
-    IVehicleService vehicleService
-  )
-  {
-    var vehicle = await vehicleService.GetAdminVehicleListItemByIdAsync(vehicleId);
-    return vehicle is null ? Results.NotFound() : Results.Ok(vehicle);
-  }
 }

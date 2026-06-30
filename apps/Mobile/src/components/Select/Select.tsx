@@ -6,13 +6,26 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../hooks/useTheme";
-import { globalStyles } from "../../styles/globalStyles";
-import { theme as appTheme } from "../../styles/theme";
+import { styles } from "./Select.styles";
+
+const OPTION_COLOR_SWATCHES: Record<string, string> = {
+  white: "#FFFFFF",
+  black: "#1A1A1A",
+  gray: "#808080",
+  silver: "#C0C0C0",
+  red: "#E53935",
+  blue: "#1E88E5",
+  green: "#43A047",
+  yellow: "#FDD835",
+  brown: "#795548",
+  beige: "#D7CCC8",
+  orange: "#FB8C00",
+  purple: "#8E24AA",
+};
 
 export interface SelectOption {
   label: string;
@@ -28,6 +41,12 @@ interface SelectProps {
   containerStyle?: object;
   error?: string;
   disabled?: boolean;
+  /** Show search when option count exceeds this. Default: 6 */
+  searchThreshold?: number;
+}
+
+function getOptionSwatch(value: string | number): string | undefined {
+  return OPTION_COLOR_SWATCHES[String(value).toLowerCase()];
 }
 
 export const Select: React.FC<SelectProps> = ({
@@ -39,14 +58,17 @@ export const Select: React.FC<SelectProps> = ({
   containerStyle,
   error,
   disabled = false,
+  searchThreshold = 6,
 }) => {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const selectedOption = options.find((option) => option.value === value);
+  const showSearch = options.length > searchThreshold;
+  const modalTitle = label || "Виберіть опцію";
 
-  // Фільтруємо опції на основі пошукового запиту
   const filteredOptions = useMemo(() => {
     if (!searchQuery.trim()) {
       return options;
@@ -60,275 +82,184 @@ export const Select: React.FC<SelectProps> = ({
   const handleSelect = (optionValue: string | number) => {
     onValueChange(optionValue);
     setIsModalVisible(false);
-    setSearchQuery(""); // Очищаємо пошук після вибору
+    setSearchQuery("");
   };
 
   const handleModalClose = () => {
     setIsModalVisible(false);
-    setSearchQuery(""); // Очищаємо пошук при закритті
+    setSearchQuery("");
+  };
+
+  const selectedSwatch = selectedOption
+    ? getOptionSwatch(selectedOption.value)
+    : undefined;
+
+  const renderOption = ({ item }: { item: SelectOption }) => {
+    const isSelected = value === item.value;
+    const swatch = getOptionSwatch(item.value);
+
+    return (
+      <TouchableOpacity
+        style={[styles.optionItem, isSelected && styles.optionItemSelected]}
+        onPress={() => handleSelect(item.value)}
+        activeOpacity={0.8}
+      >
+        {swatch ? (
+          <View style={[styles.swatch, { backgroundColor: swatch }]} />
+        ) : null}
+        <Text
+          style={[styles.optionText, isSelected && styles.optionTextSelected]}
+        >
+          {item.label}
+        </Text>
+        {isSelected ? (
+          <Feather
+            name="check-circle"
+            size={18}
+            color={theme.colors.accent.primary}
+          />
+        ) : null}
+      </TouchableOpacity>
+    );
   };
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && (
-        <Text style={[globalStyles.textPrimary, styles.label]}>{label}</Text>
-      )}
+      {label ? <Text style={styles.label}>{label}</Text> : null}
+
       <TouchableOpacity
         style={[
-          globalStyles.input,
-          error && styles.selectError,
           styles.selectButton,
+          isModalVisible && styles.selectButtonOpen,
+          error && styles.selectError,
           disabled && styles.selectDisabled,
         ]}
         onPress={() => !disabled && setIsModalVisible(true)}
         disabled={disabled}
+        activeOpacity={0.85}
       >
-        <Text
-          style={[styles.selectText, !selectedOption && styles.placeholderText]}
-        >
-          {selectedOption ? selectedOption.label : placeholder}
-        </Text>
-        <Text style={styles.arrow}>▼</Text>
+        <View style={styles.selectValueRow}>
+          {selectedSwatch ? (
+            <View
+              style={[styles.swatch, { backgroundColor: selectedSwatch }]}
+            />
+          ) : null}
+          <Text
+            style={[
+              styles.selectText,
+              !selectedOption && styles.placeholderText,
+            ]}
+            numberOfLines={1}
+          >
+            {selectedOption ? selectedOption.label : placeholder}
+          </Text>
+        </View>
+        <Feather
+          name={isModalVisible ? "chevron-up" : "chevron-down"}
+          size={18}
+          color={isModalVisible ? theme.colors.accent.primary : "#8E8E93"}
+        />
       </TouchableOpacity>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
       <Modal
         visible={isModalVisible}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={handleModalClose}
       >
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
+        <View style={styles.modalRoot}>
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
             onPress={handleModalClose}
           />
-          <View
-            style={styles.modalContent}
-            onStartShouldSetResponder={() => true}
-          >
-            {/* Заголовок */}
-            <View style={styles.modalHeader}>
-              <Text style={[globalStyles.textPrimary, styles.modalTitle]}>
-                {label || "Виберіть опцію"}
-              </Text>
+
+          <View style={styles.sheet}>
+            <View style={styles.handle} />
+
+            <View style={styles.sheetHeader}>
+              <View style={styles.sheetHeaderContent}>
+                <Text style={styles.sheetTitle}>{modalTitle}</Text>
+                <Text style={styles.sheetSubtitle}>
+                  {filteredOptions.length}{" "}
+                  {filteredOptions.length === 1 ? "варіант" : "варіантів"}
+                </Text>
+              </View>
               <TouchableOpacity
                 onPress={handleModalClose}
                 style={styles.closeButton}
+                activeOpacity={0.8}
               >
-                <Text style={styles.closeButtonText}>✕</Text>
+                <Feather name="x" size={18} color="#8E8E93" />
               </TouchableOpacity>
             </View>
-            {/* Пошукове поле */}
-            <View style={styles.searchContainer}>
-              <TextInput
-                style={[globalStyles.input, styles.searchInput]}
-                placeholder="Пошук..."
-                placeholderTextColor={theme.colors.special.placeholder}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoFocus={true}
-              />
-            </View>
-            {/* Список опцій */}
-            <View style={styles.optionsContainer}>
+
+            {showSearch ? (
+              <View style={styles.searchContainer}>
+                <View style={styles.searchInputWrapper}>
+                  <Feather name="search" size={16} color="#8E8E93" />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Пошук..."
+                    placeholderTextColor="#8E8E93"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  {searchQuery.length > 0 ? (
+                    <TouchableOpacity
+                      onPress={() => setSearchQuery("")}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Feather name="x-circle" size={16} color="#8E8E93" />
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+              </View>
+            ) : null}
+
+            <View style={styles.optionsBody}>
               {filteredOptions.length > 0 ? (
                 <FlatList
                   data={filteredOptions}
                   keyExtractor={(item) => String(item.value)}
                   style={styles.optionsList}
                   contentContainerStyle={styles.optionsListContent}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.optionItem,
-                        value === item.value && styles.optionItemSelected,
-                      ]}
-                      onPress={() => handleSelect(item.value)}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[
-                          globalStyles.textPrimary,
-                          styles.optionText,
-                          value === item.value && styles.optionTextSelected,
-                        ]}
-                      >
-                        {item.label}
-                      </Text>
-                      {value === item.value && (
-                        <Text style={styles.checkmark}>✓</Text>
-                      )}
-                    </TouchableOpacity>
-                  )}
+                  renderItem={renderOption}
                   keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={true}
+                  showsVerticalScrollIndicator={false}
                 />
               ) : (
                 <View style={styles.noResultsContainer}>
-                  <Text style={styles.noResultsText}>Нічого не знайдено</Text>
+                  <Feather name="search" size={28} color="#8E8E93" />
+                  <Text style={styles.noResultsTitle}>Нічого не знайдено</Text>
+                  <Text style={styles.noResultsText}>
+                    Спробуйте інший пошуковий запит
+                  </Text>
                 </View>
               )}
             </View>
+
+            <View
+              style={[
+                styles.sheetFooter,
+                { paddingBottom: Math.max(insets.bottom, 16) },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.doneButton}
+                onPress={handleModalClose}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.doneButtonText}>Готово</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
-  label: {
-    marginBottom: 8,
-  },
-  selectButton: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  selectText: {
-    flex: 1,
-    color: "#f0f6fc", // theme.colors.text.primary
-  },
-  placeholderText: {
-    color: "#6e7681", // theme.colors.special.placeholder
-  },
-  arrow: {
-    color: "#8b949e", // theme.colors.text.secondary
-    fontSize: 12,
-  },
-  selectError: {
-    borderColor: "#f85149", // theme.colors.accent.error
-  },
-  selectDisabled: {
-    opacity: 0.5,
-  },
-  errorText: {
-    color: "#f85149", // theme.colors.accent.error
-    fontSize: 12,
-    marginTop: 4,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalBackdrop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-  },
-  modalContent: {
-    backgroundColor: "#161b22", // theme.colors.background.secondary
-    borderRadius: 16,
-    width: "90%",
-    maxWidth: 500,
-    height: "80%",
-    maxHeight: 600,
-    overflow: "hidden",
-    shadowColor: "#000",
-    borderWidth: 1,
-    borderColor: "#21262d", // theme.colors.border.primary
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    display: "flex",
-    flexDirection: "column",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-
-    borderBottomColor: "#30363d", // theme.colors.border.primary
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    flex: 1,
-  },
-  closeButton: {
-    padding: 8,
-    marginLeft: 12,
-    borderRadius: 8,
-    minWidth: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  closeButtonText: {
-    color: "#8b949e", // theme.colors.text.secondary
-    fontSize: 20,
-    lineHeight: 20,
-  },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#30363d", // theme.colors.border.primary
-  },
-  searchInput: {
-    marginBottom: 0,
-    borderWidth: 1,
-    borderColor: "#3bc98e",
-  },
-  optionsContainer: {
-    flex: 1,
-    minHeight: 200,
-  },
-  optionsList: {
-    flex: 1,
-  },
-  optionsListContent: {
-    paddingVertical: 4,
-  },
-  noResultsContainer: {
-    padding: 40,
-    alignItems: "center",
-  },
-  noResultsText: {
-    color: "#8b949e", // theme.colors.text.secondary
-    fontSize: 16,
-  },
-  optionItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#21262d", // theme.colors.border.secondary
-  },
-  optionText: {
-    flex: 1,
-  },
-  optionItemSelected: {
-    backgroundColor: "#21262d", // theme.colors.background.tertiary
-  },
-  optionTextSelected: {
-    color: appTheme.colors.accent.primary,
-    fontWeight: "600",
-  },
-  checkmark: {
-    color: appTheme.colors.accent.primary,
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 12,
-  },
-});

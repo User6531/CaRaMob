@@ -6,13 +6,22 @@
   padding: 24px 16px;
   background-color: var(--bg-secondary);
   border-right: 1px solid var(--border-secondary);
+  transition: width 0.2s ease;
 }
 
 .brand {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 0 8px 24px;
+}
+
+.brandInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .logoMark {
@@ -30,6 +39,24 @@
   color: var(--text-inverse);
   font-size: 20px;
   font-weight: 800;
+}
+
+.collapseButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.collapseButton svg {
+  width: 16px;
+  height: 16px;
 }
 
 .brandTitle {
@@ -78,6 +105,41 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+}
+
+.sidebarCollapsed {
+  width: 84px;
+  padding: 16px 10px;
+}
+
+.sidebarCollapsed .brand {
+  padding: 0 0 16px;
+}
+
+.sidebarCollapsed .brandInfo {
+  justify-content: center;
+}
+
+.sidebarCollapsed .brandTitle,
+.sidebarCollapsed .brandSubtitle,
+.sidebarCollapsed .navItem span,
+.sidebarCollapsed .userInfo,
+.sidebarCollapsed .footer button {
+  display: none;
+}
+
+.sidebarCollapsed .navItem {
+  justify-content: center;
+  padding: 12px;
+}
+
+.sidebarCollapsed .userCard {
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.sidebarCollapsed .footer {
+  align-items: center;
 }
 
 .footer {
@@ -152,10 +214,49 @@
     min-height: auto;
     border-right: none;
     border-bottom: 1px solid var(--border-secondary);
+    padding: 12px 16px;
+  }
+
+  .brand {
+    padding: 0 0 12px;
+  }
+
+  .collapseButton {
+    display: none;
   }
 
   .nav {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+
+  .sidebarCollapsed {
+    width: 100%;
+    padding: 12px 16px;
+  }
+
+  .sidebarCollapsed .brandTitle,
+  .sidebarCollapsed .brandSubtitle,
+  .sidebarCollapsed .navItem span,
+  .sidebarCollapsed .userInfo {
+    display: block;
+  }
+
+  .sidebarCollapsed .footer button {
+    display: inline-flex;
+  }
+
+  .sidebarCollapsed .navItem {
+    justify-content: flex-start;
+    padding: 12px 14px;
+  }
+
+  .sidebarCollapsed .userCard {
+    justify-content: flex-start;
+    padding: 8px;
+  }
+
+  .sidebarCollapsed .footer {
+    align-items: stretch;
   }
 }

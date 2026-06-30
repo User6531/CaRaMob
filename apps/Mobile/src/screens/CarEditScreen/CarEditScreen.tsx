@@ -5,19 +5,23 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Alert,
   Platform,
   ActivityIndicator,
 } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
 import { FormScreen } from "../../components/FormScreen";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../../hooks/useTheme";
+import { useStatusBar } from "../../hooks/useStatusBar";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarEditScreen.styles";
 import { CarEditScreenProps } from "../../navigation/types";
 import { Select, SelectOption } from "../../components/Select";
 import { useVehicle, useUpdateVehicle, useDeleteVehicle } from "../../queries";
+import { formatVinShort } from "../HomeScreen/homeScreenUtils";
+import { useAppAlert } from "../../components/AppAlert";
 
 const COLOR_OPTIONS: SelectOption[] = [
   { label: "Білий", value: "white" },
@@ -38,9 +42,16 @@ export default function CarEditScreen({
   navigation,
   route,
 }: CarEditScreenProps) {
+  useStatusBar();
   const theme = useTheme();
+  const { showAlert, showError, showSuccess } = useAppAlert();
   const { carId } = route.params;
-  const { data: vehicle, isLoading: isLoadingVehicle, isError, error } = useVehicle(carId);
+  const {
+    data: vehicle,
+    isLoading: isLoadingVehicle,
+    isError,
+    error,
+  } = useVehicle(carId);
   const updateVehicle = useUpdateVehicle();
   const deleteVehicle = useDeleteVehicle();
 
@@ -65,7 +76,7 @@ export default function CarEditScreen({
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
-      Alert.alert("Дозвіл потрібен", "Потрібен дозвіл для доступу до галереї!");
+      showError("Потрібен дозвіл для доступу до галереї!", "Дозвіл потрібен");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -79,7 +90,8 @@ export default function CarEditScreen({
     }
   };
 
-  const getInitialBoughtAt = () => (vehicle?.boughtAt ? new Date(vehicle.boughtAt) : null);
+  const getInitialBoughtAt = () =>
+    vehicle?.boughtAt ? new Date(vehicle.boughtAt) : null;
   const getInitialMileage = () => (vehicle ? String(vehicle.mileage) : "");
   const getInitialColor = () => {
     if (!vehicle?.color) return undefined;
@@ -89,7 +101,9 @@ export default function CarEditScreen({
 
   const hasChanges = () => {
     if (!vehicle) return false;
-    const colorLabel = COLOR_OPTIONS.find((o) => o.value === color)?.label ?? String(color ?? "");
+    const colorLabel =
+      COLOR_OPTIONS.find((o) => o.value === color)?.label ??
+      String(color ?? "");
     return (
       licensePlate.trim() !== vehicle.licensePlate ||
       (boughtAt?.getTime() ?? 0) !== (getInitialBoughtAt()?.getTime() ?? 0) ||
@@ -101,14 +115,18 @@ export default function CarEditScreen({
 
   const handleCancel = () => {
     if (hasChanges()) {
-      Alert.alert(
-        "Скасувати зміни?",
-        "Ви внесли зміни. Ви впевнені, що хочете скасувати?",
-        [
+      showAlert({
+        title: "Скасувати зміни?",
+        message: "Ви внесли зміни. Ви впевнені, що хочете скасувати?",
+        buttons: [
           { text: "Продовжити редагування", style: "cancel" },
-          { text: "Скасувати", style: "destructive", onPress: () => navigation.goBack() },
-        ]
-      );
+          {
+            text: "Скасувати",
+            style: "destructive",
+            onPress: () => navigation.goBack(),
+          },
+        ],
+      });
     } else {
       navigation.goBack();
     }
@@ -116,20 +134,22 @@ export default function CarEditScreen({
 
   const handleSave = async () => {
     if (!licensePlate.trim()) {
-      Alert.alert("Помилка", "Введіть номерний знак");
+      showError("Введіть номерний знак");
       return;
     }
     const mileageNum = parseInt(mileage.trim(), 10);
     if (mileage.trim() === "" || isNaN(mileageNum) || mileageNum < 0) {
-      Alert.alert("Помилка", "Введіть коректний пробіг (км)");
+      showError("Введіть коректний пробіг (км)");
       return;
     }
     if (mileageNum > 1000000) {
-      Alert.alert("Помилка", "Пробіг не може перевищувати 1 000 000 км");
+      showError("Пробіг не може перевищувати 1 000 000 км");
       return;
     }
 
-    const colorLabel = COLOR_OPTIONS.find((o) => o.value === color)?.label ?? String(color ?? "");
+    const colorLabel =
+      COLOR_OPTIONS.find((o) => o.value === color)?.label ??
+      String(color ?? "");
 
     const dto = {
       licensePlate: licensePlate.trim(),
@@ -141,22 +161,22 @@ export default function CarEditScreen({
 
     try {
       await updateVehicle.mutateAsync({ vehicleId: carId, data: dto });
-      Alert.alert("Успішно!", "Дані автомобіля оновлені", [
+      showSuccess("Дані автомобіля оновлені", "Успішно!", [
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (e) {
-      Alert.alert(
-        "Помилка",
+      showError(
         e instanceof Error ? e.message : "Не вдалося зберегти зміни"
       );
     }
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "Видалити автомобіль?",
-      "Ви впевнені, що хочете видалити цей автомобіль? Цю дію неможливо скасувати.",
-      [
+    showAlert({
+      title: "Видалити автомобіль?",
+      message:
+        "Ви впевнені, що хочете видалити цей автомобіль? Цю дію неможливо скасувати.",
+      buttons: [
         { text: "Скасувати", style: "cancel" },
         {
           text: "Видалити",
@@ -166,15 +186,14 @@ export default function CarEditScreen({
               await deleteVehicle.mutateAsync(carId);
               navigation.navigate("Home");
             } catch (e) {
-              Alert.alert(
-                "Помилка",
+              showError(
                 e instanceof Error ? e.message : "Не вдалося видалити"
               );
             }
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   if (isLoadingVehicle || !vehicle) {
@@ -183,12 +202,15 @@ export default function CarEditScreen({
         style={[
           globalStyles.container,
           globalStyles.pageBackground,
-          globalStyles.loadingContainer,
+          styles.loadingContainer,
         ]}
       >
         {isLoadingVehicle ? (
           <>
-            <ActivityIndicator size="large" color={theme.colors.accent.primary} />
+            <ActivityIndicator
+              size="large"
+              color={theme.colors.accent.primary}
+            />
             <Text style={globalStyles.loadingText}>Завантаження...</Text>
           </>
         ) : (
@@ -204,14 +226,14 @@ export default function CarEditScreen({
         style={[
           globalStyles.container,
           globalStyles.pageBackground,
-          globalStyles.loadingContainer,
+          styles.errorContainer,
         ]}
       >
         <Text style={globalStyles.textPrimary}>
           {error instanceof Error ? error.message : "Помилка завантаження"}
         </Text>
         <TouchableOpacity
-          style={[globalStyles.buttonPrimary, { marginTop: 16 }]}
+          style={[globalStyles.buttonPrimary, styles.retryButton]}
           onPress={() => navigation.goBack()}
         >
           <Text style={globalStyles.buttonPrimaryText}>Назад</Text>
@@ -221,67 +243,114 @@ export default function CarEditScreen({
   }
 
   const isSaving = updateVehicle.isPending;
+  const vehicleTitle = `${vehicle.brand} ${vehicle.model}`.trim();
 
   return (
     <FormScreen
       style={[globalStyles.container, globalStyles.pageBackground]}
-      contentContainerStyle={styles.scrollContainer}
+      contentContainerStyle={styles.contentContainer}
     >
-        <View style={styles.header}>
-          <Text style={[globalStyles.textLarge, styles.title]}>
-            Редагувати автомобіль
-          </Text>
-          <Text style={[globalStyles.textSecondary, styles.subtitle]}>
-            Можна змінити номерний знак, дату купівлі, колір, пробіг та фото
+      <Animated.View entering={FadeIn.duration(280)}>
+        <Text style={styles.pageTitle}>Редагування</Text>
+        <Text style={styles.pageSubtitle}>
+          Змініть номерний знак, пробіг, колір, фото або дату купівлі
+        </Text>
+
+        <View style={styles.vehicleBadge}>
+          <Feather name="truck" size={14} color={theme.colors.accent.primary} />
+          <Text style={styles.vehicleBadgeText}>
+            {vehicleTitle} · {vehicle.year} · VIN {formatVinShort(vehicle.vin)}
           </Text>
         </View>
+      </Animated.View>
 
-        <View style={styles.form}>
-          <View style={styles.imageSection}>
-            <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
-              {photoUrl ? (
-                <Image source={{ uri: photoUrl }} style={styles.carImage} />
-              ) : (
-                <View style={styles.placeholderImage}>
-                  <Text style={styles.placeholderText}>🚗</Text>
-                  <Text style={styles.placeholderLabel}>Фото авто</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
+      <Animated.View entering={FadeIn.duration(300).delay(60)}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Фото</Text>
+          <TouchableOpacity
+            style={styles.photoCard}
+            onPress={pickImage}
+            activeOpacity={0.9}
+          >
+            {photoUrl ? (
+              <Image source={{ uri: photoUrl }} style={styles.photoImage} />
+            ) : (
+              <View style={styles.photoPlaceholder}>
+                <Feather
+                  name="image"
+                  size={32}
+                  color={theme.colors.accent.primary}
+                />
+                <Text style={styles.photoPlaceholderText}>
+                  Додати фото автомобіля
+                </Text>
+              </View>
+            )}
+            <View style={styles.photoOverlay}>
+              <Feather name="camera" size={16} color="#FFFFFF" />
+              <Text style={styles.photoOverlayText}>
+                {photoUrl ? "Змінити фото" : "Обрати фото"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
 
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Номерний знак *
-            </Text>
+      <Animated.View entering={FadeIn.duration(300).delay(120)}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Основні дані</Text>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Номерний знак *</Text>
             <TextInput
-              style={[globalStyles.input, styles.input]}
+              style={styles.input}
               value={licensePlate}
               onChangeText={setLicensePlate}
               placeholder="Наприклад: АА1234ВВ"
-              placeholderTextColor={theme.colors.special.placeholder}
+              placeholderTextColor="#8E8E93"
               autoCapitalize="characters"
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Дата купівлі
-            </Text>
+          <View style={styles.field}>
+            <Text style={styles.label}>Пробіг (км) *</Text>
+            <TextInput
+              style={styles.input}
+              value={mileage}
+              onChangeText={setMileage}
+              placeholder="Наприклад: 50000"
+              placeholderTextColor="#8E8E93"
+              keyboardType="number-pad"
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Колір *</Text>
+            <Select
+              options={COLOR_OPTIONS}
+              value={color}
+              onValueChange={setColor}
+              placeholder="Виберіть колір"
+              containerStyle={styles.selectContainer}
+            />
+          </View>
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.duration(300).delay(180)}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Додатково</Text>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Дата купівлі</Text>
             <TouchableOpacity
-              style={[globalStyles.input, styles.input]}
+              style={[styles.input, styles.dateInput]}
               onPress={() => setShowBoughtAtPicker(true)}
+              activeOpacity={0.8}
             >
               <Text
                 style={
-                  boughtAt
-                    ? [globalStyles.textPrimary, { paddingVertical: 12 }]
-                    : [
-                        {
-                          color: theme.colors.special.placeholder,
-                          paddingVertical: 12,
-                        },
-                      ]
+                  boughtAt ? styles.dateInputText : styles.dateInputPlaceholder
                 }
               >
                 {boughtAt
@@ -289,7 +358,7 @@ export default function CarEditScreen({
                   : "Оберіть дату (необов'язково)"}
               </Text>
             </TouchableOpacity>
-            {showBoughtAtPicker && (
+            {showBoughtAtPicker ? (
               <DateTimePicker
                 value={boughtAt ?? new Date()}
                 mode="date"
@@ -300,63 +369,57 @@ export default function CarEditScreen({
                   if (date) setBoughtAt(date);
                 }}
               />
-            )}
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Select
-              label="Колір *"
-              options={COLOR_OPTIONS}
-              value={color}
-              onValueChange={setColor}
-              placeholder="Виберіть колір"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={[globalStyles.textPrimary, styles.label]}>
-              Пробіг (км) *
-            </Text>
-            <TextInput
-              style={[globalStyles.input, styles.input]}
-              value={mileage}
-              onChangeText={setMileage}
-              placeholder="Наприклад: 50000"
-              placeholderTextColor={theme.colors.special.placeholder}
-              keyboardType="number-pad"
-            />
-          </View>
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={globalStyles.buttonDanger}
-              onPress={handleDelete}
-              disabled={deleteVehicle.isPending}
-            >
-              <Text style={globalStyles.buttonDangerText}>
-                {deleteVehicle.isPending ? "..." : "🗑️ Видалити"}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={globalStyles.buttonSecondary}
-              onPress={handleCancel}
-              disabled={isSaving}
-            >
-              <Text style={globalStyles.buttonSecondaryText}>Скасувати</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={globalStyles.buttonPrimary}
-              onPress={handleSave}
-              disabled={isSaving}
-            >
-              <Text style={globalStyles.buttonPrimaryText}>
-                {isSaving ? "Збереження..." : "Зберегти"}
-              </Text>
-            </TouchableOpacity>
+            ) : null}
           </View>
         </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.duration(300).delay(240)}>
+        <View style={styles.actionsSection}>
+          <TouchableOpacity
+            style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+            onPress={handleSave}
+            disabled={isSaving}
+            activeOpacity={0.85}
+          >
+            <Feather name="check" size={18} color={theme.colors.text.inverse} />
+            <Text style={styles.saveButtonText}>
+              {isSaving ? "Збереження..." : "Зберегти зміни"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={handleCancel}
+            disabled={isSaving}
+            activeOpacity={0.85}
+          >
+            <Feather name="x" size={18} color={theme.colors.accent.primary} />
+            <Text style={styles.cancelButtonText}>Скасувати</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeIn.duration(300).delay(300)}>
+        <View style={styles.dangerSection}>
+          <Text style={styles.dangerTitle}>Небезпечна зона</Text>
+          <Text style={styles.dangerText}>
+            Видалення автомобіля також прибере пов&apos;язану історію
+            обслуговування. Цю дію неможливо скасувати.
+          </Text>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={handleDelete}
+            disabled={deleteVehicle.isPending}
+            activeOpacity={0.85}
+          >
+            <Feather name="trash-2" size={16} color="#F85149" />
+            <Text style={styles.deleteButtonText}>
+              {deleteVehicle.isPending ? "Видалення..." : "Видалити автомобіль"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     </FormScreen>
   );
 }

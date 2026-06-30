@@ -56,3 +56,42 @@
 .body {
   padding: 24px;
 }
+
+.modalLarge {
+  max-width: 960px;
+  max-height: min(90vh, 900px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.bodyLarge {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.closeButtonFloating {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.closeButtonFloating:hover {
+  background-color: var(--bg-quaternary);
+  color: var(--text-primary);
+}

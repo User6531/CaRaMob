@@ -1,69 +1,218 @@
 import { StyleSheet } from "react-native";
+import { theme } from "../../styles/theme";
 
 export const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
+  contentContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
-  header: {
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
+  pageTitle: {
+    color: "#FFFFFF",
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 4,
   },
-  title: {
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    textAlign: "center",
-  },
-  form: {
-    flex: 1,
-  },
-  imageSection: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  imageContainer: {
-    width: 200,
-    height: 120,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#30363D", // Using theme color directly
-    borderStyle: "dashed",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  carImage: {
-    width: 196,
-    height: 116,
-    borderRadius: 10,
-  },
-  placeholderImage: {
-    alignItems: "center",
-  },
-  placeholderText: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  placeholderLabel: {
+  pageSubtitle: {
+    color: "#8E8E93",
     fontSize: 14,
-    color: "#8B949E", // Using theme color directly
+    marginBottom: 14,
+    lineHeight: 20,
   },
-  inputContainer: {
-    marginBottom: 20,
+  vehicleBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(74, 222, 158, 0.1)",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginBottom: 18,
+  },
+  vehicleBadgeText: {
+    color: theme.colors.accent.primary,
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  section: {
+    backgroundColor: "#1A1C1E",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.05)",
+    gap: 14,
+  },
+  sectionTitle: {
+    color: theme.colors.accent.primary,
+    fontSize: 13,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  photoCard: {
+    borderRadius: 14,
+    overflow: "hidden",
+    backgroundColor: "#121212",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+  },
+  photoImage: {
+    width: "100%",
+    height: 180,
+    backgroundColor: "#121212",
+  },
+  photoPlaceholder: {
+    width: "100%",
+    height: 180,
+    backgroundColor: theme.colors.accent.dark,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  photoPlaceholderText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  photoOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+  },
+  photoOverlayText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  field: {
+    gap: 6,
   },
   label: {
-    marginBottom: 8,
+    color: "#8E8E93",
+    fontSize: 13,
   },
   input: {
-    // Additional input styles if needed
+    backgroundColor: "#232527",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    color: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 15,
   },
-  buttonContainer: {
+  dateInput: {
+    justifyContent: "center",
+  },
+  dateInputText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+  },
+  dateInputPlaceholder: {
+    color: "#8E8E93",
+    fontSize: 15,
+  },
+  selectContainer: {
+    marginBottom: 0,
+  },
+  actionsSection: {
+    gap: 10,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  saveButton: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-    marginBottom: 40,
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
+    backgroundColor: theme.colors.interactive.primary,
+    borderRadius: 14,
+    paddingVertical: 14,
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
+  },
+  saveButtonText: {
+    color: theme.colors.text.inverse,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  cancelButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: theme.colors.accent.dark,
+    borderRadius: 14,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "rgba(74, 222, 158, 0.15)",
+  },
+  cancelButtonText: {
+    color: theme.colors.accent.primary,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  dangerSection: {
+    backgroundColor: "rgba(248, 81, 73, 0.06)",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "rgba(248, 81, 73, 0.18)",
+    gap: 10,
+  },
+  dangerTitle: {
+    color: "#F85149",
+    fontSize: 13,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  dangerText: {
+    color: "#B0B0B0",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "rgba(248, 81, 73, 0.4)",
+    backgroundColor: "rgba(248, 81, 73, 0.08)",
+  },
+  deleteButtonText: {
+    color: "#F85149",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  retryButton: {
+    marginTop: 8,
   },
 });

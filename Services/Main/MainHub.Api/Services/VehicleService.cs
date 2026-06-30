@@ -20,6 +20,14 @@ public interface IVehicleService
   Task<VehicleDto> GetVehicleByIdAsync(Guid vehicleId, Guid userId);
 
   /// <summary>
+  /// Retrieves a vehicle by its unique identifier asynchronously.
+  /// </summary>
+  /// <param name="vehicleId">The unique identifier of the vehicle.</param>
+  /// <param name="userId">The unique identifier of the user.</param>
+  /// <returns>The vehicle DTO.</returns>
+  Task<VehicleDto> GetVehicleByIdAsync(Guid vehicleId);
+
+  /// <summary>
   /// Updates an existing vehicle asynchronously.
   /// </summary>
   /// <param name="updateVehicleDto">The vehicle DTO containing updated information.</param>
@@ -42,20 +50,25 @@ public interface IVehicleService
   /// <param name="vehicleId">The unique identifier of the vehicle to delete.</param
   /// <param name="userId">The unique identifier of the user.</param>
   Task DeleteAsync(Guid vehicleId, Guid userId);
-  Task<PagedResultDto<AdminVehicleListItemDto>> GetAdminVehiclesPagedAsync(AdminVehicleQueryDto query);
-  Task<AdminVehicleListItemDto?> GetAdminVehicleListItemByIdAsync(Guid vehicleId);
-  Task<List<VehicleListItemDto>?> GetAdminDriverVehiclesAsync(Guid driverId);
+
+  /// <summary>
+  /// Retrieves a paged list of all vehicles for admin users asynchronously.
+  /// </summary>
+  /// <param name="page"></param>
+  /// <param name="pageSize"></param>
+  /// <returns></returns>
+  Task<PagedResultDto<AdminVehicleListItemDto>> GetAllVehiclesAsync(int page, int pageSize);
 }
 
 public class VehicleService(
   IVehicleRepository repository,
   IUserService userService,
-  IServiceHistoryService serviceHistoryService
+  IServiceHistoryRepository serviceHistoryRepository
 ) : IVehicleService
 {
   private readonly IVehicleRepository _repository = repository;
   private readonly IUserService _userService = userService;
-  private readonly IServiceHistoryService _serviceHistoryService = serviceHistoryService;
+  private readonly IServiceHistoryRepository _serviceHistoryRepository = serviceHistoryRepository;
 
   public async Task<VehicleDto> GetVehicleByIdAsync(Guid vehicleId, Guid userId)
   {
@@ -65,6 +78,36 @@ public class VehicleService(
       throw new UnauthorizedAccessException("You don't have permission to access this vehicle.");
     }
 
+    var vehicle = await _repository.GetByIdAsync(vehicleId);
+    if (vehicle == null)
+    {
+      throw new ArgumentException($"Vehicle with ID {vehicleId} not found.");
+    }
+
+    return new VehicleDto
+    {
+      Id = vehicle.Id,
+      Vin = vehicle.Vin,
+      Brand = vehicle.Brand,
+      Model = vehicle.Model,
+      Year = vehicle.Year,
+      Color = vehicle.Color,
+      LicensePlate = vehicle.LicensePlate,
+      BoughtAt = vehicle.BoughtAt,
+      EngineCapacity = vehicle.EngineCapacity,
+      EnginePower = vehicle.EnginePower,
+      FuelType = vehicle.FuelType,
+      TransmissionType = vehicle.TransmissionType,
+      WheelDriveType = vehicle.WheelDriveType,
+      Mileage = vehicle.Mileage,
+      PhotoUrl = vehicle.PhotoUrl,
+      CreatedAt = vehicle.CreatedAt,
+      UpdatedAt = vehicle.UpdatedAt,
+    };
+  }
+
+  public async Task<VehicleDto> GetVehicleByIdAsync(Guid vehicleId)
+  {
     var vehicle = await _repository.GetByIdAsync(vehicleId);
     if (vehicle == null)
     {
@@ -149,15 +192,32 @@ public class VehicleService(
 
   public async Task DeleteAsync(Guid vehicleId, Guid userId)
   {
-    var IsVehicleBelongsToUser = await CheckIsVehicleBelongsToUser(userId, vehicleId);
-    if (!IsVehicleBelongsToUser)
+    var user = await _userService.GetByIdAsync(userId);
+    if (user == null)
     {
+      throw new ArgumentException("User not found.", nameof(userId));
+    }
+
+    var isAssociated = user.VehicleIds?.Contains(vehicleId) ?? false;
+    if (!isAssociated)
+    {
+      var existingVehicle = await _repository.GetByIdAsync(vehicleId);
+      if (existingVehicle == null)
+      {
+        return;
+      }
+
       throw new ArgumentException("Vehicle not associated with the user.", nameof(vehicleId));
     }
 
-    await _repository.DeleteAsync(vehicleId);
+    await _serviceHistoryRepository.DeleteAllByVehicleIdAsync(vehicleId);
     await _userService.DetachVehicleAsync(vehicleId, userId);
-    await _serviceHistoryService.DeleteAllByVehicleIdAsync(vehicleId, userId);
+
+    var vehicle = await _repository.GetByIdAsync(vehicleId);
+    if (vehicle != null)
+    {
+      await _repository.DeleteAsync(vehicleId);
+    }
   }
 
   public async Task<List<VehicleListItemDto>> GetAllByUserAsync(Guid userId)
@@ -236,10 +296,27 @@ public class VehicleService(
     return true;
   }
 
+  public async Task<PagedResultDto<AdminVehicleListItemDto>> GetAllVehiclesAsync(int page, int pageSize)
+  {
+    var (skip, limit) = PaginationHelper.Normalize(page, pageSize);
+
+    var vehicles = await _repository.GetAllVehiclesAsync(skip, limit);
+    var totalItems = (int)await _repository.GetCountAsync();
+    var ownerMap = await _userService.GetOwnerMapByVehicleIdsAsync(vehicles.Select(v => v.Id).ToList());
+    var items = vehicles.Select(v => MapAdminVehicleListItem(v, ownerMap)).ToList();
+
+    return new PagedResultDto<AdminVehicleListItemDto>
+    {
+      Items = items,
+      TotalItems = totalItems,
+    };
+  }
+
+
   private static AdminVehicleListItemDto MapAdminVehicleListItem(
-    VehicleEntity vehicle,
-    IReadOnlyDictionary<Guid, Guid> ownerMap
-  )
+  VehicleEntity vehicle,
+  IReadOnlyDictionary<Guid, Guid> ownerMap
+)
   {
     if (!ownerMap.TryGetValue(vehicle.Id, out var ownerUserId))
     {
@@ -248,50 +325,15 @@ public class VehicleService(
       );
     }
 
-    return (AdminVehicleListItemDto)(vehicle, ownerUserId);
-  }
-
-  public async Task<PagedResultDto<AdminVehicleListItemDto>> GetAdminVehiclesPagedAsync(
-    AdminVehicleQueryDto query
-  )
-  {
-    var (safePage, safePageSize, skip) = PaginationHelper.Normalize(query.Page, query.PageSize);
-    query.Page = safePage;
-    query.PageSize = safePageSize;
-
-    var items = await _repository.GetAdminPagedAsync(query, skip, safePageSize);
-    var totalItems = (int)await _repository.CountAdminAsync(query);
-    var ownerMap = await _userService.GetOwnerMapByVehicleIdsAsync(items.Select(v => v.Id).ToList());
-
-    return new PagedResultDto<AdminVehicleListItemDto>
+    return new AdminVehicleListItemDto()
     {
-      Items = items
-        .Select(v => MapAdminVehicleListItem(v, ownerMap))
-        .ToList(),
-      TotalItems = totalItems,
+      Id = vehicle.Id,
+      LicensePlate = vehicle.LicensePlate,
+      Brand = vehicle.Brand,
+      Model = vehicle.Model,
+      Year = vehicle.Year,
+      PhotoUrl = vehicle.PhotoUrl,
+      OwnerUserId = ownerUserId,
     };
-  }
-
-  public async Task<AdminVehicleListItemDto?> GetAdminVehicleListItemByIdAsync(Guid vehicleId)
-  {
-    var vehicle = await _repository.GetByIdAsync(vehicleId);
-    if (vehicle is null)
-    {
-      return null;
-    }
-
-    var ownerMap = await _userService.GetOwnerMapByVehicleIdsAsync([vehicle.Id]);
-    return MapAdminVehicleListItem(vehicle, ownerMap);
-  }
-
-  public async Task<List<VehicleListItemDto>?> GetAdminDriverVehiclesAsync(Guid driverId)
-  {
-    var user = await _userService.GetByIdAsync(driverId);
-    if (user is null)
-    {
-      return null;
-    }
-
-    return await GetAllByUserAsync(driverId);
   }
 }

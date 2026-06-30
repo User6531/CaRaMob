@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Alert, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { useTheme } from "../../hooks/useTheme";
 import { globalStyles } from "../../styles/globalStyles";
 import { Input } from "../Input";
 import { decodeVinExtended, VinDecodeData } from "../../api/services/nhtsaService";
+import { useAppAlert } from "../AppAlert";
 
 interface VinDecoderProps {
   onDecodeSuccess: (data: {
@@ -25,6 +26,7 @@ export const VinDecoder: React.FC<VinDecoderProps> = ({
   containerStyle,
 }) => {
   const theme = useTheme();
+  const { showSuccess, showError } = useAppAlert();
   const [vinDecode, setVinDecode] = useState("");
   const [isDecodingVin, setIsDecodingVin] = useState(false);
 
@@ -54,14 +56,14 @@ export const VinDecoder: React.FC<VinDecoderProps> = ({
           driveType: vinData.DriveType,
         });
 
-        Alert.alert("Успішно!", "Дані про автомобіль отримано та заповнено");
+        showSuccess("Дані про автомобіль отримано та заповнено", "Успішно!");
       } catch (error) {
         console.error("Error decoding VIN:", error);
         const errorMessage =
           error instanceof Error
             ? error.message
             : "Не вдалося розшифрувати VIN номер. Перевірте правильність введення.";
-        Alert.alert("Помилка", errorMessage);
+        showError(errorMessage);
       } finally {
         setIsDecodingVin(false);
       }
@@ -75,7 +77,7 @@ export const VinDecoder: React.FC<VinDecoderProps> = ({
     }, 500); // 500ms затримка після останнього введення
 
     return () => clearTimeout(timeoutId);
-  }, [vinDecode, onDecodeSuccess]);
+  }, [vinDecode, onDecodeSuccess, showSuccess, showError]);
 
   return (
     <View style={[styles.container, containerStyle]}>

@@ -21,6 +21,13 @@ export const NAV_ITEMS: NavItemConfig[] = [
     requiredPermissions: [Permission.StoView],
   },
   {
+    id: "sto-queue",
+    label: "Черга СТО",
+    path: "/sto/queue",
+    icon: "M4 6h16v2h2v10H6V8H4V6zm4 2h8v2H8V8zm0 4h8v2H8v-2zm0 4h5v2H8v-2z",
+    requiredPermissions: [Permission.StoView],
+  },
+  {
     id: "users",
     label: "Клієнти",
     path: "/users",

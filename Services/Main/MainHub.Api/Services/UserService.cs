@@ -74,8 +74,14 @@ public interface IUserService
   /// <returns>A task that represents the asynchronous operation.</returns>
   Task DeleteAsync(Guid id);
   Task<Dictionary<Guid, Guid>> GetOwnerMapByVehicleIdsAsync(IReadOnlyCollection<Guid> vehicleIds);
-  Task<PagedResultDto<DriverListItemDto>> GetAdminDriversPagedAsync(AdminDriverQueryDto query);
-  Task<AdminDriverDetailsDto?> GetAdminDriverByIdAsync(Guid driverId);
+
+  /// <summary>
+  /// Retrieves a paged list of users asynchronously.
+  /// </summary>
+  /// <param name="page">The page number to retrieve.</param>
+  /// <param name="pageSize">The number of items per page.</param>
+  /// <returns>A task that represents the asynchronous operation.</returns>
+  Task<PagedResultDto<AdminUserListItemDto>> GetAllUsersAsync(int page, int pageSize);
 
   /// <summary>
   /// Attach a new vehicle to user asynchronously.
@@ -213,27 +219,20 @@ public class UserService(IUserRepository repository) : IUserService
     return result;
   }
 
-  public async Task<PagedResultDto<DriverListItemDto>> GetAdminDriversPagedAsync(
-    AdminDriverQueryDto query
+  public async Task<PagedResultDto<AdminUserListItemDto>> GetAllUsersAsync(
+    int page,
+    int pageSize
   )
   {
-    var (safePage, safePageSize, skip) = PaginationHelper.Normalize(query.Page, query.PageSize);
-    query.Page = safePage;
-    query.PageSize = safePageSize;
+    var (skip, limit) = PaginationHelper.Normalize(page, pageSize);
 
-    var items = await _repository.GetAdminDriversPagedAsync(query, skip, safePageSize);
-    var totalItems = (int)await _repository.CountAdminDriversAsync(query);
+    var items = await _repository.GetAllUsersPagedAsync(skip, limit);
+    var totalItems = (int)await _repository.CountAllUsersAsync();
 
-    return new PagedResultDto<DriverListItemDto>
+    return new PagedResultDto<AdminUserListItemDto>
     {
-      Items = items.Select(d => (DriverListItemDto)d).ToList(),
+      Items = items.Select(d => (AdminUserListItemDto)d).ToList(),
       TotalItems = totalItems,
     };
-  }
-
-  public async Task<AdminDriverDetailsDto?> GetAdminDriverByIdAsync(Guid driverId)
-  {
-    var user = await _repository.GetByIdAsync(driverId);
-    return user is null ? null : (AdminDriverDetailsDto)user;
   }
 }

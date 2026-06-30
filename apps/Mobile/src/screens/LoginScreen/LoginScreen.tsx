@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Text,
   View,
@@ -11,9 +10,11 @@ import { useAuth } from "../../context/AuthContext";
 import { useStatusBar } from "../../hooks/useStatusBar";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./LoginScreen.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 export default function LoginScreen() {
   const { login } = useAuth();
+  const { showError } = useAppAlert();
   const [loading, setLoading] = useState(false);
   const handleLogin = async () => {
     try {
@@ -23,11 +24,11 @@ export default function LoginScreen() {
       if (error instanceof Error && error.message.includes("cancel")) {
         // user cancelled
       } else {
-        Alert.alert(
-          "Login Failed",
+        showError(
           error instanceof Error
             ? error.message
-            : "Failed to login. Please try again."
+            : "Failed to login. Please try again.",
+          "Login Failed"
         );
       }
     } finally {
@@ -46,9 +47,10 @@ export default function LoginScreen() {
         ]}
       >
         <Image
-          source={require("../../../assets/images/icon.png")}
+          source={require("../../../assets/images/iconLogin.png")}
           style={styles.logo}
         />
+
         <Text style={[globalStyles.textLarge, styles.title]}>
           Привіт, готові рухатись?
         </Text>

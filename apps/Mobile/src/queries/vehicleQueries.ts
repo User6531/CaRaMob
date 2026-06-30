@@ -67,6 +67,7 @@ export const useDeleteVehicle = () => {
     },
     onSuccess: (_, vehicleId) => {
       queryClient.removeQueries({ queryKey: queryKeys.vehicle(vehicleId) });
+      queryClient.removeQueries({ queryKey: queryKeys.serviceHistory(vehicleId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.vehicles });
     },
   });

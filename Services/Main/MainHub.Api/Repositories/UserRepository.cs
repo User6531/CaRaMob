@@ -36,8 +36,19 @@ public interface IUserRepository
     /// The task result contains a list of <see cref="UserEntity"/> objects.
     /// </returns>
     Task<List<UserEntity>> GetAllAsync();
-    Task<List<UserEntity>> GetAdminDriversPagedAsync(AdminDriverQueryDto query, int skip, int take);
-    Task<long> CountAdminDriversAsync(AdminDriverQueryDto query);
+
+    /// <summary>
+    /// Retrieves a paged list of all users asynchronously.
+    /// </summary>
+    /// <param name="skip"></param>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    Task<List<UserEntity>> GetAllUsersPagedAsync(
+        int skip,
+        int limit
+    );
+
+    Task<long> CountAllUsersAsync();
 
     /// <summary>
     /// Retrieves a user entity by its unique identifier asynchronously.
@@ -106,25 +117,26 @@ public class UserRepository : IUserRepository
     public async Task<List<UserEntity>> GetAllAsync() =>
         await _users.Find(_ => true).ToListAsync();
 
-    public async Task<List<UserEntity>> GetAdminDriversPagedAsync(
-        AdminDriverQueryDto query,
+    public async Task<List<UserEntity>> GetAllUsersPagedAsync(
         int skip,
-        int take
+        int limit
     )
     {
-        var filter = BuildAdminDriverFilter(query);
+        var builder = Builders<UserEntity>.Filter;
+        var filter = builder.Empty; // No specific filter, retrieve all users
 
         return await _users
             .Find(filter)
-            .SortByDescending(u => u.CreatedAt)
+            .SortByDescending(u => u.Name)
             .Skip(skip)
-            .Limit(take)
+            .Limit(limit)
             .ToListAsync();
     }
 
-    public async Task<long> CountAdminDriversAsync(AdminDriverQueryDto query)
+    public async Task<long> CountAllUsersAsync()
     {
-        var filter = BuildAdminDriverFilter(query);
+        var builder = Builders<UserEntity>.Filter;
+        var filter = builder.Empty; // No specific filter, count all users
         return await _users.CountDocumentsAsync(filter);
     }
 
@@ -149,16 +161,4 @@ public class UserRepository : IUserRepository
 
     public async Task DeleteAsync(Guid id) =>
         await _users.DeleteOneAsync(u => u.Id == id);
-
-    private static FilterDefinition<UserEntity> BuildAdminDriverFilter(
-        AdminDriverQueryDto query
-    )
-    {
-        var builder = Builders<UserEntity>.Filter;
-
-        // TODO: restore query filters in a later iteration
-        _ = query;
-
-        return builder.Regex(u => u.ProviderId, "^telegram:");
-    }
 }

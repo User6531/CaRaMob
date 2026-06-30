@@ -1,101 +1,176 @@
 import { StyleSheet } from "react-native";
+import { theme } from "../../styles/theme";
 
 export const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
+  contentContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
-  header: {
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  title: {
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    textAlign: "center",
-  },
-  form: {
-    flex: 1,
-  },
-  stepHeaderContainer: {
-    marginBottom: 16,
-  },
-  stepHeaderTop: {
-    marginBottom: 10,
-  },
-  stepTitle: {
-    fontSize: 16,
+  pageTitle: {
+    color: "#FFFFFF",
+    fontSize: 24,
     fontWeight: "700",
     marginBottom: 4,
   },
-  stepSubtitle: {
+  pageSubtitle: {
+    color: "#8E8E93",
     fontSize: 14,
+    marginBottom: 18,
+    lineHeight: 20,
   },
-  stepDots: {
+  stepHeader: {
+    marginBottom: 14,
+    gap: 6,
+  },
+  stepCounter: {
+    color: theme.colors.accent.primary,
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  stepTitle: {
+    color: "#FFFFFF",
+    fontSize: 17,
+    fontWeight: "600",
+  },
+  stepProgress: {
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
+    marginTop: 4,
   },
   stepDot: {
     flex: 1,
-    height: 6,
+    height: 4,
     borderRadius: 999,
-    backgroundColor: "#30363D",
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
   },
   stepDotCompleted: {
-    backgroundColor: "#2EA043",
+    backgroundColor: theme.colors.accent.primary,
   },
   stepDotActive: {
-    backgroundColor: "#F2CC60",
+    backgroundColor: "#FFFFFF",
   },
-  stepCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    marginBottom: 12,
+  section: {
+    backgroundColor: "#1A1C1E",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.05)",
+    gap: 14,
   },
-  imageSection: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  imageContainer: {
-    width: 200,
-    height: 120,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#30363D", // Using theme color directly
-    borderStyle: "dashed",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  carImage: {
-    width: 196,
-    height: 116,
-    borderRadius: 10,
-  },
-  placeholderImage: {
-    alignItems: "center",
-  },
-  placeholderText: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  placeholderLabel: {
-    fontSize: 14,
-    color: "#8B949E", // Using theme color directly
-  },
-  inputContainer: {
-    marginBottom: 20,
+  field: {
+    gap: 6,
   },
   label: {
-    marginBottom: 8,
+    color: "#8E8E93",
+    fontSize: 13,
   },
   input: {
-    // Additional input styles if needed
+    backgroundColor: "#232527",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    color: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 15,
+  },
+  dateInput: {
+    justifyContent: "center",
   },
   dateInputText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+  },
+  selectContainer: {
+    marginBottom: 0,
+  },
+  loadingIndicator: {
+    marginTop: 4,
+    alignItems: "flex-start",
+  },
+  photoCard: {
+    borderRadius: 14,
+    overflow: "hidden",
+    backgroundColor: "#121212",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+  },
+  photoImage: {
+    width: "100%",
+    height: 180,
+    backgroundColor: "#121212",
+  },
+  photoPlaceholder: {
+    width: "100%",
+    height: 180,
+    backgroundColor: theme.colors.accent.dark,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  photoPlaceholderText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  photoOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
     paddingVertical: 12,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+  },
+  photoOverlayText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  actionsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 4,
+  },
+  halfButton: {
+    flex: 1,
+  },
+  primaryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: theme.colors.interactive.primary,
+    borderRadius: 14,
+    paddingVertical: 14,
+  },
+  primaryButtonText: {
+    color: theme.colors.text.inverse,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  secondaryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: theme.colors.accent.dark,
+    borderRadius: 14,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "rgba(74, 222, 158, 0.15)",
+  },
+  secondaryButtonText: {
+    color: theme.colors.accent.primary,
+    fontSize: 15,
+    fontWeight: "600",
   },
   datePickerModalRoot: {
     flex: 1,
@@ -103,53 +178,42 @@ export const styles = StyleSheet.create({
   },
   datePickerBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
   },
   datePickerSheet: {
-    backgroundColor: "#161B22",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: "#1A1C1E",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: "rgba(255, 255, 255, 0.08)",
     paddingBottom: 24,
+  },
+  datePickerHandle: {
+    alignSelf: "center",
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    marginTop: 10,
+    marginBottom: 8,
   },
   datePickerHeader: {
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#30363D",
+    paddingBottom: 8,
   },
   datePickerDoneText: {
-    color: "#4ade9e",
+    color: theme.colors.accent.primary,
+    fontSize: 15,
     fontWeight: "600",
   },
-  vinDecodeContainer: {
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "flex-start",
-  },
-  vinDecodeInput: {
+  loadingContainer: {
     flex: 1,
-  },
-  decodeButton: {
-    minWidth: 120,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 16,
-  },
-  decodeButtonDisabled: {
-    opacity: 0.6,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-    marginBottom: 40,
-    gap: 12,
-  },
-  loadingIndicator: {
-    marginTop: 8,
-    alignItems: "center",
+    paddingHorizontal: 24,
   },
 });

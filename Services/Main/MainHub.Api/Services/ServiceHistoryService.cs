@@ -35,6 +35,12 @@ public interface IServiceHistoryService
   Task DeleteAllByVehicleIdAsync(Guid vehicleId, Guid userId);
 
   /// <summary>
+  /// Deletes all service history for a vehicle without ownership validation.
+  /// Caller must verify that the user owns the vehicle before invoking.
+  /// </summary>
+  Task DeleteAllByVehicleIdUncheckedAsync(Guid vehicleId);
+
+  /// <summary>
   /// Retrieves a service history record by its unique identifier asynchronously.
   /// </summary>
   /// <param name="vehicleId">The unique identifier of the vehicle.</param>
@@ -77,6 +83,11 @@ public class ServiceHistoryService(
   {
     await EnsureValidVehicleRequest(userId, vehicleId);
     await _repository.DeleteAllByVehicleIdAsync(vehicleId);
+  }
+
+  public Task DeleteAllByVehicleIdUncheckedAsync(Guid vehicleId)
+  {
+    return _repository.DeleteAllByVehicleIdAsync(vehicleId);
   }
 
   public async Task UpdateAsync(Guid vehicleId, Guid serviceHistoryId, CreateServiceHistoryDetailsDto updateServiceHistoryDetailsDto, Guid userId)

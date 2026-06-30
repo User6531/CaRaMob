@@ -11,11 +11,14 @@ import {
   Easing,
   Modal,
 } from "react-native";
+import ReanimatedAnimated, { FadeIn } from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
 import { FormScreen } from "../../components/FormScreen";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../hooks/useTheme";
+import { useStatusBar } from "../../hooks/useStatusBar";
 import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./CarCardScreen.styles";
 import { CarCardScreenProps } from "../../navigation/types";
@@ -115,10 +118,11 @@ const STEP_TITLES = [
 ];
 
 export default function CarCardScreen({ navigation }: CarCardScreenProps) {
+  useStatusBar();
   const { getAccessToken } = useAuth();
   const queryClient = useQueryClient();
   const theme = useTheme();
-  const { showAlert, showError, showSuccess, alertModal } = useAppAlert();
+  const { showAlert, showError, showSuccess } = useAppAlert();
   const [carImage, setCarImage] = useState<string | null>(null);
   const [brand, setBrand] = useState<string | number | undefined>(undefined);
   const [model, setModel] = useState<string | number | undefined>(undefined);
@@ -624,7 +628,7 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
         style={[
           globalStyles.container,
           globalStyles.pageBackground,
-          globalStyles.loadingContainer,
+          styles.loadingContainer,
         ]}
       >
         <ActivityIndicator size="large" color={theme.colors.accent.primary} />
@@ -636,62 +640,51 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
   return (
     <FormScreen
       style={[globalStyles.container, globalStyles.pageBackground]}
-      contentContainerStyle={styles.scrollContainer}
+      contentContainerStyle={styles.contentContainer}
     >
-      <View style={styles.header}>
-        <Text style={[globalStyles.textLarge, styles.title]}>
-          Додай свій автомобіль
+      <ReanimatedAnimated.View entering={FadeIn.duration(280)}>
+        <Text style={styles.pageTitle}>Додай свій автомобіль</Text>
+        <Text style={styles.pageSubtitle}>Створи картку твого авто</Text>
+      </ReanimatedAnimated.View>
+
+      <View style={styles.stepHeader}>
+        <Text style={styles.stepCounter}>
+          Крок {currentStep + 1} з {TOTAL_STEPS}
         </Text>
-        <Text style={[globalStyles.textSecondary, styles.subtitle]}>
-          Створи картку твого авто
-        </Text>
+        <Text style={styles.stepTitle}>{STEP_TITLES[currentStep]}</Text>
+        <View style={styles.stepProgress}>
+          {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.stepDot,
+                index < currentStep && styles.stepDotCompleted,
+                index === currentStep && styles.stepDotActive,
+              ]}
+            />
+          ))}
+        </View>
       </View>
 
-      <View style={styles.form}>
-        <View style={styles.stepHeaderContainer}>
-          <View style={styles.stepHeaderTop}>
-            <Text style={[globalStyles.textPrimary, styles.stepTitle]}>
-              Крок {currentStep + 1} з {TOTAL_STEPS}
-            </Text>
-            <Text style={[globalStyles.textSecondary, styles.stepSubtitle]}>
-              {STEP_TITLES[currentStep]}
-            </Text>
-          </View>
-          <View style={styles.stepDots}>
-            {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.stepDot,
-                  index < currentStep && styles.stepDotCompleted,
-                  index === currentStep && styles.stepDotActive,
-                ]}
-              />
-            ))}
-          </View>
-        </View>
-
-        <Animated.View
-          style={[
-            styles.stepCard,
+      <Animated.View
+        style={{
+          opacity: stepAnimation,
+          transform: [
             {
-              opacity: stepAnimation,
-              transform: [
-                {
-                  translateY: stepAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [14, 0],
-                  }),
-                },
-              ],
+              translateY: stepAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [14, 0],
+              }),
             },
-          ]}
-        >
+          ],
+        }}
+      >
+        <View style={styles.section}>
           {currentStep === 0 && (
             <>
-              <View style={styles.inputContainer}>
+              <View style={styles.field}>
+                <Text style={styles.label}>Марка *</Text>
                 <Select
-                  label="Марка *"
                   options={brandOptions}
                   value={brand}
                   onValueChange={setBrand}
@@ -700,20 +693,21 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
                       ? "Завантаження марок..."
                       : "Виберіть марку автомобіля"
                   }
+                  containerStyle={styles.selectContainer}
                 />
-                {isLoadingBrands && (
+                {isLoadingBrands ? (
                   <View style={styles.loadingIndicator}>
                     <ActivityIndicator
                       size="small"
                       color={theme.colors.accent.primary}
                     />
                   </View>
-                )}
+                ) : null}
               </View>
 
-              <View style={styles.inputContainer}>
+              <View style={styles.field}>
+                <Text style={styles.label}>Модель *</Text>
                 <Select
-                  label="Модель *"
                   options={modelOptions}
                   value={model}
                   onValueChange={setModel}
@@ -725,95 +719,94 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
                         : "Виберіть модель автомобіля"
                   }
                   disabled={!brand || isLoadingModels}
+                  containerStyle={styles.selectContainer}
                 />
-                {isLoadingModels && (
+                {isLoadingModels ? (
                   <View style={styles.loadingIndicator}>
                     <ActivityIndicator
                       size="small"
                       color={theme.colors.accent.primary}
                     />
                   </View>
-                )}
+                ) : null}
               </View>
 
-              <Select
-                label="Рік випуску *"
-                options={yearOptions}
-                value={year}
-                onValueChange={setYear}
-                placeholder="Виберіть рік випуску"
-              />
+              <View style={styles.field}>
+                <Text style={styles.label}>Рік випуску *</Text>
+                <Select
+                  options={yearOptions}
+                  value={year}
+                  onValueChange={setYear}
+                  placeholder="Виберіть рік випуску"
+                  containerStyle={styles.selectContainer}
+                />
+              </View>
             </>
           )}
 
           {currentStep === 1 && (
             <>
-              <Select
-                label="Колір *"
-                options={COLOR_OPTIONS}
-                value={color}
-                onValueChange={setColor}
-                placeholder="Виберіть колір автомобіля"
-              />
+              <View style={styles.field}>
+                <Text style={styles.label}>Колір *</Text>
+                <Select
+                  options={COLOR_OPTIONS}
+                  value={color}
+                  onValueChange={setColor}
+                  placeholder="Виберіть колір автомобіля"
+                  containerStyle={styles.selectContainer}
+                />
+              </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={[globalStyles.textPrimary, styles.label]}>
-                  Номерний знак *
-                </Text>
+              <View style={styles.field}>
+                <Text style={styles.label}>Номерний знак *</Text>
                 <TextInput
-                  style={[globalStyles.input, styles.input]}
+                  style={styles.input}
                   value={licensePlate}
                   onChangeText={setLicensePlate}
                   placeholder="Наприклад: АА1234ВВ"
-                  placeholderTextColor={theme.colors.special.placeholder}
+                  placeholderTextColor="#8E8E93"
                   autoCapitalize="characters"
                 />
               </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={[globalStyles.textPrimary, styles.label]}>
-                  VIN номер *
-                </Text>
+              <View style={styles.field}>
+                <Text style={styles.label}>VIN номер *</Text>
                 <TextInput
-                  style={[globalStyles.input, styles.input]}
+                  style={styles.input}
                   value={vin}
                   onChangeText={(text) => setVin(normalizeVinInput(text))}
                   placeholder="17 символів (латиниця, без I, O, Q)"
-                  placeholderTextColor={theme.colors.special.placeholder}
+                  placeholderTextColor="#8E8E93"
                   autoCapitalize="characters"
                   maxLength={17}
                 />
               </View>
-
             </>
           )}
 
           {currentStep === 2 && (
             <>
-              <View style={styles.inputContainer}>
-                <Text style={[globalStyles.textPrimary, styles.label]}>
-                  Дата купівлі
-                </Text>
+              <View style={styles.field}>
+                <Text style={styles.label}>Дата купівлі</Text>
                 <TouchableOpacity
-                  style={[globalStyles.input, styles.input]}
+                  style={[styles.input, styles.dateInput]}
                   onPress={openBoughtAtPicker}
+                  activeOpacity={0.8}
                 >
-                  <Text style={[globalStyles.textPrimary, styles.dateInputText]}>
+                  <Text style={styles.dateInputText}>
                     {boughtAt.toLocaleDateString("uk-UA")}
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={[globalStyles.textPrimary, styles.label]}>
-                  Пробіг (км) *
-                </Text>
+              <View style={styles.field}>
+                <Text style={styles.label}>Пробіг (км) *</Text>
                 <TextInput
-                  style={[globalStyles.input, styles.input]}
+                  style={styles.input}
                   value={mileage}
                   onChangeText={setMileage}
                   placeholder="Наприклад: 50000"
-                  placeholderTextColor={theme.colors.special.placeholder}
+                  placeholderTextColor="#8E8E93"
                   keyboardType="number-pad"
                 />
               </View>
@@ -822,128 +815,167 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
 
           {currentStep === 3 && (
             <>
-              <Select
-                label="Тип палива *"
-                options={FUEL_TYPE_OPTIONS}
-                value={fuelType}
-                onValueChange={(value) =>
-                  setFuelType(normalizeFuelType(value))
-                }
-                placeholder="Виберіть тип палива"
-              />
+              <View style={styles.field}>
+                <Text style={styles.label}>Тип палива *</Text>
+                <Select
+                  options={FUEL_TYPE_OPTIONS}
+                  value={fuelType}
+                  onValueChange={(value) =>
+                    setFuelType(normalizeFuelType(value))
+                  }
+                  placeholder="Виберіть тип палива"
+                  containerStyle={styles.selectContainer}
+                />
+              </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={[globalStyles.textPrimary, styles.label]}>
-                  {getEnginePowerLabel(fuelType)}
-                </Text>
+              <View style={styles.field}>
+                <Text style={styles.label}>{getEnginePowerLabel(fuelType)}</Text>
                 <TextInput
-                  style={[globalStyles.input, styles.input]}
+                  style={styles.input}
                   value={enginePower}
                   onChangeText={setEnginePower}
                   placeholder="Наприклад: 150"
-                  placeholderTextColor={theme.colors.special.placeholder}
+                  placeholderTextColor="#8E8E93"
                   keyboardType="number-pad"
                 />
               </View>
 
-              {requiresEngineDisplacement(fuelType) && (
-                <View style={styles.inputContainer}>
-                  <Text style={[globalStyles.textPrimary, styles.label]}>
-                    Об&apos;єм двигуна (л) *
-                  </Text>
+              {requiresEngineDisplacement(fuelType) ? (
+                <View style={styles.field}>
+                  <Text style={styles.label}>Об&apos;єм двигуна (л) *</Text>
                   <TextInput
-                    style={[globalStyles.input, styles.input]}
+                    style={styles.input}
                     value={displacement}
                     onChangeText={setDisplacement}
                     placeholder="Наприклад: 2.0, 3.5"
-                    placeholderTextColor={theme.colors.special.placeholder}
+                    placeholderTextColor="#8E8E93"
                     keyboardType="decimal-pad"
                   />
                 </View>
-              )}
+              ) : null}
 
-              <Select
-                label="Тип кузова"
-                options={BODY_CLASS_OPTIONS}
-                value={bodyClass}
-                onValueChange={setBodyClass}
-                placeholder="Виберіть тип кузова"
-              />
+              <View style={styles.field}>
+                <Text style={styles.label}>Тип кузова</Text>
+                <Select
+                  options={BODY_CLASS_OPTIONS}
+                  value={bodyClass}
+                  onValueChange={setBodyClass}
+                  placeholder="Виберіть тип кузова"
+                  containerStyle={styles.selectContainer}
+                />
+              </View>
             </>
           )}
 
           {currentStep === 4 && (
             <>
-              <Select
-                label="Коробка передач *"
-                options={getTransmissionOptionsForFuel(
-                  fuelType,
-                  TRANSMISSION_API_OPTIONS
-                )}
-                value={transmission}
-                onValueChange={(value) =>
-                  setTransmission(normalizeTransmissionType(value))
-                }
-                placeholder={
-                  normalizeFuelType(fuelType) === FuelType.Electric
-                    ? "Для електрокарів — автомат або CVT"
-                    : "Виберіть коробку передач"
-                }
-              />
+              <View style={styles.field}>
+                <Text style={styles.label}>Коробка передач *</Text>
+                <Select
+                  options={getTransmissionOptionsForFuel(
+                    fuelType,
+                    TRANSMISSION_API_OPTIONS
+                  )}
+                  value={transmission}
+                  onValueChange={(value) =>
+                    setTransmission(normalizeTransmissionType(value))
+                  }
+                  placeholder={
+                    normalizeFuelType(fuelType) === FuelType.Electric
+                      ? "Для електрокарів — автомат або CVT"
+                      : "Виберіть коробку передач"
+                  }
+                  containerStyle={styles.selectContainer}
+                />
+              </View>
 
-              <Select
-                label="Привід *"
-                options={WHEEL_DRIVE_API_OPTIONS}
-                value={driveType}
-                onValueChange={(v) => setDriveType(v as number)}
-                placeholder="Виберіть тип приводу"
-              />
+              <View style={styles.field}>
+                <Text style={styles.label}>Привід *</Text>
+                <Select
+                  options={WHEEL_DRIVE_API_OPTIONS}
+                  value={driveType}
+                  onValueChange={(v) => setDriveType(v as number)}
+                  placeholder="Виберіть тип приводу"
+                  containerStyle={styles.selectContainer}
+                />
+              </View>
             </>
           )}
 
           {currentStep === 5 && (
-            <View style={styles.imageSection}>
-              <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
-                {carImage ? (
-                  <Image source={{ uri: carImage }} style={styles.carImage} />
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Text style={styles.placeholderText}>🚗</Text>
-                    <Text style={styles.placeholderLabel}>Додати фото авто</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
-        </Animated.View>
-
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={globalStyles.buttonSecondary}
-            onPress={currentStep === 0 ? handleCancel : handlePreviousStep}
-          >
-            <Text style={globalStyles.buttonSecondaryText}>
-              {currentStep === 0 ? "Скасувати" : "Назад"}
-            </Text>
-          </TouchableOpacity>
-
-          {currentStep < TOTAL_STEPS - 1 ? (
             <TouchableOpacity
-              style={globalStyles.buttonPrimary}
-              onPress={handleNextStep}
+              style={styles.photoCard}
+              onPress={pickImage}
+              activeOpacity={0.9}
             >
-              <Text style={globalStyles.buttonPrimaryText}>Далі</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={globalStyles.buttonPrimary}
-              onPress={handleSave}
-            >
-              <Text style={globalStyles.buttonPrimaryText}>Зберегти</Text>
+              {carImage ? (
+                <Image source={{ uri: carImage }} style={styles.photoImage} />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Feather
+                    name="image"
+                    size={32}
+                    color={theme.colors.accent.primary}
+                  />
+                  <Text style={styles.photoPlaceholderText}>
+                    Додати фото автомобіля
+                  </Text>
+                </View>
+              )}
+              <View style={styles.photoOverlay}>
+                <Feather name="camera" size={16} color="#FFFFFF" />
+                <Text style={styles.photoOverlayText}>
+                  {carImage ? "Змінити фото" : "Обрати фото"}
+                </Text>
+              </View>
             </TouchableOpacity>
           )}
         </View>
+      </Animated.View>
+
+      <View style={styles.actionsRow}>
+        <TouchableOpacity
+          style={[styles.secondaryButton, styles.halfButton]}
+          onPress={currentStep === 0 ? handleCancel : handlePreviousStep}
+          activeOpacity={0.85}
+        >
+          <Feather
+            name={currentStep === 0 ? "x" : "arrow-left"}
+            size={18}
+            color={theme.colors.accent.primary}
+          />
+          <Text style={styles.secondaryButtonText}>
+            {currentStep === 0 ? "Скасувати" : "Назад"}
+          </Text>
+        </TouchableOpacity>
+
+        {currentStep < TOTAL_STEPS - 1 ? (
+          <TouchableOpacity
+            style={[styles.primaryButton, styles.halfButton]}
+            onPress={handleNextStep}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.primaryButtonText}>Далі</Text>
+            <Feather
+              name="arrow-right"
+              size={18}
+              color={theme.colors.text.inverse}
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.primaryButton, styles.halfButton]}
+            onPress={handleSave}
+            activeOpacity={0.85}
+          >
+            <Feather
+              name="check"
+              size={18}
+              color={theme.colors.text.inverse}
+            />
+            <Text style={styles.primaryButtonText}>Зберегти</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {Platform.OS === "ios" ? (
@@ -960,16 +992,10 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
               onPress={closeBoughtAtPicker}
             />
             <View style={styles.datePickerSheet}>
+              <View style={styles.datePickerHandle} />
               <View style={styles.datePickerHeader}>
                 <TouchableOpacity onPress={confirmBoughtAtPicker}>
-                  <Text
-                    style={[
-                      globalStyles.textPrimary,
-                      styles.datePickerDoneText,
-                    ]}
-                  >
-                    Готово
-                  </Text>
+                  <Text style={styles.datePickerDoneText}>Готово</Text>
                 </TouchableOpacity>
               </View>
               <DateTimePicker
@@ -1002,7 +1028,6 @@ export default function CarCardScreen({ navigation }: CarCardScreenProps) {
           />
         )
       )}
-      {alertModal}
     </FormScreen>
   );
 }

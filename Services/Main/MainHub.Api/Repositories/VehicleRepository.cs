@@ -46,8 +46,20 @@ public interface IVehicleRepository
     FilterDefinition<VehicleEntity> filter,
     UpdateDefinition<VehicleEntity> update
   );
-  Task<List<VehicleEntity>> GetAdminPagedAsync(AdminVehicleQueryDto query, int skip, int take);
-  Task<long> CountAdminAsync(AdminVehicleQueryDto query);
+
+  /// <summary>
+  /// Retrieves a paged list of vehicle entities for admin users asynchronously.
+  /// </summary>
+  /// <param name="skip"></param>
+  /// <param name="limit"></param>
+  /// <returns></returns>
+  Task<List<VehicleEntity>> GetAllVehiclesAsync(int skip, int limit);
+
+  /// <summary>
+  /// Retrieves the total count of vehicle entities for admin users asynchronously.
+  /// </summary>
+  /// <returns></returns>
+  Task<long> GetCountAsync();
 }
 
 public class VehicleRepository : IVehicleRepository
@@ -91,34 +103,27 @@ public class VehicleRepository : IVehicleRepository
     await _vehicles.DeleteOneAsync(filter);
   }
 
-  public async Task<List<VehicleEntity>> GetAdminPagedAsync(
-    AdminVehicleQueryDto query,
+  public async Task<List<VehicleEntity>> GetAllVehiclesAsync(
     int skip,
-    int take
+    int limit
   )
   {
-    var filter = BuildAdminFilter(query);
+    var builder = Builders<VehicleEntity>.Filter;
+    var filter = builder.Empty;
+
     return await _vehicles
       .Find(filter)
       .SortByDescending(v => v.CreatedAt)
       .Skip(skip)
-      .Limit(take)
+      .Limit(limit)
       .ToListAsync();
   }
 
-  public async Task<long> CountAdminAsync(AdminVehicleQueryDto query)
-  {
-    var filter = BuildAdminFilter(query);
-    return await _vehicles.CountDocumentsAsync(filter);
-  }
-
-  private static FilterDefinition<VehicleEntity> BuildAdminFilter(AdminVehicleQueryDto query)
+  public async Task<long> GetCountAsync()
   {
     var builder = Builders<VehicleEntity>.Filter;
+    var filter = builder.Empty;
 
-    // TODO: restore query filters in a later iteration
-    _ = query;
-
-    return builder.Empty;
+    return await _vehicles.CountDocumentsAsync(filter);
   }
 }

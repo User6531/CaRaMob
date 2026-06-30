@@ -1,0 +1,134 @@
+# Human-readable name of the workflow, shown in the GitHub Actions UI.
+name: Telegram Notifications
+
+# Defines which GitHub events trigger this workflow.
+on:
+  # Trigger when commits are pushed.
+  # push:
+  # Only run for pushes to the "dev" branch.
+  # branches: [dev]
+
+  # Trigger on pull request activity.
+  pull_request:
+    # Only run for pull requests targeting the "dev" branch.
+    branches: [dev]
+    # Limit to these specific PR actions to avoid spamming on every change.
+    types: [opened, reopened, closed, ready_for_review]
+
+# Controls how concurrent runs of this workflow are grouped/cancelled.
+concurrency:
+  # Group runs per PR number, or per commit SHA for push events.
+  group: telegram-${{ github.event.pull_request.number || github.sha }}
+  # Do not cancel an in-progress run when a new one starts (so no notification is lost).
+  cancel-in-progress: false
+
+# Restricts the GITHUB_TOKEN permissions for this workflow (least privilege).
+permissions:
+  # Only read access to repository contents is granted.
+  contents: read
+
+# Defines the set of jobs that make up the workflow.
+jobs:
+  # A single job named "notify".
+  notify:
+    # Run the job on the latest GitHub-hosted Ubuntu runner.
+    runs-on: ubuntu-latest
+    # Don't fail the workflow if a notification step errors out.
+    continue-on-error: true
+    # The ordered list of steps the job executes.
+    steps:
+      # Step that sends a Telegram message for push events.
+      - name: Send Telegram message (push)
+        # Only run this step for push events that include a head commit.
+        if: github.event_name == 'push' && github.event.head_commit != null
+        # Environment variables made available to the shell script below.
+        env:
+          # Secret bot token used to authenticate with the Telegram API.
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          # Secret chat/channel ID that the message is sent to.
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Full repository name in "owner/repo" form.
+          REPO: ${{ github.repository }}
+          # Short name of the branch/ref that was pushed.
+          REF_NAME: ${{ github.ref_name }}
+          # Username of the person who triggered the push.
+          ACTOR: ${{ github.actor }}
+          # The message of the most recent commit in the push.
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          # The full commit SHA, used to build the commit URL.
+          SHA: ${{ github.sha }}
+        # The shell script executed for this step.
+        run: |
+          # Exit on error, unset variable use, or any failed command in a pipe.
+          set -euo pipefail
+          # Build the multi-line message text using the env variables.
+          MESSAGE="🚀 New push!
+
+          Repository: ${REPO}
+          Branch: ${REF_NAME}
+          Author: ${ACTOR}
+
+          Commit:
+          ${COMMIT_MSG}
+
+          https://github.com/${REPO}/commit/${SHA}"
+          # Truncate the message to Telegram's 4096-char limit (kept at 4000 for safety).
+          MESSAGE="${MESSAGE:0:4000}"
+          # Send the message via the Telegram Bot API (silent, fail on HTTP error, retry up to 3 times).
+          curl -sS --fail-with-body --retry 3 --retry-delay 2 -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MESSAGE}"
+
+      # Step that sends a Telegram message for pull request events.
+      - name: Send Telegram message (pull request)
+        # Run for PR events, but skip the "opened" action when the PR is a draft.
+        if: >-
+          github.event_name == 'pull_request' &&
+          !(github.event.action == 'opened' && github.event.pull_request.draft)
+        # Environment variables made available to the shell script below.
+        env:
+          # Secret bot token used to authenticate with the Telegram API.
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          # Secret chat/channel ID that the message is sent to.
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Full repository name in "owner/repo" form.
+          REPO: ${{ github.repository }}
+          # Username of the person who triggered the PR event.
+          ACTOR: ${{ github.actor }}
+          # The pull request's number.
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # The pull request's title.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          # The source (head) branch of the PR.
+          PR_HEAD: ${{ github.event.pull_request.head.ref }}
+          # The target (base) branch of the PR.
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          # The web URL of the pull request.
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          # Human-friendly status label derived from the PR action.
+          STATUS: >-
+            ${{ (github.event.action == 'closed' && github.event.pull_request.merged && '✅ merged')
+             || (github.event.action == 'closed' && '❌ closed')
+             || (github.event.action == 'ready_for_review' && '👀 ready for review')
+             || github.event.action }}
+        # The shell script executed for this step.
+        run: |
+          # Exit on error, unset variable use, or any failed command in a pipe.
+          set -euo pipefail
+          # Build the multi-line message text using the env variables.
+          MESSAGE="🔀 Pull request ${STATUS}!
+
+          Repository: ${REPO}
+          PR #${PR_NUMBER}: ${PR_TITLE}
+          ${PR_HEAD} → ${PR_BASE}
+          Author: ${ACTOR}
+
+          ${PR_URL}"
+          # Truncate the message to Telegram's 4096-char limit (kept at 4000 for safety).
+          MESSAGE="${MESSAGE:0:4000}"
+          # Send the message via the Telegram Bot API (silent, fail on HTTP error, retry up to 3 times).
+          curl -sS --fail-with-body --retry 3 --retry-delay 2 -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MESSAGE}"

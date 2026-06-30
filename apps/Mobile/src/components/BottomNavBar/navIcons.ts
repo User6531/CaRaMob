@@ -8,6 +8,15 @@ export const HOME_NAV_ICON_SVG = `
 </svg>
 `;
 
+export const STATUS_NAV_ICON_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none">
+  <path d="M4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <path d="M12 8V12L15 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+  <circle cx="18" cy="6" r="2.5" fill="currentColor"/>
+</svg>
+`;
+
 export const CHAT_NAV_ICON_SVG = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27 26" preserveAspectRatio="xMidYMid meet" fill="none">
   <path d="M22 1H4.89999C2.79999 1 1.10001 2.70815 1.10001 4.81823V17.2778C1.10001 19.3878 2.79999 21.096 4.89999 21.096H14.8C15.2 21.096 15.5 21.1965 15.8 21.4979L19.1 24.8138C19.5 25.2157 20.1 24.9142 20.1 24.4118V22.5027C20.1 21.6989 20.7 21.096 21.5 21.096H22C24.1 21.096 25.8 19.3878 25.8 17.2778V4.81823C25.8 2.70815 24.1 1 22 1Z" stroke="currentColor" stroke-miterlimit="10" stroke-width="2"/>

@@ -216,5 +216,7 @@ app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapVehicleEndpoints();
 app.MapServiceHistoryEndpoints();
+app.MapAdminUserEndpoints();
+app.MapAdminVehicleEndpoints();
 
 app.Run();

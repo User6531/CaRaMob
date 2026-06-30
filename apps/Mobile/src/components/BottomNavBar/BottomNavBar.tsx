@@ -10,13 +10,13 @@ import { SvgXml } from "react-native-svg";
 import { theme } from "../../styles/theme";
 import { styles } from "./BottomNavBar.styles";
 import {
-  CHAT_NAV_ICON_SVG,
   HISTORY_NAV_ICON_SVG,
   HOME_NAV_ICON_SVG,
   SERVICES_NAV_ICON_SVG,
+  STATUS_NAV_ICON_SVG,
 } from "./navIcons";
 
-export type BottomNavTab = "garage" | "chats" | "services" | "history";
+export type BottomNavTab = "garage" | "status" | "services" | "history";
 
 interface NavItemConfig {
   id: BottomNavTab;
@@ -26,7 +26,7 @@ interface NavItemConfig {
 
 const NAV_ITEMS: NavItemConfig[] = [
   { id: "garage", label: "Гараж", icon: HOME_NAV_ICON_SVG },
-  { id: "chats", label: "Чати", icon: CHAT_NAV_ICON_SVG },
+  { id: "status", label: "Статус", icon: STATUS_NAV_ICON_SVG },
   { id: "services", label: "Мої сервіси", icon: SERVICES_NAV_ICON_SVG },
   { id: "history", label: "Історія", icon: HISTORY_NAV_ICON_SVG },
 ];
@@ -36,7 +36,7 @@ const TAB_ANIMATION_DURATION_MS = 220;
 export interface BottomNavBarProps {
   activeTab?: BottomNavTab;
   onGaragePress?: () => void;
-  onChatsPress?: () => void;
+  onStatusPress?: () => void;
   onServicesPress?: () => void;
   onHistoryPress?: () => void;
 }
@@ -44,13 +44,13 @@ export interface BottomNavBarProps {
 export function BottomNavBar({
   activeTab = "garage",
   onGaragePress,
-  onChatsPress,
+  onStatusPress,
   onServicesPress,
   onHistoryPress,
 }: BottomNavBarProps) {
   const handlers: Record<BottomNavTab, (() => void) | undefined> = {
     garage: onGaragePress,
-    chats: onChatsPress,
+    status: onStatusPress,
     services: onServicesPress,
     history: onHistoryPress,
   };

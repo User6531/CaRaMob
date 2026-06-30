@@ -1,0 +1,1 @@
+export { StoVehicleStatusBadge } from "./StoVehicleStatusBadge";
