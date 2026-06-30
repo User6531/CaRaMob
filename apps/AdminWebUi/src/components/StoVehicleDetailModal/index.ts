@@ -1,0 +1,1 @@
+export { StoVehicleDetailModal } from "./StoVehicleDetailModal";
