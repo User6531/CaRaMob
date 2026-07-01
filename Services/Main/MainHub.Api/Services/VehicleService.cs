@@ -63,12 +63,12 @@ public interface IVehicleService
 public class VehicleService(
   IVehicleRepository repository,
   IUserService userService,
-  IServiceHistoryRepository serviceHistoryRepository
+  IServiceHistoryService serviceHistoryService
 ) : IVehicleService
 {
   private readonly IVehicleRepository _repository = repository;
   private readonly IUserService _userService = userService;
-  private readonly IServiceHistoryRepository _serviceHistoryRepository = serviceHistoryRepository;
+  private readonly IServiceHistoryService _serviceHistoryService = serviceHistoryService;
 
   public async Task<VehicleDto> GetVehicleByIdAsync(Guid vehicleId, Guid userId)
   {
@@ -192,32 +192,15 @@ public class VehicleService(
 
   public async Task DeleteAsync(Guid vehicleId, Guid userId)
   {
-    var user = await _userService.GetByIdAsync(userId);
-    if (user == null)
+    var IsVehicleBelongsToUser = await CheckIsVehicleBelongsToUser(userId, vehicleId);
+    if (!IsVehicleBelongsToUser)
     {
-      throw new ArgumentException("User not found.", nameof(userId));
-    }
-
-    var isAssociated = user.VehicleIds?.Contains(vehicleId) ?? false;
-    if (!isAssociated)
-    {
-      var existingVehicle = await _repository.GetByIdAsync(vehicleId);
-      if (existingVehicle == null)
-      {
-        return;
-      }
-
       throw new ArgumentException("Vehicle not associated with the user.", nameof(vehicleId));
     }
 
-    await _serviceHistoryRepository.DeleteAllByVehicleIdAsync(vehicleId);
+    await _repository.DeleteAsync(vehicleId);
     await _userService.DetachVehicleAsync(vehicleId, userId);
-
-    var vehicle = await _repository.GetByIdAsync(vehicleId);
-    if (vehicle != null)
-    {
-      await _repository.DeleteAsync(vehicleId);
-    }
+    await _serviceHistoryService.DeleteAllByVehicleIdAsync(vehicleId, userId);
   }
 
   public async Task<List<VehicleListItemDto>> GetAllByUserAsync(Guid userId)
