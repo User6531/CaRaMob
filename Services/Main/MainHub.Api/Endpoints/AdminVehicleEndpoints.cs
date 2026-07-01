@@ -27,11 +27,6 @@ public static partial class AdminVehicleEndpoints
       .MapGet("/{userId}/vehicles", GetVehiclesByUserIdAsync)
       .WithSummary("Get vehicles for a specific driver")
       .Produces<List<VehicleListItemDto>>(StatusCodes.Status200OK);
-
-    vehicles
-      .MapDelete("/{vehicleId}", DeleteAsync)
-      .WithSummary("Delete a vehicle by its id")
-      .Produces(StatusCodes.Status204NoContent);
   }
 
   internal static async Task<IResult> GetVehicleByIdAsync(
@@ -60,21 +55,5 @@ public static partial class AdminVehicleEndpoints
   {
     var vehicles = await vehicleService.GetAllByUserAsync(userId);
     return vehicles is null ? Results.NotFound() : Results.Ok(vehicles);
-  }
-
-  internal static async Task<IResult> DeleteAsync(
-    Guid vehicleId,
-    IVehicleService vehicleService
-  )
-  {
-    try
-    {
-      await vehicleService.DeleteByAdminAsync(vehicleId);
-      return Results.NoContent();
-    }
-    catch (Exception ex)
-    {
-      return Results.BadRequest(ex.Message);
-    }
   }
 }

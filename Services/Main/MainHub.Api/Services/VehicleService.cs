@@ -45,16 +45,11 @@ public interface IVehicleService
   Task<List<VehicleListItemDto>> GetAllByUserAsync(Guid userId);
 
   /// <summary>
-  /// Deletes a vehicle after verifying it belongs to the authenticated user.
-  /// Intended for mobile clients using an internal JWT.
+  /// Deletes a vehicle associated with a user asynchronously.
   /// </summary>
+  /// <param name="vehicleId">The unique identifier of the vehicle to delete.</param
+  /// <param name="userId">The unique identifier of the user.</param>
   Task DeleteAsync(Guid vehicleId, Guid userId);
-
-  /// <summary>
-  /// Deletes a vehicle without ownership validation.
-  /// Intended only for admin endpoints protected by an admin JWT.
-  /// </summary>
-  Task DeleteByAdminAsync(Guid vehicleId);
 
   /// <summary>
   /// Retrieves a paged list of all vehicles for admin users asynchronously.
@@ -215,33 +210,14 @@ public class VehicleService(
       throw new ArgumentException("Vehicle not associated with the user.", nameof(vehicleId));
     }
 
-    await VehicleDeletionExecutor.ExecuteAsync(
-      vehicleId,
-      ownerUserId: userId,
-      _repository,
-      _userService,
-      _serviceHistoryService
-    );
-  }
+    await _serviceHistoryService.DeleteAllByVehicleIdAsync(vehicleId, userId);
+    await _userService.DetachVehicleAsync(vehicleId, userId);
 
-  public async Task DeleteByAdminAsync(Guid vehicleId)
-  {
     var vehicle = await _repository.GetByIdAsync(vehicleId);
-    if (vehicle == null)
+    if (vehicle != null)
     {
-      return;
+      await _repository.DeleteAsync(vehicleId);
     }
-
-    var ownerMap = await _userService.GetOwnerMapByVehicleIdsAsync([vehicleId]);
-    ownerMap.TryGetValue(vehicleId, out var ownerUserId);
-
-    await VehicleDeletionExecutor.ExecuteAsync(
-      vehicleId,
-      ownerUserId: ownerUserId == default ? null : ownerUserId,
-      _repository,
-      _userService,
-      _serviceHistoryService
-    );
   }
 
   public async Task<List<VehicleListItemDto>> GetAllByUserAsync(Guid userId)
@@ -366,33 +342,5 @@ public class VehicleService(
       Mileage = vehicle.Mileage,
       CreatedAt = vehicle.CreatedAt,
     };
-  }
-
-  private static class VehicleDeletionExecutor
-  {
-    internal static async Task ExecuteAsync(
-      Guid vehicleId,
-      Guid? ownerUserId,
-      IVehicleRepository repository,
-      IUserService userService,
-      IServiceHistoryService serviceHistoryService
-    )
-    {
-      if (ownerUserId.HasValue)
-      {
-        await serviceHistoryService.DeleteAllByVehicleIdAsync(vehicleId, ownerUserId.Value);
-        await userService.DetachVehicleAsync(vehicleId, ownerUserId.Value);
-      }
-      else
-      {
-        await serviceHistoryService.DeleteAllByVehicleIdForAdminAsync(vehicleId);
-      }
-
-      var vehicle = await repository.GetByIdAsync(vehicleId);
-      if (vehicle != null)
-      {
-        await repository.DeleteAsync(vehicleId);
-      }
-    }
   }
 }
