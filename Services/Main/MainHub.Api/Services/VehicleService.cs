@@ -63,12 +63,12 @@ public interface IVehicleService
 public class VehicleService(
   IVehicleRepository repository,
   IUserService userService,
-  IServiceHistoryRepository serviceHistoryRepository
+  IServiceHistoryService serviceHistoryService
 ) : IVehicleService
 {
   private readonly IVehicleRepository _repository = repository;
   private readonly IUserService _userService = userService;
-  private readonly IServiceHistoryRepository _serviceHistoryRepository = serviceHistoryRepository;
+  private readonly IServiceHistoryService _serviceHistoryService = serviceHistoryService;
 
   public async Task<VehicleDto> GetVehicleByIdAsync(Guid vehicleId, Guid userId)
   {
@@ -210,7 +210,7 @@ public class VehicleService(
       throw new ArgumentException("Vehicle not associated with the user.", nameof(vehicleId));
     }
 
-    await _serviceHistoryRepository.DeleteAllByVehicleIdAsync(vehicleId);
+    await _serviceHistoryService.DeleteAllByVehicleIdAsync(vehicleId, userId);
     await _userService.DetachVehicleAsync(vehicleId, userId);
 
     var vehicle = await _repository.GetByIdAsync(vehicleId);
