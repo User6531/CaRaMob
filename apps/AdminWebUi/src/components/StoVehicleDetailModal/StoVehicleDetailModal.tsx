@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ApprovalRequestCard } from "../ApprovalRequestCard";
 import { Button } from "../Button";
 import { Modal } from "../Modal";
+import { StoVehicleActivityLog } from "../StoVehicleActivityLog";
 import { StoVehicleStatusBadge } from "../StoVehicleStatusBadge";
 import type {
   StoQueueVehicle,
@@ -539,6 +540,8 @@ export function StoVehicleDetailModal({
             ) : null}
           </div>
         </section>
+
+        <StoVehicleActivityLog vehicle={vehicle} />
       </div>
     </Modal>
   );

@@ -28,6 +28,20 @@ export const NAV_ITEMS: NavItemConfig[] = [
     requiredPermissions: [Permission.StoView],
   },
   {
+    id: "booking-requests",
+    label: "Онлайн-записи",
+    path: "/sto/bookings",
+    icon: "M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14v11zM7 11h5v2H7v-2zm7 0h5v2h-5v-2z",
+    requiredPermissions: [Permission.StoView],
+  },
+  {
+    id: "visits",
+    label: "Візити",
+    path: "/visits",
+    icon: "M4 4h16v2H4V4zm0 4h10v2H4V8zm0 4h14v2H4v-2zm0 4h8v2H4v-2z",
+    requiredPermissions: [Permission.StoView],
+  },
+  {
     id: "users",
     label: "Клієнти",
     path: "/users",

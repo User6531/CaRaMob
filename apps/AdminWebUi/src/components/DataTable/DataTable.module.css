@@ -26,6 +26,15 @@
   padding: 20px;
 }
 
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.clickableRow:hover {
+  background-color: rgba(74, 222, 158, 0.05);
+}
+
 .actionsCell {
   display: flex;
   gap: 6px;

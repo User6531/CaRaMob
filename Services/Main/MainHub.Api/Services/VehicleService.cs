@@ -334,6 +334,13 @@ public class VehicleService(
       Year = vehicle.Year,
       PhotoUrl = vehicle.PhotoUrl,
       OwnerUserId = ownerUserId,
+      Vin = vehicle.Vin,
+      FuelType = vehicle.FuelType,
+      TransmissionType = vehicle.TransmissionType,
+      WheelDriveType = vehicle.WheelDriveType,
+      Color = vehicle.Color,
+      Mileage = vehicle.Mileage,
+      CreatedAt = vehicle.CreatedAt,
     };
   }
 }
