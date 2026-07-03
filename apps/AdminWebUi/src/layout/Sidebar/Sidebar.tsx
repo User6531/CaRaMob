@@ -26,7 +26,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
         <div className={styles.brandInfo}>
           <div className={styles.logoMark}>C</div>
           <div>
-            <p className={styles.brandTitle}>CaRaMob</p>
+            <p className={styles.brandTitle}>Rookit</p>
             <p className={styles.brandSubtitle}>Admin Panel</p>
           </div>
         </div>
