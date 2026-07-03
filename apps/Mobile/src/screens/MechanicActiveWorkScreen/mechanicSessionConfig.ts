@@ -63,8 +63,9 @@ export function mapSessionToDriverStatus(
     case "diagnostics":
       return "diagnostics";
     case "repair":
-    case "waiting_parts":
       return "in_progress";
+    case "waiting_parts":
+      return "waiting_parts";
     case "final_check":
       return "quality_check";
     case "estimate":

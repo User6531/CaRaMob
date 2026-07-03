@@ -1,7 +1,6 @@
 import React from "react";
 import {
   ActivityIndicator,
-  Alert,
   LayoutChangeEvent,
   Text,
   TouchableOpacity,
@@ -24,6 +23,7 @@ import {
   getRecordsTotalPrice,
 } from "./serviceHistoryUtils";
 import { styles } from "./ServiceHistoryScreen.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 const EXPAND_DURATION_MS = 320;
 
@@ -37,6 +37,7 @@ export function ServiceHistoryVisitBody({
   vehicleId,
 }: ServiceHistoryVisitBodyProps) {
   const theme = useTheme();
+  const { showError } = useAppAlert();
   const detailsMutation = useServiceHistoryDetails();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [records, setRecords] = React.useState<ServiceWorkItemDto[] | null>(
@@ -93,8 +94,7 @@ export function ServiceHistoryVisitBody({
       setRecords(details.records ?? []);
       setIsExpanded(true);
     } catch (error) {
-      Alert.alert(
-        "Помилка",
+      showError(
         error instanceof Error
           ? error.message
           : "Не вдалося завантажити виконані роботи"

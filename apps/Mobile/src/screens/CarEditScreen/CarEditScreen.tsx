@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Alert,
   Platform,
   ActivityIndicator,
 } from "react-native";
@@ -22,6 +21,7 @@ import { CarEditScreenProps } from "../../navigation/types";
 import { Select, SelectOption } from "../../components/Select";
 import { useVehicle, useUpdateVehicle, useDeleteVehicle } from "../../queries";
 import { formatVinShort } from "../HomeScreen/homeScreenUtils";
+import { useAppAlert } from "../../components/AppAlert";
 
 const COLOR_OPTIONS: SelectOption[] = [
   { label: "Білий", value: "white" },
@@ -44,6 +44,7 @@ export default function CarEditScreen({
 }: CarEditScreenProps) {
   useStatusBar();
   const theme = useTheme();
+  const { showAlert, showError, showSuccess } = useAppAlert();
   const { carId } = route.params;
   const {
     data: vehicle,
@@ -75,7 +76,7 @@ export default function CarEditScreen({
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
-      Alert.alert("Дозвіл потрібен", "Потрібен дозвіл для доступу до галереї!");
+      showError("Потрібен дозвіл для доступу до галереї!", "Дозвіл потрібен");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -114,18 +115,18 @@ export default function CarEditScreen({
 
   const handleCancel = () => {
     if (hasChanges()) {
-      Alert.alert(
-        "Скасувати зміни?",
-        "Ви внесли зміни. Ви впевнені, що хочете скасувати?",
-        [
+      showAlert({
+        title: "Скасувати зміни?",
+        message: "Ви внесли зміни. Ви впевнені, що хочете скасувати?",
+        buttons: [
           { text: "Продовжити редагування", style: "cancel" },
           {
             text: "Скасувати",
             style: "destructive",
             onPress: () => navigation.goBack(),
           },
-        ]
-      );
+        ],
+      });
     } else {
       navigation.goBack();
     }
@@ -133,16 +134,16 @@ export default function CarEditScreen({
 
   const handleSave = async () => {
     if (!licensePlate.trim()) {
-      Alert.alert("Помилка", "Введіть номерний знак");
+      showError("Введіть номерний знак");
       return;
     }
     const mileageNum = parseInt(mileage.trim(), 10);
     if (mileage.trim() === "" || isNaN(mileageNum) || mileageNum < 0) {
-      Alert.alert("Помилка", "Введіть коректний пробіг (км)");
+      showError("Введіть коректний пробіг (км)");
       return;
     }
     if (mileageNum > 1000000) {
-      Alert.alert("Помилка", "Пробіг не може перевищувати 1 000 000 км");
+      showError("Пробіг не може перевищувати 1 000 000 км");
       return;
     }
 
@@ -160,22 +161,22 @@ export default function CarEditScreen({
 
     try {
       await updateVehicle.mutateAsync({ vehicleId: carId, data: dto });
-      Alert.alert("Успішно!", "Дані автомобіля оновлені", [
+      showSuccess("Дані автомобіля оновлені", "Успішно!", [
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (e) {
-      Alert.alert(
-        "Помилка",
+      showError(
         e instanceof Error ? e.message : "Не вдалося зберегти зміни"
       );
     }
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "Видалити автомобіль?",
-      "Ви впевнені, що хочете видалити цей автомобіль? Цю дію неможливо скасувати.",
-      [
+    showAlert({
+      title: "Видалити автомобіль?",
+      message:
+        "Ви впевнені, що хочете видалити цей автомобіль? Цю дію неможливо скасувати.",
+      buttons: [
         { text: "Скасувати", style: "cancel" },
         {
           text: "Видалити",
@@ -185,15 +186,14 @@ export default function CarEditScreen({
               await deleteVehicle.mutateAsync(carId);
               navigation.navigate("Home");
             } catch (e) {
-              Alert.alert(
-                "Помилка",
+              showError(
                 e instanceof Error ? e.message : "Не вдалося видалити"
               );
             }
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   if (isLoadingVehicle || !vehicle) {
@@ -377,10 +377,7 @@ export default function CarEditScreen({
       <Animated.View entering={FadeIn.duration(300).delay(240)}>
         <View style={styles.actionsSection}>
           <TouchableOpacity
-            style={[
-              styles.saveButton,
-              isSaving && styles.saveButtonDisabled,
-            ]}
+            style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
             onPress={handleSave}
             disabled={isSaving}
             activeOpacity={0.85}
@@ -397,11 +394,7 @@ export default function CarEditScreen({
             disabled={isSaving}
             activeOpacity={0.85}
           >
-            <Feather
-              name="x"
-              size={18}
-              color={theme.colors.accent.primary}
-            />
+            <Feather name="x" size={18} color={theme.colors.accent.primary} />
             <Text style={styles.cancelButtonText}>Скасувати</Text>
           </TouchableOpacity>
         </View>

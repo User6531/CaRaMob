@@ -46,6 +46,34 @@ export interface StoMechanic {
   fullName: string;
 }
 
+export type StoVehicleActivityType =
+  | "vehicle_created"
+  | "appointment_scheduled"
+  | "vehicle_arrived"
+  | "status_changed"
+  | "mechanic_assigned"
+  | "approval_requested"
+  | "approval_sent_to_client"
+  | "approval_approved"
+  | "approval_rejected";
+
+export type StoVehicleActivityActorRole =
+  | "system"
+  | "operator"
+  | "manager"
+  | "mechanic"
+  | "client";
+
+export interface StoVehicleActivityEntry {
+  id: string;
+  type: StoVehicleActivityType;
+  occurredAt: string;
+  actorName: string;
+  actorRole: StoVehicleActivityActorRole;
+  title: string;
+  description?: string;
+}
+
 export interface StoQueueVehicle {
   id: string;
   stoId: string;
@@ -63,6 +91,8 @@ export interface StoQueueVehicle {
   mechanicName?: string;
   progress?: number;
   approvalRequests?: StoVehicleApprovalRequest[];
+  /** Журнал дій з API; якщо відсутній — будується на фронтенді з наявних полів */
+  activityLog?: StoVehicleActivityEntry[];
   isManualEntry?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -79,4 +109,5 @@ export interface CreateStoQueueVehiclePayload {
   problemSummary?: string;
   status: StoVehicleQueueStatus;
   appointmentAt?: string;
+  isManualEntry?: boolean;
 }

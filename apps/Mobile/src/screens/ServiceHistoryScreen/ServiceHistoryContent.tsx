@@ -1,7 +1,6 @@
 import React from "react";
 import {
   ActivityIndicator,
-  Alert,
   RefreshControl,
   ScrollView,
   Text,
@@ -22,6 +21,7 @@ import { globalStyles } from "../../styles/globalStyles";
 import { ServiceHistorySwipeableVisit } from "./ServiceHistorySwipeableVisit";
 import { formatVisitCount } from "./serviceHistoryUtils";
 import { styles } from "./ServiceHistoryScreen.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 export interface ServiceHistoryContentProps {
   vehicleId: string;
@@ -39,6 +39,7 @@ export function ServiceHistoryContent({
   contentContainerStyle,
 }: ServiceHistoryContentProps) {
   const theme = useTheme();
+  const { showAlert, showError } = useAppAlert();
   const insets = useSafeAreaInsets();
   const deleteServiceHistory = useDeleteServiceHistory();
   const swipeableRefs = React.useRef<Map<string, Swipeable | null>>(new Map());
@@ -68,10 +69,10 @@ export function ServiceHistoryContent({
   const handleDeletePress = (visit: ServiceHistoryVisitDto) => {
     swipeableRefs.current.get(visit.id)?.close();
 
-    Alert.alert(
-      "Видалити запис?",
-      `Запис «${visit.title}» буде видалено без можливості відновлення.`,
-      [
+    showAlert({
+      title: "Видалити запис?",
+      message: `Запис «${visit.title}» буде видалено без можливості відновлення.`,
+      buttons: [
         { text: "Скасувати", style: "cancel" },
         {
           text: "Видалити",
@@ -83,8 +84,7 @@ export function ServiceHistoryContent({
                 serviceHistoryId: visit.id,
               });
             } catch (deleteError) {
-              Alert.alert(
-                "Помилка",
+              showError(
                 deleteError instanceof Error
                   ? deleteError.message
                   : "Не вдалося видалити запис обслуговування"
@@ -92,8 +92,8 @@ export function ServiceHistoryContent({
             }
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   const handleEditPress = (visit: ServiceHistoryVisitDto) => {

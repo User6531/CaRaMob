@@ -4,7 +4,6 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { SvgXml } from "react-native-svg";
@@ -23,6 +22,7 @@ import { GarageContent } from "./GarageContent";
 import { useTheme } from "../../hooks/useTheme";
 import { NotificationBellButton } from "../../components/NotificationBellButton";
 import { useNotifications } from "../../context/NotificationsContext";
+import { useAppAlert } from "../../components/AppAlert";
 
 const CAR_PLACEHOLDER_SVG = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420.849 420.849">
@@ -38,6 +38,7 @@ const CAR_PLACEHOLDER_SVG = `
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   useStatusBar();
   const theme = useTheme();
+  const { showError } = useAppAlert();
   const insets = useSafeAreaInsets();
   const { unreadCount } = useNotifications();
   const [selectedVehicleId, setSelectedVehicleId] = React.useState<
@@ -97,9 +98,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   const openServiceHistory = () => {
     if (!activeVehicleId) {
-      Alert.alert(
-        "Немає автомобіля",
-        "Додайте авто, щоб переглядати історію обслуговування."
+      showError(
+        "Додайте авто, щоб переглядати історію обслуговування.",
+        "Немає автомобіля"
       );
       return;
     }

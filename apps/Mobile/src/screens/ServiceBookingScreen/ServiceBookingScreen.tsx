@@ -1,7 +1,6 @@
 import React from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Text,
   TextInput,
@@ -31,6 +30,7 @@ import {
   VISIT_REASON_OPTIONS,
 } from "./serviceBookingConfig";
 import { styles } from "./ServiceBookingScreen.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 const MAX_PHOTO_ATTACHMENTS = 3;
 
@@ -44,6 +44,7 @@ export default function ServiceBookingScreen({
 }: ServiceBookingScreenProps) {
   useStatusBar();
   const theme = useTheme();
+  const { showError, showSuccess } = useAppAlert();
   const { serviceId, serviceName } = route.params;
   void serviceId;
 
@@ -88,16 +89,16 @@ export default function ServiceBookingScreen({
 
   const handlePickMedia = async () => {
     if (attachments.length >= MAX_PHOTO_ATTACHMENTS) {
-      Alert.alert(
-        "Ліміт досягнуто",
-        `Можна додати до ${MAX_PHOTO_ATTACHMENTS} фото або відео`
+      showError(
+        `Можна додати до ${MAX_PHOTO_ATTACHMENTS} фото або відео`,
+        "Ліміт досягнуто"
       );
       return;
     }
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Дозвіл потрібен", "Потрібен дозвіл для доступу до галереї");
+      showError("Потрібен дозвіл для доступу до галереї", "Дозвіл потрібен");
       return;
     }
 
@@ -126,27 +127,27 @@ export default function ServiceBookingScreen({
 
   const handleSubmit = async () => {
     if (!selectedVehicleId || !selectedVehicle) {
-      Alert.alert("Помилка", "Оберіть автомобіль для запису");
+      showError("Оберіть автомобіль для запису");
       return;
     }
     if (!visitReason) {
-      Alert.alert("Помилка", "Оберіть причину візиту");
+      showError("Оберіть причину візиту");
       return;
     }
     if (!problemDescription.trim()) {
-      Alert.alert("Помилка", "Опишіть проблему своїми словами");
+      showError("Опишіть проблему своїми словами");
       return;
     }
     if (!selectedDateKey) {
-      Alert.alert("Помилка", "Оберіть бажану дату");
+      showError("Оберіть бажану дату");
       return;
     }
     if (!timeSlot) {
-      Alert.alert("Помилка", "Оберіть часовий слот");
+      showError("Оберіть часовий слот");
       return;
     }
     if (!partsOption) {
-      Alert.alert("Помилка", "Вкажіть, чи потрібні запчастини від СТО");
+      showError("Вкажіть, чи потрібні запчастини від СТО");
       return;
     }
 
@@ -154,9 +155,9 @@ export default function ServiceBookingScreen({
     try {
       await new Promise((resolve) => setTimeout(resolve, 600));
 
-      Alert.alert(
-        "Заявку надіслано",
+      showSuccess(
         `${serviceName ?? "СТО"} отримає вашу заявку. Адміністратор зателефонує, щоб підтвердити точний час.`,
+        "Заявку надіслано",
         [{ text: "OK", onPress: () => navigation.goBack() }]
       );
     } finally {

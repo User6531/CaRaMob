@@ -8,8 +8,10 @@ import { LoginPage } from "../pages/LoginPage";
 import { PlaceholderPage } from "../pages/PlaceholderPage";
 import { StoListPage } from "../pages/StoListPage";
 import { StoQueuePage } from "../pages/StoQueuePage";
+import { BookingRequestsPage } from "../pages/BookingRequestsPage";
 import { VehicleServiceHistoryPage } from "../pages/VehicleServiceHistoryPage";
 import { VehiclesPage } from "../pages/VehiclesPage";
+import { VisitsPage } from "../pages/VisitsPage";
 import { PermissionGate } from "./PermissionGate";
 import { ProtectedRoute } from "./ProtectedRoute";
 
@@ -41,6 +43,24 @@ export function AppRouter() {
           element={
             <PermissionGate requiredPermissions={[Permission.StoView]}>
               <StoQueuePage />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/sto/bookings"
+          element={
+            <PermissionGate requiredPermissions={[Permission.StoView]}>
+              <BookingRequestsPage />
+            </PermissionGate>
+          }
+        />
+
+        <Route
+          path="/visits"
+          element={
+            <PermissionGate requiredPermissions={[Permission.StoView]}>
+              <VisitsPage />
             </PermissionGate>
           }
         />

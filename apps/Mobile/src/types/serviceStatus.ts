@@ -2,6 +2,7 @@ export type ServiceStatusId =
   | "received"
   | "diagnostics"
   | "approval"
+  | "waiting_parts"
   | "in_progress"
   | "quality_check"
   | "ready";

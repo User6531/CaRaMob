@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -17,12 +16,14 @@ import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./ProfileEditScreen.styles";
 import { ProfileEditScreenProps } from "../../navigation/types";
 import { formatPhone } from "../ProfileScreen/profileUtils";
+import { useAppAlert } from "../../components/AppAlert";
 
 export default function ProfileEditScreen({
   navigation,
 }: ProfileEditScreenProps) {
   useStatusBar();
   const theme = useTheme();
+  const { showAlert, showError, showSuccess } = useAppAlert();
   const { data: meData, isLoading: isLoadingMe } = useMe();
   const updateUserMutation = useUpdateUserProfile();
 
@@ -42,12 +43,12 @@ export default function ProfileEditScreen({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введіть ваше ім'я");
+      showError("Будь ласка, введіть ваше ім'я");
       return;
     }
 
     if (!email.trim()) {
-      Alert.alert("Помилка", "Будь ласка, введіть вашу пошту");
+      showError("Будь ласка, введіть вашу пошту");
       return;
     }
 
@@ -57,7 +58,7 @@ export default function ProfileEditScreen({
         email: email.trim(),
       });
 
-      Alert.alert("Успішно!", "Профіль успішно оновлено", [
+      showSuccess("Профіль успішно оновлено", "Успішно!", [
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
@@ -80,7 +81,7 @@ export default function ProfileEditScreen({
         }
       }
 
-      Alert.alert("Помилка", errorMessage);
+      showError(errorMessage);
     }
   };
 
@@ -89,18 +90,18 @@ export default function ProfileEditScreen({
       name !== (meData?.name || "") || email !== (meData?.email || "");
 
     if (hasChanges) {
-      Alert.alert(
-        "Скасувати зміни?",
-        "Ви вже внесли зміни. Ви впевнені, що хочете скасувати?",
-        [
+      showAlert({
+        title: "Скасувати зміни?",
+        message: "Ви вже внесли зміни. Ви впевнені, що хочете скасувати?",
+        buttons: [
           { text: "Продовжити редагування", style: "cancel" },
           {
             text: "Скасувати",
             style: "destructive",
             onPress: () => navigation.goBack(),
           },
-        ]
-      );
+        ],
+      });
     } else {
       navigation.goBack();
     }

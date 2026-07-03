@@ -1,4 +1,3 @@
-using System.Data;
 using System.Text.RegularExpressions;
 using FluentValidation;
 using MainHub.Api.DTOs;
@@ -61,12 +60,12 @@ public class CreateVehicleDtoValidator : AbstractValidator<CreateVehicleDto>
       .When(x => x.BoughtAt.HasValue);
 
     RuleFor(x => x.EngineCapacity)
-      .NotEmpty()
-      .WithMessage("Engine capacity is required.")
-      .GreaterThan(0)
-      .WithMessage("Engine capacity must be greater than 0.")
-      .LessThanOrEqualTo(10000)
-      .WithMessage("Engine capacity must be less than or equal to 10000.");
+    .NotEmpty().WithMessage("Engine capacity is required.")
+    .LessThanOrEqualTo(10000).WithMessage("Engine capacity must be less than or equal to 10000.")
+    .GreaterThan(0).WithMessage("Engine capacity must be greater than 0.")
+        .When(x => x.FuelType is not FuelType.Electric and not FuelType.Hydrogen)
+    .Equal(0).WithMessage("Engine capacity must be 0 for Electric/Hydrogen vehicles.")
+        .When(x => x.FuelType is FuelType.Electric or FuelType.Hydrogen);
 
     RuleFor(x => x.Mileage)
       .NotEmpty()

@@ -6,7 +6,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert,
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
@@ -21,6 +20,7 @@ import {
   SERVICE_TAG_LABELS,
 } from "../ServicesScreen/serviceShopUtils";
 import { styles } from "./ServiceShopDetailScreen.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 type SocialPlatform = "instagram" | "facebook" | "telegram" | "website";
 
@@ -43,6 +43,7 @@ export default function ServiceShopDetailScreen({
   route,
 }: ServiceShopDetailScreenProps) {
   const theme = useTheme();
+  const { showError } = useAppAlert();
   const { serviceId } = route.params;
   const service = getServiceById(serviceId);
 
@@ -71,10 +72,10 @@ export default function ServiceShopDetailScreen({
       if (canOpen) {
         await Linking.openURL(url);
       } else {
-        Alert.alert("Помилка", "Не вдалося відкрити телефонний дзвінок");
+        showError("Не вдалося відкрити телефонний дзвінок");
       }
     } catch {
-      Alert.alert("Помилка", "Не вдалося відкрити телефонний дзвінок");
+      showError("Не вдалося відкрити телефонний дзвінок");
     }
   };
 
@@ -86,7 +87,7 @@ export default function ServiceShopDetailScreen({
         await Linking.openURL(url);
       }
     } catch {
-      Alert.alert("Помилка", "Не вдалося відкрити посилання");
+      showError("Не вдалося відкрити посилання");
     }
   };
 

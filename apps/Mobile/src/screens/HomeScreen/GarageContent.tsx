@@ -1,7 +1,6 @@
 import React from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   RefreshControl,
   ScrollView,
@@ -34,7 +33,9 @@ import {
   TRANSMISSION_LABELS,
   WHEEL_DRIVE_LABELS,
 } from "./homeScreenUtils";
+import { formatEngineDisplay } from "../../utils/vehicleFormUtils";
 import { styles } from "./GarageContent.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 const CAR_PLACEHOLDER_SVG = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420.849 420.849">
@@ -120,6 +121,7 @@ export function GarageContent({
   contentContainerStyle,
 }: GarageContentProps) {
   const theme = useTheme();
+  const { showAlert } = useAppAlert();
   const insets = useSafeAreaInsets();
   const pickerRef = React.useRef<View>(null);
   const [isPickerOpen, setIsPickerOpen] = React.useState(false);
@@ -138,7 +140,7 @@ export function GarageContent({
 
   const handleCopyVin = () => {
     if (car?.vin) {
-      Alert.alert("VIN-код", car.vin, [{ text: "OK" }]);
+      showAlert({ title: "VIN-код", message: car.vin, buttons: [{ text: "OK" }] });
     }
   };
 
@@ -487,8 +489,11 @@ export function GarageContent({
                         <View style={styles.infoContent}>
                           <Text style={styles.infoLabel}>Двигун</Text>
                           <Text style={styles.infoValue}>
-                            {(car.engineCapacity / 1000).toFixed(1)} л,{" "}
-                            {car.enginePower} к.с.
+                            {formatEngineDisplay(
+                              car.engineCapacity,
+                              car.enginePower,
+                              car.fuelType as FuelType
+                            )}
                           </Text>
                         </View>
                       </View>

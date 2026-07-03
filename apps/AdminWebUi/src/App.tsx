@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { StoProvider } from "./context/StoContext";
 import { StoVehicleProvider } from "./context/StoVehicleContext";
+import { BookingRequestProvider } from "./context/BookingRequestContext";
 import { queryClient } from "./lib/queryClient";
 import { AppRouter } from "./routes/AppRouter";
 import { persistor, store } from "./store";
@@ -19,7 +20,9 @@ function App() {
             <AuthProvider>
               <StoProvider>
                 <StoVehicleProvider>
-                  <AppRouter />
+                  <BookingRequestProvider>
+                    <AppRouter />
+                  </BookingRequestProvider>
                 </StoVehicleProvider>
               </StoProvider>
             </AuthProvider>

@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Alert,
   Linking,
   ScrollView,
   Text,
@@ -18,7 +17,10 @@ import Animated, {
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../hooks/useTheme";
-import { ActiveServiceSession, ServiceStatusId } from "../../types/serviceStatus";
+import {
+  ActiveServiceSession,
+  ServiceStatusId,
+} from "../../types/serviceStatus";
 import { MOCK_ACTIVE_SESSION } from "./mockServiceStatus";
 import {
   getStatusContextMessage,
@@ -27,6 +29,7 @@ import {
   SERVICE_STATUS_STEPS,
 } from "./serviceStatusConfig";
 import { styles } from "./ServiceStatusContent.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 export interface ServiceStatusContentProps {
   contentContainerStyle?: ViewStyle;
@@ -51,11 +54,7 @@ function PulsingDot() {
   const opacity = useSharedValue(1);
 
   React.useEffect(() => {
-    opacity.value = withRepeat(
-      withTiming(0.35, { duration: 900 }),
-      -1,
-      true
-    );
+    opacity.value = withRepeat(withTiming(0.35, { duration: 900 }), -1, true);
   }, [opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -69,6 +68,7 @@ export function ServiceStatusContent({
   contentContainerStyle,
 }: ServiceStatusContentProps) {
   const theme = useTheme();
+  const { showAlert, showError } = useAppAlert();
   const insets = useSafeAreaInsets();
   const scrollTopInset = 16 + insets.top;
 
@@ -97,10 +97,10 @@ export function ServiceStatusContent({
   const handleApprove = () => {
     if (!session?.estimateItems?.length) return;
 
-    Alert.alert(
-      "Затвердити кошторис?",
-      "Після підтвердження СТО розпочне виконання погоджених робіт.",
-      [
+    showAlert({
+      title: "Затвердити кошторис?",
+      message: "Після підтвердження СТО розпочне виконання погоджених робіт.",
+      buttons: [
         { text: "Скасувати", style: "cancel" },
         {
           text: "Затвердити",
@@ -110,14 +110,14 @@ export function ServiceStatusContent({
                 ? {
                     ...prev,
                     isApproved: true,
-                    currentStatus: "in_progress",
+                    currentStatus: "waiting_parts",
                   }
                 : prev
             );
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   const handleNavigate = () => {
@@ -125,14 +125,14 @@ export function ServiceStatusContent({
     const query = encodeURIComponent(session.serviceAddress);
     const url = `https://maps.google.com/?q=${query}`;
     Linking.openURL(url).catch(() => {
-      Alert.alert("Помилка", "Не вдалося відкрити карту");
+      showError("Не вдалося відкрити карту");
     });
   };
 
   const handleCall = () => {
     if (!session?.servicePhone) return;
     Linking.openURL(`tel:${session.servicePhone.replace(/\s/g, "")}`).catch(
-      () => Alert.alert("Помилка", "Не вдалося відкрити дзвінок")
+      () => showError("Не вдалося відкрити дзвінок")
     );
   };
 
@@ -208,7 +208,9 @@ export function ServiceStatusContent({
                   </View>
                   <View style={styles.liveBadge}>
                     <PulsingDot />
-                    <Text style={styles.liveBadgeText}>Оновлення в реальному часі</Text>
+                    <Text style={styles.liveBadgeText}>
+                      Оновлення в реальному часі
+                    </Text>
                   </View>
                   <Text style={styles.sessionVehicle}>
                     Прийнято о {formatAcceptedAt(session.acceptedAt)}
@@ -340,7 +342,7 @@ export function ServiceStatusContent({
                       color={theme.colors.text.inverse}
                     />
                     <Text style={styles.primaryButtonText}>
-                      Переглянути та затвердити перелік робіт
+                      Затвердити перелік робіт
                     </Text>
                   </TouchableOpacity>
                 </Animated.View>

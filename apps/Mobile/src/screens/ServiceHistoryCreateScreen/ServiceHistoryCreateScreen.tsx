@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { FormScreen } from "../../components/FormScreen";
 import { useServiceHistoryCreateDraft } from "../../hooks/useServiceHistoryCreateDraft";
 import { useStatusBar } from "../../hooks/useStatusBar";
@@ -9,6 +9,7 @@ import { globalStyles } from "../../styles/globalStyles";
 import { useTheme } from "../../hooks/useTheme";
 import { ServiceHistoryForm } from "./ServiceHistoryForm";
 import { styles } from "./ServiceHistoryCreateScreen.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 export default function ServiceHistoryCreateScreen({
   navigation,
@@ -16,6 +17,7 @@ export default function ServiceHistoryCreateScreen({
 }: ServiceHistoryCreateScreenProps) {
   useStatusBar();
   const theme = useTheme();
+  const { showError, showSuccess } = useAppAlert();
   const { vehicleId, vehicleTitle } = route.params;
   const createServiceHistory = useCreateServiceHistory();
   const {
@@ -35,7 +37,7 @@ export default function ServiceHistoryCreateScreen({
 
   const handleSave = async () => {
     if (!title.trim()) {
-      Alert.alert("Помилка", "Вкажіть назву візиту або сервісу.");
+      showError("Вкажіть назву візиту або сервісу.");
       return;
     }
 
@@ -49,7 +51,7 @@ export default function ServiceHistoryCreateScreen({
     });
 
     if (!parsedRecords.length) {
-      Alert.alert("Помилка", "Додайте хоча б одну виконану роботу.");
+      showError("Додайте хоча б одну виконану роботу.");
       return;
     }
 
@@ -62,8 +64,7 @@ export default function ServiceHistoryCreateScreen({
     );
 
     if (invalidRecord) {
-      Alert.alert(
-        "Помилка",
+      showError(
         `Перевірте пункт #${invalidRecord.index + 1}: вкажіть назву роботи та ціну більше 0.`
       );
       return;
@@ -87,12 +88,11 @@ export default function ServiceHistoryCreateScreen({
 
       await clearDraft();
 
-      Alert.alert("Успіх", "Запис обслуговування збережено у базі.", [
+      showSuccess("Запис обслуговування збережено у базі.", "Успіх", [
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      Alert.alert(
-        "Помилка",
+      showError(
         error instanceof Error
           ? error.message
           : "Не вдалося зберегти запис обслуговування"

@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Alert,
   Image,
   ScrollView,
   Text,
@@ -37,6 +36,7 @@ import {
   PART_ORDER_STATUS_ORDER,
 } from "./mechanicPartsUtils";
 import { styles } from "./MechanicActiveWorkContent.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 const MAX_PHOTOS = 6;
 
@@ -593,10 +593,12 @@ function EstimateWorkItemRow({ item, onPriceChange }: EstimateWorkItemProps) {
   );
 }
 
-async function pickPhoto(): Promise<string | null> {
+async function pickPhoto(
+  showPermissionError: (message: string, title?: string) => void
+): Promise<string | null> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) {
-    Alert.alert("Дозвіл потрібен", "Потрібен дозвіл для доступу до галереї");
+    showPermissionError("Потрібен дозвіл для доступу до галереї", "Дозвіл потрібен");
     return null;
   }
 
@@ -613,6 +615,7 @@ export function MechanicActiveWorkContent({
   contentContainerStyle,
 }: MechanicActiveWorkContentProps) {
   const theme = useTheme();
+  const { showAlert, showError } = useAppAlert();
   const insets = useSafeAreaInsets();
   const scrollTopInset = 16 + insets.top;
 
@@ -642,19 +645,19 @@ export function MechanicActiveWorkContent({
 
   const handlePickWorkItemPhoto = async (workItemId: string, currentCount: number) => {
     if (currentCount >= MAX_PHOTOS) {
-      Alert.alert("Ліміт", `Можна додати до ${MAX_PHOTOS} фото`);
+      showError(`Можна додати до ${MAX_PHOTOS} фото`, "Ліміт");
       return;
     }
-    const uri = await pickPhoto();
+    const uri = await pickPhoto(showError);
     if (uri) addWorkItemPhoto(workItemId, uri);
   };
 
   const handlePickConclusionPhoto = async () => {
     if ((session?.conclusionPhotos.length ?? 0) >= MAX_PHOTOS) {
-      Alert.alert("Ліміт", `Можна додати до ${MAX_PHOTOS} фото`);
+      showError(`Можна додати до ${MAX_PHOTOS} фото`, "Ліміт");
       return;
     }
-    const uri = await pickPhoto();
+    const uri = await pickPhoto(showError);
     if (uri) addConclusionPhoto(uri);
   };
 
@@ -663,18 +666,19 @@ export function MechanicActiveWorkContent({
     const hasValidWork = planned.some((item) => item.title.trim().length > 0);
 
     if (!hasValidWork) {
-      Alert.alert("Помилка", "Додайте хоча б одну роботу з назвою перед погодженням");
+      showError("Додайте хоча б одну роботу з назвою перед погодженням");
       return;
     }
 
-    Alert.alert(
-      "Погодити кошторис?",
-      "Клієнт отримає список робіт та приблизну вартість для підтвердження.",
-      [
+    showAlert({
+      title: "Погодити кошторис?",
+      message:
+        "Клієнт отримає список робіт та приблизну вартість для підтвердження.",
+      buttons: [
         { text: "Скасувати", style: "cancel" },
         { text: "Погодити", onPress: approveDiagnostics },
-      ]
-    );
+      ],
+    });
   };
 
   const handleCompleteRepair = () => {
@@ -684,14 +688,15 @@ export function MechanicActiveWorkContent({
       ) ?? [];
 
     if (planned.length > 0) {
-      Alert.alert(
-        "Незавершені роботи",
-        "Деякі роботи ще не позначені як виконані. Все одно перейти до фінальної перевірки?",
-        [
+      showAlert({
+        title: "Незавершені роботи",
+        message:
+          "Деякі роботи ще не позначені як виконані. Все одно перейти до фінальної перевірки?",
+        buttons: [
           { text: "Скасувати", style: "cancel" },
           { text: "Перейти", onPress: completeRepair },
-        ]
-      );
+        ],
+      });
       return;
     }
 
@@ -699,14 +704,15 @@ export function MechanicActiveWorkContent({
   };
 
   const handleReturnToRepair = () => {
-    Alert.alert(
-      "Повернутись до ремонту?",
-      "Ви зможете змінити статуси робіт, додати фото та продовжити ремонт.",
-      [
+    showAlert({
+      title: "Повернутись до ремонту?",
+      message:
+        "Ви зможете змінити статуси робіт, додати фото та продовжити ремонт.",
+      buttons: [
         { text: "Скасувати", style: "cancel" },
         { text: "Повернутись", onPress: returnToRepair },
-      ]
-    );
+      ],
+    });
   };
 
   const handleStartWaitingParts = () => {
@@ -725,14 +731,15 @@ export function MechanicActiveWorkContent({
       session?.partOrders.filter((item) => item.status !== "received") ?? [];
 
     if (pending.length > 0) {
-      Alert.alert(
-        "Деталі ще не всі отримані",
-        "Деякі позиції ще не позначені як «Отримано». Продовжити ремонт?",
-        [
+      showAlert({
+        title: "Деталі ще не всі отримані",
+        message:
+          "Деякі позиції ще не позначені як «Отримано». Продовжити ремонт?",
+        buttons: [
           { text: "Скасувати", style: "cancel" },
           { text: "Продовжити", onPress: returnToRepair },
-        ]
-      );
+        ],
+      });
       return;
     }
 
@@ -741,18 +748,19 @@ export function MechanicActiveWorkContent({
 
   const handleFinishWork = () => {
     if (!session?.conclusion.trim()) {
-      Alert.alert("Помилка", "Напишіть висновок для водія перед завершенням");
+      showError("Напишіть висновок для водія перед завершенням");
       return;
     }
 
-    Alert.alert(
-      "Завершити роботу?",
-      "Водій побачить кошторис, висновок та фото. Статус зміниться на «Завершено».",
-      [
+    showAlert({
+      title: "Завершити роботу?",
+      message:
+        "Водій побачить кошторис, висновок та фото. Статус зміниться на «Завершено».",
+      buttons: [
         { text: "Скасувати", style: "cancel" },
         { text: "Завершити", onPress: finishWork },
-      ]
-    );
+      ],
+    });
   };
 
   if (!activeVehicle || !session) {

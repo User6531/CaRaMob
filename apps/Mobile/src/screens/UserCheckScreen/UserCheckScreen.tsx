@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ActivityIndicator,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import { useMe } from "../../queries/userQueries";
@@ -11,10 +10,12 @@ import { useAuth } from "../../context/AuthContext";
 import { theme } from "../../styles/theme";
 import { styles } from "./UserCheckScreen.styles";
 import { UserCheckScreenProps } from "../../navigation/types";
+import { useAppAlert } from "../../components/AppAlert";
 
 export default function UserCheckScreen({ navigation }: UserCheckScreenProps) {
   const { data: meData, isLoading, error } = useMe();
   const { logout } = useAuth();
+  const { showAlert } = useAppAlert();
   const [showSkipButton, setShowSkipButton] = useState(false);
 
   useEffect(() => {
@@ -93,34 +94,39 @@ export default function UserCheckScreen({ navigation }: UserCheckScreenProps) {
       }
 
       // Показуємо повідомлення користувачу
-      Alert.alert("Помилка", errorMessage, [
-        {
-          text: "Скасувати",
-          style: "cancel",
-          onPress: async () => {
-            await logout();
-          },
-        },
-        {
-          text: buttonText,
-          onPress: async () => {
-            if (buttonText === "Увійти знову") {
+      showAlert({
+        title: "Помилка",
+        message: errorMessage,
+        buttons: [
+          {
+            text: "Скасувати",
+            style: "cancel",
+            onPress: async () => {
               await logout();
-            } else {
-              // Спробувати знову - просто закриваємо Alert, query автоматично повториться
-              // React Query автоматично повторить запит через retry логіку
-            }
+            },
           },
-        },
-      ]);
+          {
+            text: buttonText,
+            onPress: async () => {
+              if (buttonText === "Увійти знову") {
+                await logout();
+              } else {
+                // Спробувати знову - просто закриваємо Alert, query автоматично повториться
+                // React Query автоматично повторить запит через retry логіку
+              }
+            },
+          },
+        ],
+      });
     }
-  }, [error, isLoading, logout, navigation]);
+  }, [error, isLoading, logout, navigation, showAlert]);
 
   const handleSkip = () => {
-    Alert.alert(
-      "Пропустити перевірку",
-      "Ви впевнені, що хочете пропустити перевірку профілю? Це може призвести до проблем з функціональністю додатку.",
-      [
+    showAlert({
+      title: "Пропустити перевірку",
+      message:
+        "Ви впевнені, що хочете пропустити перевірку профілю? Це може призвести до проблем з функціональністю додатку.",
+      buttons: [
         {
           text: "Скасувати",
           style: "cancel",
@@ -130,8 +136,8 @@ export default function UserCheckScreen({ navigation }: UserCheckScreenProps) {
           style: "destructive",
           onPress: () => navigation.replace("ProfileSetup"),
         },
-      ]
-    );
+      ],
+    });
   };
 
   return (

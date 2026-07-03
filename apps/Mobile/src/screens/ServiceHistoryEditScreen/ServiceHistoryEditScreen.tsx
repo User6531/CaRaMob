@@ -1,5 +1,4 @@
 import React from "react";
-import { Alert } from "react-native";
 import { FormScreen } from "../../components/FormScreen";
 import { useStatusBar } from "../../hooks/useStatusBar";
 import { useUpdateServiceHistory } from "../../queries";
@@ -10,6 +9,7 @@ import {
   ServiceHistoryWorkInput,
 } from "../ServiceHistoryCreateScreen/ServiceHistoryForm";
 import { styles } from "../ServiceHistoryCreateScreen/ServiceHistoryCreateScreen.styles";
+import { useAppAlert } from "../../components/AppAlert";
 
 const createEmptyWork = (): ServiceHistoryWorkInput => ({
   id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -36,6 +36,7 @@ export default function ServiceHistoryEditScreen({
   route,
 }: ServiceHistoryEditScreenProps) {
   useStatusBar();
+  const { showError, showSuccess } = useAppAlert();
   const { vehicleId, vehicleTitle, visit } = route.params;
   const updateServiceHistory = useUpdateServiceHistory();
 
@@ -71,7 +72,7 @@ export default function ServiceHistoryEditScreen({
 
   const handleSave = async () => {
     if (!title.trim()) {
-      Alert.alert("Помилка", "Вкажіть назву візиту або сервісу.");
+      showError("Вкажіть назву візиту або сервісу.");
       return;
     }
 
@@ -85,7 +86,7 @@ export default function ServiceHistoryEditScreen({
     });
 
     if (!parsedRecords.length) {
-      Alert.alert("Помилка", "Додайте хоча б одну виконану роботу.");
+      showError("Додайте хоча б одну виконану роботу.");
       return;
     }
 
@@ -98,8 +99,7 @@ export default function ServiceHistoryEditScreen({
     );
 
     if (invalidRecord) {
-      Alert.alert(
-        "Помилка",
+      showError(
         `Перевірте пункт #${invalidRecord.index + 1}: вкажіть назву роботи та ціну більше 0.`
       );
       return;
@@ -122,12 +122,11 @@ export default function ServiceHistoryEditScreen({
         },
       });
 
-      Alert.alert("Успіх", "Запис обслуговування оновлено.", [
+      showSuccess("Запис обслуговування оновлено.", "Успіх", [
         { text: "OK", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      Alert.alert(
-        "Помилка",
+      showError(
         error instanceof Error
           ? error.message
           : "Не вдалося оновити запис обслуговування"

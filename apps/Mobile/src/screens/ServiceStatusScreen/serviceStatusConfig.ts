@@ -27,6 +27,12 @@ export const SERVICE_STATUS_STEPS: ServiceStatusStepConfig[] = [
     shortTitle: "Кошторис",
   },
   {
+    id: "waiting_parts",
+    emoji: "📦",
+    title: "Очікуємо деталей",
+    shortTitle: "Деталі",
+  },
+  {
     id: "in_progress",
     emoji: "🔧",
     title: "У роботі",
@@ -67,6 +73,8 @@ export function getStatusContextMessage(
       return "Майстер проводить огляд. Очікуйте на результати та кошторис.";
     case "approval":
       return "Діагностику завершено. Перегляньте перелік робіт і затвердіть кошторис.";
+    case "waiting_parts":
+      return "Очікуємо постачання деталей. Ремонт розпочнеться одразу після їх отримання.";
     case "in_progress":
       return currentWork
         ? `Зараз виконується: ${currentWork}`

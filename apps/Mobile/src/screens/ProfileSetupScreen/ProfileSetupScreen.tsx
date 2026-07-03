@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { FormScreen } from "../../components/FormScreen";
@@ -13,12 +12,14 @@ import { useAuth } from "../../context/AuthContext";
 import { useUpdateUserProfile } from "../../queries/userQueries";
 import { styles } from "./ProfileSetupScreen.styles";
 import { ProfileSetupScreenProps } from "../../navigation/types";
+import { useAppAlert } from "../../components/AppAlert";
 
 export default function ProfileSetupScreen({
   navigation,
 }: ProfileSetupScreenProps) {
   const { meData } = useAuth();
   const updateUserMutation = useUpdateUserProfile();
+  const { showAlert, showError } = useAppAlert();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -36,10 +37,10 @@ export default function ProfileSetupScreen({
     const hasData = name.trim() || email.trim();
 
     if (hasData) {
-      Alert.alert(
-        "Скасувати створення профілю?",
-        "Ви вже ввели деякі дані. Ви впевнені, що хочете скасувати?",
-        [
+      showAlert({
+        title: "Скасувати створення профілю?",
+        message: "Ви вже ввели деякі дані. Ви впевнені, що хочете скасувати?",
+        buttons: [
           {
             text: "Продовжити редагування",
             style: "cancel",
@@ -49,8 +50,8 @@ export default function ProfileSetupScreen({
             style: "destructive",
             onPress: () => navigation.navigate("Home"),
           },
-        ]
-      );
+        ],
+      });
     } else {
       navigation.navigate("Home");
     }
@@ -58,11 +59,11 @@ export default function ProfileSetupScreen({
 
   const handleContinue = async () => {
     if (!name.trim()) {
-      Alert.alert("Error", "Будь ласка, введи своє імʼя");
+      showError("Будь ласка, введи своє імʼя", "Error");
       return;
     }
     if (!email.trim()) {
-      Alert.alert("Error", "Будь ласка, введи свою пошту");
+      showError("Будь ласка, введи свою пошту", "Error");
       return;
     }
 
@@ -94,7 +95,7 @@ export default function ProfileSetupScreen({
         }
       }
 
-      Alert.alert("Помилка", errorMessage);
+      showError(errorMessage);
     }
   };
 

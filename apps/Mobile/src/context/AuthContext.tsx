@@ -15,6 +15,7 @@ import {
   refreshAccessToken,
 } from "../api/services/authService";
 import { queryClient } from "../lib/queryClient";
+import { registerRefreshAccessToken } from "../api/authTokenBridge";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -136,6 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     checkAuthStatus();
   }, [checkAuthStatus]);
+
+  useEffect(() => {
+    registerRefreshAccessToken(refreshSession);
+  }, [refreshSession]);
 
   const login = async () => {
     const result = await WebBrowser.openAuthSessionAsync(

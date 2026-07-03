@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
-  Platform,
-  Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -70,7 +68,6 @@ export const Select: React.FC<SelectProps> = ({
   const selectedOption = options.find((option) => option.value === value);
   const showSearch = options.length > searchThreshold;
   const modalTitle = label || "Виберіть опцію";
-  const listMaxHeight = Dimensions.get("window").height * 0.42;
 
   const filteredOptions = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -211,7 +208,6 @@ export const Select: React.FC<SelectProps> = ({
                     onChangeText={setSearchQuery}
                     autoCapitalize="none"
                     autoCorrect={false}
-                    autoFocus={Platform.OS === "ios"}
                   />
                   {searchQuery.length > 0 ? (
                     <TouchableOpacity
@@ -225,25 +221,27 @@ export const Select: React.FC<SelectProps> = ({
               </View>
             ) : null}
 
-            {filteredOptions.length > 0 ? (
-              <FlatList
-                data={filteredOptions}
-                keyExtractor={(item) => String(item.value)}
-                style={[styles.optionsList, { maxHeight: listMaxHeight }]}
-                contentContainerStyle={styles.optionsListContent}
-                renderItem={renderOption}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-              />
-            ) : (
-              <View style={styles.noResultsContainer}>
-                <Feather name="search" size={28} color="#8E8E93" />
-                <Text style={styles.noResultsTitle}>Нічого не знайдено</Text>
-                <Text style={styles.noResultsText}>
-                  Спробуйте інший пошуковий запит
-                </Text>
-              </View>
-            )}
+            <View style={styles.optionsBody}>
+              {filteredOptions.length > 0 ? (
+                <FlatList
+                  data={filteredOptions}
+                  keyExtractor={(item) => String(item.value)}
+                  style={styles.optionsList}
+                  contentContainerStyle={styles.optionsListContent}
+                  renderItem={renderOption}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                />
+              ) : (
+                <View style={styles.noResultsContainer}>
+                  <Feather name="search" size={28} color="#8E8E93" />
+                  <Text style={styles.noResultsTitle}>Нічого не знайдено</Text>
+                  <Text style={styles.noResultsText}>
+                    Спробуйте інший пошуковий запит
+                  </Text>
+                </View>
+              )}
+            </View>
 
             <View
               style={[

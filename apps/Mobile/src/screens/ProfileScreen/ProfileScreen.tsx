@@ -4,7 +4,6 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
   Image,
   RefreshControl,
@@ -20,12 +19,14 @@ import { globalStyles } from "../../styles/globalStyles";
 import { styles } from "./ProfileScreen.styles";
 import { ProfileScreenProps } from "../../navigation/types";
 import { formatPhone, getProfileInitials } from "./profileUtils";
+import { useAppAlert } from "../../components/AppAlert";
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   useStatusBar();
   const { logout } = useAuth();
   const { data: meData, isLoading, error, refetch } = useMe();
   const theme = useTheme();
+  const { showAlert } = useAppAlert();
 
   const refreshProfile = React.useCallback(async () => {
     await refetch();
@@ -38,10 +39,14 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   };
 
   const handleLogout = () => {
-    Alert.alert("Вийти з акаунту?", "Ви впевнені, що хочете вийти?", [
-      { text: "Скасувати", style: "cancel" },
-      { text: "Вийти", style: "destructive", onPress: logout },
-    ]);
+    showAlert({
+      title: "Вийти з акаунту?",
+      message: "Ви впевнені, що хочете вийти?",
+      buttons: [
+        { text: "Скасувати", style: "cancel" },
+        { text: "Вийти", style: "destructive", onPress: logout },
+      ],
+    });
   };
 
   if (isLoading) {

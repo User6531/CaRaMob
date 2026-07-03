@@ -14,6 +14,7 @@ interface DataTableProps<T> {
   getRowKey: (row: T) => string;
   emptyMessage: string;
   minWidth?: number | string;
+  onRowClick?: (row: T) => void;
 }
 
 export function DataTable<T>({
@@ -22,6 +23,7 @@ export function DataTable<T>({
   getRowKey,
   emptyMessage,
   minWidth,
+  onRowClick,
 }: DataTableProps<T>) {
   const tableStyle = minWidth ? { minWidth } : undefined;
 
@@ -40,7 +42,11 @@ export function DataTable<T>({
         <tbody>
           {data.length > 0 ? (
             data.map((row) => (
-              <tr key={getRowKey(row)}>
+              <tr
+                key={getRowKey(row)}
+                className={onRowClick ? styles.clickableRow : undefined}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+              >
                 {columns.map((column) => (
                   <td key={column.key} className={column.className}>
                     {column.render(row)}

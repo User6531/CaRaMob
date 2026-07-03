@@ -72,8 +72,11 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderBottomWidth: 0,
     borderColor: "rgba(255, 255, 255, 0.08)",
-    maxHeight: "85%",
+    height: "85%",
     overflow: "hidden",
+  },
+  optionsBody: {
+    flex: 1,
   },
   handle: {
     alignSelf: "center",
@@ -83,23 +86,27 @@ export const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.15)",
     marginTop: 10,
     marginBottom: 4,
+    flexShrink: 0,
   },
   sheetHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
+    flexShrink: 0,
   },
   sheetHeaderContent: {
     flex: 1,
+    minWidth: 0,
+    marginRight: 12,
   },
   sheetTitle: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
-    flex: 1,
+    lineHeight: 24,
   },
   sheetSubtitle: {
     color: "#8E8E93",
@@ -113,10 +120,12 @@ export const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.06)",
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 2,
   },
   searchContainer: {
     paddingHorizontal: 16,
     paddingBottom: 12,
+    flexShrink: 0,
   },
   searchInputWrapper: {
     flexDirection: "row",
@@ -135,7 +144,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 11,
   },
   optionsList: {
-    flexGrow: 0,
+    flex: 1,
   },
   optionsListContent: {
     paddingHorizontal: 12,
@@ -167,9 +176,11 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   noResultsContainer: {
+    flex: 1,
     paddingVertical: 36,
     paddingHorizontal: 24,
     alignItems: "center",
+    justifyContent: "center",
     gap: 8,
   },
   noResultsTitle: {
@@ -187,6 +198,7 @@ export const styles = StyleSheet.create({
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: "rgba(255, 255, 255, 0.06)",
+    flexShrink: 0,
   },
   doneButton: {
     alignItems: "center",

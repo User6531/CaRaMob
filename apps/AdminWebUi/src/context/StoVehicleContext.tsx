@@ -86,7 +86,7 @@ export function StoVehicleProvider({ children }: { children: ReactNode }) {
               ? 100
               : undefined,
       approvalRequests: [],
-      isManualEntry: true,
+      isManualEntry: payload.isManualEntry ?? true,
       createdAt: now,
       updatedAt: now,
     };
