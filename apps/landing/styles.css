@@ -759,29 +759,53 @@ h3 {
 }
 
 .timeline {
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
-  margin-left: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .timeline-item {
   display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 14px;
-  padding: 0 0 28px;
+  grid-template-columns: 32px 1fr;
+  gap: 16px;
+  padding-bottom: 28px;
 }
 
 .timeline-item:last-child {
   padding-bottom: 0;
 }
 
+.timeline-item:last-child .timeline-marker::after {
+  display: none;
+}
+
+.timeline-marker {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 7px;
+}
+
+.timeline-marker::after {
+  content: "";
+  position: absolute;
+  top: 24px;
+  bottom: -28px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgba(74, 222, 158, 0.22);
+}
+
 .timeline .dot {
-  width: 22px;
-  height: 22px;
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  border: 2px solid rgba(74, 222, 158, 0.35);
-  background: rgba(26, 64, 56, 0.55);
-  margin-left: -12px;
-  margin-top: 4px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 0 5px #14181d;
 }
 
 .timeline h3 {
