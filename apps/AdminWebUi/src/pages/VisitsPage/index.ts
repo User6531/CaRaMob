@@ -1,1 +1,0 @@
-export { VisitsPage } from "./VisitsPage";

@@ -1,1 +1,0 @@
-export { BookingRequestDetailModal } from "./BookingRequestDetailModal";
