@@ -1,9 +1,0 @@
-node_modules
-.expo
-dist
-build
-*.log
-package-lock.json
-coverage
-.nyc_output
-
